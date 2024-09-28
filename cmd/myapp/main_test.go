@@ -15,8 +15,8 @@ func TestCreateWorker(t *testing.T) {
 	t.Parallel()
 
 	h := BD.WorkerHandlers{
-		users: map[string]BD.Worker{},
-		mu:    &sync.RWMutex{},
+		Users: map[string]BD.Worker{},
+		Mu:    &sync.RWMutex{},
 	}
 
 	body := bytes.NewReader([]byte(`{"WorkerName":"Vasia","WorkerLastName":"Vasin",
@@ -33,16 +33,14 @@ func TestCreateWorker(t *testing.T) {
 		},
 	}
 
-	r := httptest.NewRequest("POST", "/registration/worker", body)
+	r := httptest.NewRequest("POST", "api/registration/worker", body)
 	w := httptest.NewRecorder()
 	h.HandleCreateWorker(w, r)
-	//fmt.Println(h.users, expectedUsers)
-	//fmt.Println(h.users[0].ID, expectedUsers[0].ID)
 	if w.Code != http.StatusOK {
 		t.Error("status is not ok")
 	}
-	if !reflect.DeepEqual(h.users, expectedUsers) {
-		t.Errorf("got %q, want %q", h.users, expectedUsers)
+	if !reflect.DeepEqual(h.Users, expectedUsers) {
+		t.Errorf("got %q, want %q", h.Users, expectedUsers)
 	}
 }
 
@@ -50,8 +48,8 @@ func TestCreateEmployer(t *testing.T) {
 	t.Parallel()
 
 	h := BD.EmployerHandlers{
-		users: map[string]BD.Employer{},
-		mu:    &sync.RWMutex{},
+		Users: map[string]BD.Employer{},
+		Mu:    &sync.RWMutex{},
 	}
 
 	body := bytes.NewReader([]byte(`{"EmployerName":"Vasily","EmployerLastName":"Vasin",
@@ -72,54 +70,17 @@ func TestCreateEmployer(t *testing.T) {
 		},
 	}
 
-	r := httptest.NewRequest("POST", "/registration/employer", body)
+	r := httptest.NewRequest("POST", "api/registration/employer", body)
 	w := httptest.NewRecorder()
+	//workerHandler := handler.CreateWorkerHandler(&BD.HandlersWorker)
 
 	h.HandleCreateEmployer(w, r)
 
-	//fmt.Println(h.users, expectedUsers)
 	if w.Code != http.StatusOK {
 		t.Error("status is not ok")
 	}
 
-	if !reflect.DeepEqual(h.users, expectedUsers) {
-		t.Errorf("got %q, want %q", h.users, expectedUsers)
+	if !reflect.DeepEqual(h.Users, expectedUsers) {
+		t.Errorf("got %q, want %q", h.Users, expectedUsers)
 	}
 }
-
-//var expectedJSON = `[{"id":1,"name":"Afanasiy"},{"id":2,"name":"Ka"}]`
-
-// func TestGetUsers(t *testing.T) {
-
-// 	h := Handlers{
-// 		users: []User{
-// 			{
-// 				ID:       1,
-// 				Name:     "Afanasiy",
-// 				Password: "1234",
-// 			},
-// 			{
-// 				ID:       2,
-// 				Name:     "Ka",
-// 				Password: "jdjfaljhfljehfs;l3345354",
-// 			},
-// 		},
-// 		mu: &sync.Mutex{},
-// 	}
-
-// 	t.Parallel()
-
-// 	r := httptest.NewRequest("GET", "/users/", nil)
-// 	w := httptest.NewRecorder()
-
-// 	h.HandleListUsers(w, r)
-
-// 	if w.Code != http.StatusOK {
-// 		t.Error("status is not ok")
-// 	}
-
-// 	bytes, _ := ioutil.ReadAll(w.Body)
-// 	if strings.Trim(string(bytes), "\n") != expectedJSON {
-// 		t.Errorf("expected: [%s], got: [%s]", expectedJSON, string(bytes))
-// 	}
-// }

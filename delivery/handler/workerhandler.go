@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -20,20 +19,19 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 		decErr := decoder.Decode(newUserInput)
 		if decErr != nil {
 			w.WriteHeader(400)
-			log.Printf("error while unmarshalling JSON: %s", decErr)
+			log.Printf("error while unmarshalling worker JSON: %s", decErr)
 			w.Write([]byte("{}"))
 			return
 		}
 
-		fmt.Println(newUserInput)
-
-		err := service.TryCreateWorker(h, newUserInput)
+		user, err := service.TryCreateWorker(h, newUserInput)
 		if err != nil {
 			w.WriteHeader(400)
 			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
 			w.Write([]byte("{}"))
 		} else {
-			w.Write([]byte("{allok: true}"))
+			userdata, _ := json.Marshal(user)
+			w.Write([]byte(userdata))
 		}
 
 	}

@@ -7,6 +7,7 @@ import (
 )
 
 func GetWorkerByEmail(table *BD.WorkerHandlers, email string) (BD.Worker, error) {
+
 	table.Mu.RLock()
 	user, err := table.Users[email]
 	table.Mu.RUnlock()
@@ -18,10 +19,12 @@ func GetWorkerByEmail(table *BD.WorkerHandlers, email string) (BD.Worker, error)
 }
 
 func GetEmployerByEmail(table *BD.EmployerHandlers, email string) (BD.Employer, error) {
+	fmt.Println("1")
 	table.Mu.RLock()
-	user, err := table.Users[email]
+	user, ok := table.Users[email]
 	table.Mu.RUnlock()
-	if err == true {
+	fmt.Println("@", ok, "@")
+	if ok == true {
 		return user, nil
 	} else {
 		return BD.Employer{}, fmt.Errorf("No employer with such email")

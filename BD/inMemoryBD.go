@@ -42,7 +42,7 @@ type Worker struct {
 	WorkerLastName  string // `json:"WorkerLastName"`
 	WorkerBirthDate string // `json:"WorkerBirthDate"`
 	WorkerEmail     string // `json:"WorkerEmail"`
-	WorkerPassword  string // `json:"WorkerPassword"`
+	WorkerPassword  string `json:"-"`
 }
 
 type EmployerInput struct {
@@ -65,5 +65,5 @@ type Employer struct {
 	CompanyDescription string
 	Website            string
 	EmployerEmail      string
-	EmployerPassword   string
+	EmployerPassword   string `json:"-"`
 }

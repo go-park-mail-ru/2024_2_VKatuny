@@ -12,9 +12,9 @@ func main() {
 	Mux := http.NewServeMux()
 
 	workerHandler := handler.CreateWorkerHandler(&BD.HandlersWorker)
-	Mux.Handle("/api/registration/worker", workerHandler)
+	Mux.Handle("/api/registration/worker/", workerHandler)
 	employerHandler := handler.CreateEmployerHandler(&BD.HandlersEmployer)
-	Mux.Handle("/api/registration/employer", employerHandler)
+	Mux.Handle("/api/registration/employer/", employerHandler)
 
 	log.Print("Listening...")
 	http.ListenAndServe("0.0.0.0:8080", Mux)

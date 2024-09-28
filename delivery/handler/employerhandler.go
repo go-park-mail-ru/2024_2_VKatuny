@@ -19,18 +19,18 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 		decErr := decoder.Decode(newUserInput)
 		if decErr != nil {
 			w.WriteHeader(400)
-			log.Printf("error while unmarshalling JSON: %s", decErr)
+			log.Printf("error while unmarshalling employer  JSON: %s", decErr)
 			w.Write([]byte("{}"))
 			return
 		}
-
-		err := service.TryCreateEmployer(h, newUserInput)
+		user, err := service.TryCreateEmployer(h, newUserInput)
 		if err != nil {
 			w.WriteHeader(400)
 			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
 			w.Write([]byte("{}"))
 		} else {
-			w.Write([]byte("{allok: true}"))
+			userdata, _ := json.Marshal(user)
+			w.Write([]byte(userdata))
 		}
 
 	}

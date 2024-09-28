@@ -5,7 +5,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 )
 
-func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) error {
+func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Worker, error) {
 	_, rErr := storage.GetWorkerByEmail(h, newUserInput.WorkerEmail)
 
 	if rErr != nil {
@@ -20,8 +20,8 @@ func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) error {
 			WorkerPassword:  storage.HashPassword(newUserInput.WorkerPassword),
 		}
 		h.Mu.Unlock()
-		return nil
+		return h.Users[newUserInput.WorkerEmail], nil
 	} else {
-		return rErr
+		return BD.Worker{}, rErr
 	}
 }
