@@ -13,16 +13,16 @@ func TestCreateWorker(t *testing.T) {
 	t.Parallel()
 
 	h := WorkerHandlers{
-		users: []Worker{},
-		mu:    &sync.Mutex{},
+		users: map[string]Worker{},
+		mu:    &sync.RWMutex{},
 	}
 
 	body := bytes.NewReader([]byte(`{"WorkerName":"Vasia","WorkerLastName":"Vasin",
 	"WorkerBirthDate":"12-12-2012","WorkerEmail":"a@mail.ru","WorkerPassword":"pass"}`))
 
-	expectedUsers := []Worker{
-		{
-			ID:              0,
+	expectedUsers := map[string]Worker{
+		"a@mail.ru": {
+			ID:              1,
 			WorkerName:      "Vasia",
 			WorkerLastName:  "Vasin",
 			WorkerBirthDate: "12-12-2012",
@@ -50,17 +50,17 @@ func TestCreateEmployer(t *testing.T) {
 	t.Parallel()
 
 	h := EmployerHandlers{
-		users: []Employer{},
-		mu:    &sync.Mutex{},
+		users: map[string]Employer{},
+		mu:    &sync.RWMutex{},
 	}
 
 	body := bytes.NewReader([]byte(`{"EmployerName":"Vasily","EmployerLastName":"Vasin",
 	"EmployerPosition":"CEO","CompanyName":"Vasia Entertainment","CompanyDescription":"Vasia best company",
 	"Website":"vasia.com","EmployerEmail":"vasia@gmail.com","EmployerPassword":"pass"}`))
 
-	expectedUsers := []Employer{
-		{
-			ID:                 0,
+	expectedUsers := map[string]Employer{
+		"vasia@gmail.com": {
+			ID:                 1,
 			EmployerName:       "Vasily",
 			EmployerLastName:   "Vasin",
 			EmployerPosition:   "CEO",

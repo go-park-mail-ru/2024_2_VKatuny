@@ -6,11 +6,26 @@ import (
 	"log"
 	"net/http"
 	"sync"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
+var HandlersWorker = WorkerHandlers{
+	users:  make(map[string]Worker, 0),
+	mu:     &sync.RWMutex{},
+	amount: 0,
+}
+
+var HandlersEmployer = EmployerHandlers{
+	users:  make(map[string]Employer, 0),
+	mu:     &sync.RWMutex{},
+	amount: 0,
+}
+
 type WorkerHandlers struct {
-	users []Worker
-	mu    *sync.Mutex
+	users  map[string]Worker
+	mu     *sync.RWMutex
+	amount uint64
 }
 
 type WorkerInput struct {
@@ -31,8 +46,9 @@ type Worker struct {
 }
 
 type EmployerHandlers struct {
-	users []Employer
-	mu    *sync.Mutex
+	users  map[string]Employer
+	mu     *sync.RWMutex
+	amount uint64
 }
 
 type EmployerInput struct {
@@ -64,30 +80,45 @@ func (h *WorkerHandlers) HandleCreateWorker(w http.ResponseWriter, r *http.Reque
 	decoder := json.NewDecoder(r.Body)
 
 	newUserInput := new(WorkerInput)
-	err := decoder.Decode(newUserInput)
-	if err != nil {
-		log.Printf("error while unmarshalling JSON: %s", err)
+	decErr := decoder.Decode(newUserInput)
+	if decErr != nil {
+		log.Printf("error while unmarshalling JSON: %s", decErr)
 		w.Write([]byte("{}"))
 		return
 	}
 
 	fmt.Println(newUserInput)
-	h.mu.Lock()
 
-	var id uint64 = 0
-	if len(h.users) > 0 {
-		id = h.users[len(h.users)-1].ID + 1
+	_, rErr := GetWorkerByEmail(h, newUserInput.WorkerEmail)
+
+	if rErr != nil {
+		h.mu.Lock()
+		var id uint64 = h.amount + 1
+		h.users[newUserInput.WorkerEmail] = Worker{
+			ID:              id,
+			WorkerName:      newUserInput.WorkerName,
+			WorkerLastName:  newUserInput.WorkerLastName,
+			WorkerBirthDate: newUserInput.WorkerBirthDate,
+			WorkerEmail:     newUserInput.WorkerEmail,
+			WorkerPassword:  HashPassword(newUserInput.WorkerPassword),
+		}
+		h.mu.Unlock()
+	} else {
+		log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
+		w.Write([]byte("{}"))
+		return
 	}
+}
 
-	h.users = append(h.users, Worker{
-		ID:              id,
-		WorkerName:      newUserInput.WorkerName,
-		WorkerLastName:  newUserInput.WorkerLastName,
-		WorkerBirthDate: newUserInput.WorkerBirthDate,
-		WorkerEmail:     newUserInput.WorkerEmail,
-		WorkerPassword:  newUserInput.WorkerPassword,
-	})
-	h.mu.Unlock()
+func GetWorkerByEmail(table *WorkerHandlers, email string) (Worker, error) {
+	table.mu.RLock()
+	user, err := table.users[email]
+	table.mu.RUnlock()
+	if err == true {
+		return user, nil
+	} else {
+		return Worker{}, fmt.Errorf("No user with such email")
+	}
 }
 
 func (h *EmployerHandlers) HandleCreateEmployer(w http.ResponseWriter, r *http.Request) {
@@ -98,75 +129,87 @@ func (h *EmployerHandlers) HandleCreateEmployer(w http.ResponseWriter, r *http.R
 	newUserInput := new(EmployerInput)
 	err := decoder.Decode(newUserInput)
 	if err != nil {
+		w.WriteHeader(400)
 		log.Printf("error while unmarshalling JSON: %s", err)
 		w.Write([]byte("{}"))
 		return
 	}
 
 	fmt.Println(newUserInput)
-	h.mu.Lock()
+	h.mu.RLock()
+	_, alreadyExist := h.users[newUserInput.EmployerEmail]
+	h.mu.RUnlock()
+	if alreadyExist == false {
+		h.mu.Lock()
 
-	var id uint64 = 0
-	if len(h.users) > 0 {
-		id = h.users[len(h.users)-1].ID + 1
+		var id uint64 = h.amount + 1
+		h.users[newUserInput.EmployerEmail] = Employer{
+			ID:                 id,
+			EmployerName:       newUserInput.EmployerName,
+			EmployerLastName:   newUserInput.EmployerLastName,
+			EmployerPosition:   newUserInput.EmployerPosition,
+			CompanyName:        newUserInput.CompanyName,
+			CompanyDescription: newUserInput.CompanyDescription,
+			Website:            newUserInput.Website,
+			EmployerEmail:      newUserInput.EmployerEmail,
+			EmployerPassword:   newUserInput.EmployerPassword,
+		}
+		h.mu.Unlock()
+	} else {
+		log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
+		w.Write([]byte("{}"))
+		return
 	}
+}
 
-	h.users = append(h.users, Employer{
-		ID:                 id,
-		EmployerName:       newUserInput.EmployerName,
-		EmployerLastName:   newUserInput.EmployerLastName,
-		EmployerPosition:   newUserInput.EmployerPosition,
-		CompanyName:        newUserInput.CompanyName,
-		CompanyDescription: newUserInput.CompanyDescription,
-		Website:            newUserInput.Website,
-		EmployerEmail:      newUserInput.EmployerEmail,
-		EmployerPassword:   newUserInput.EmployerPassword,
-	})
-	h.mu.Unlock()
+func HashPassword(password string) string {
+	bytePassword := []byte(password)
+	cost := 10
+	hashedPassword, _ := bcrypt.GenerateFromPassword(bytePassword, cost)
+	fmt.Println(string(password[:]), string(hashedPassword[:]))
+	return string(hashedPassword[:])
+}
+
+func EqualHashedPasswords(passwordBD string, passwordFront string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(passwordBD), []byte(passwordFront))
+	if err == nil {
+		return true
+	} else {
+		return false
+	}
 }
 
 func main() {
-
-	handlersWorker := WorkerHandlers{
-		users: make([]Worker, 0),
-		mu:    &sync.Mutex{},
-	}
-
-	handlersEmployer := EmployerHandlers{
-		users: make([]Employer, 0),
-		mu:    &sync.Mutex{},
-	}
-	//fmt.Println("1")
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(EqualHashedPasswords(HashPassword("pass"), "pass"))
+	http.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte("{}"))
 	})
 
-	http.HandleFunc("/registration/worker", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/registration/worker", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		log.Println(r.URL.Path)
 		//fmt.Println("11", r.Method)
 		if r.Method == http.MethodPost {
 			fmt.Println("2")
-			handlersWorker.HandleCreateWorker(w, r)
+			HandlersWorker.HandleCreateWorker(w, r)
 			return
 		}
 
 	})
 
-	http.HandleFunc("/registration/employer", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/api/registration/employer", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		log.Println(r.URL.Path)
 		fmt.Println("11", r.Method)
 		if r.Method == http.MethodPost {
 			fmt.Println("3")
-			handlersEmployer.HandleCreateEmployer(w, r)
+			HandlersEmployer.HandleCreateEmployer(w, r)
 			return
 		}
 
 	})
-
 	http.ListenAndServe("0.0.0.0:8080", nil)
 }
