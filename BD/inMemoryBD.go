@@ -5,15 +5,17 @@ import (
 )
 
 type WorkerHandlers struct {
-	Users  map[string]Worker
-	Mu     *sync.RWMutex
-	Amount uint64
+	Sessions map[string]uint64
+	Users    map[string]Worker
+	Mu       *sync.RWMutex
+	Amount   uint64
 }
 
 type EmployerHandlers struct {
-	Users  map[string]Employer
-	Mu     *sync.RWMutex
-	Amount uint64
+	Sessions map[string]uint64
+	Users    map[string]Employer
+	Mu       *sync.RWMutex
+	Amount   uint64
 }
 
 var HandlersWorker = WorkerHandlers{
@@ -66,4 +68,9 @@ type Employer struct {
 	Website            string
 	EmployerEmail      string
 	EmployerPassword   string `json:"-"`
+}
+
+type UserInput struct {
+	Email    string // `json:"email"`
+	Password string // `json:"password"`
 }

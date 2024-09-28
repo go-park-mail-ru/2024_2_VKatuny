@@ -19,11 +19,9 @@ func GetWorkerByEmail(table *BD.WorkerHandlers, email string) (BD.Worker, error)
 }
 
 func GetEmployerByEmail(table *BD.EmployerHandlers, email string) (BD.Employer, error) {
-	fmt.Println("1")
 	table.Mu.RLock()
 	user, ok := table.Users[email]
 	table.Mu.RUnlock()
-	fmt.Println("@", ok, "@")
 	if ok == true {
 		return user, nil
 	} else {
