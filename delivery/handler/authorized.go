@@ -37,9 +37,8 @@ func AuthorizedHandler() http.Handler {
 		if authorized == nil {
 			w.Write([]byte("{statusCode: 200, {id: " + strconv.Itoa(int(id)) + ", usertype: " + userType + "}}"))
 		} else {
-			w.Write([]byte("{statusCode: 400}"))
+			w.WriteHeader(401)
 		}
-
 	}
 	return http.HandlerFunc(fn)
 }
