@@ -19,6 +19,8 @@ func LoginHandler() http.Handler {
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
+		storage.SetSecureHeaders(w)
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.UserInput)
@@ -32,14 +34,12 @@ func LoginHandler() http.Handler {
 		if err != nil {
 			w.WriteHeader(401)
 		}
-
 	}
 	return http.HandlerFunc(fn)
 }
 
 func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 	SID, err := service.TryAddSession(w, newUserInput)
-
 	if err != nil {
 		return fmt.Errorf(`no user`)
 	}
@@ -64,6 +64,6 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 	}
 	storage.SetSecureHeaders(w)
 	http.SetCookie(w, cookie)
-	//w.Write([]byte("{allok : true}"))
+	// w.Write([]byte("{allok : true}"))
 	return nil
 }
