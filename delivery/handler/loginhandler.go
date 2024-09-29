@@ -24,18 +24,20 @@ func LoginHandler() http.Handler {
 			w.WriteHeader(401)
 			return
 		}
-		LoginFromAnyware(w, newUserInput)
+		err := LoginFromAnyware(w, newUserInput)
+		if err != nil {
+			w.WriteHeader(401)
+		}
 
 	}
 	return http.HandlerFunc(fn)
 }
 
-func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) {
+func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 	SID, err := service.TryAddSession(w, newUserInput)
 
 	if err != nil {
-		http.Error(w, `no user`, 404)
-		return
+		return fmt.Errorf(`no user`)
 	}
 	fmt.Println("Cooky", SID)
 	del := &http.Cookie{
