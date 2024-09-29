@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -17,10 +16,8 @@ func LogoutHandler() http.Handler {
 			return
 		}
 		storage.SetSecureHeaders(w)
-		session, err := r.Cookie("session_id")
+		session, err := r.Cookie("session_id1")
 		if err == http.ErrNoCookie {
-			log.Println(err)
-			http.Error(w, `no sess`, 401)
 			return
 		}
 
@@ -32,7 +29,6 @@ func LogoutHandler() http.Handler {
 
 		session.Expires = time.Now().AddDate(0, 0, -1)
 		http.SetCookie(w, session)
-
 	}
 	return http.HandlerFunc(fn)
 }

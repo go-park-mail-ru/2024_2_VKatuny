@@ -18,7 +18,7 @@ func LoginHandler() http.Handler {
 		if isoption {
 			return
 		}
-		//fmt.Println(BD.HandlersEmployer)
+		// fmt.Println(BD.HandlersEmployer)
 		storage.SetSecureHeaders(w)
 		decoder := json.NewDecoder(r.Body)
 
@@ -51,6 +51,7 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
+		Domain:   "https://127.0.0.1:8080",
 	}
 	storage.SetSecureHeaders(w)
 	http.SetCookie(w, cookie)
