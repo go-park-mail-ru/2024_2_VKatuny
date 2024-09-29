@@ -11,6 +11,10 @@ import (
 
 func AuthorizedHandler() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			storage.SetSecureHeaders(w)
+			return
+		}
 		authorized := fmt.Errorf("no user with session")
 		session, err := r.Cookie("session_id1")
 		var id uint64
