@@ -21,7 +21,7 @@ func LoginHandler() http.Handler {
 		decErr := decoder.Decode(newUserInput)
 		fmt.Println(newUserInput, decErr)
 		if decErr != nil {
-			w.WriteHeader(401)
+			w.WriteHeader(403)
 			return
 		}
 		err := LoginFromAnyware(w, newUserInput)

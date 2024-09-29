@@ -79,3 +79,7 @@ type UserInput struct {
 	Email    string `json:"login"`
 	Password string `json:"password"`
 }
+
+func MakeUsers() {
+
+}
