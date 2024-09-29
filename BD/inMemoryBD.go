@@ -35,42 +35,42 @@ var HandlersEmployer = EmployerHandlers{
 }
 
 type WorkerInput struct {
-	WorkerName      string // `json:"WorkerName"`
-	WorkerLastName  string // `json:"WorkerLastName"`
-	WorkerBirthDate string // `json:"WorkerBirthDate"`
-	WorkerEmail     string // `json:"WorkerEmail"`
-	WorkerPassword  string // `json:"WorkerPassword"`
+	WorkerName      string // `json:"workerName"`
+	WorkerLastName  string // `json:"workerLastName"`
+	WorkerBirthDate string // `json:"workerBirthDate"`
+	WorkerEmail     string // `json:"workerEmail"`
+	WorkerPassword  string // `json:"workerPassword"`
 }
 
 type Worker struct {
 	ID              uint64 //`json:"id"`
-	WorkerName      string // `json:"WorkerName"`
-	WorkerLastName  string // `json:"WorkerLastName"`
-	WorkerBirthDate string // `json:"WorkerBirthDate"`
-	WorkerEmail     string // `json:"WorkerEmail"`
+	WorkerName      string // `json:"workerFirstName"`
+	WorkerLastName  string // `json:"workerLastName"`
+	WorkerBirthDate string // `json:"workerBirthDate"`
+	WorkerEmail     string // `json:"workerEmail"`
 	WorkerPassword  string `json:"-"`
 }
 
 type EmployerInput struct {
-	EmployerName       string
-	EmployerLastName   string
-	EmployerPosition   string
-	CompanyName        string
-	CompanyDescription string
-	Website            string
-	EmployerEmail      string
-	EmployerPassword   string
+	EmployerName       string `json:"employerName"`
+	EmployerLastName   string `json:"employerLastName"`
+	EmployerPosition   string `json:"employerPosition"`
+	CompanyName        string `json:"companyName"`
+	CompanyDescription string `json:"companyDescription"`
+	Website            string `json:"website"`
+	EmployerEmail      string `json:"employerEmail"`
+	EmployerPassword   string `json:"employerPassword"`
 }
 
 type Employer struct {
-	ID                 uint64
-	EmployerName       string
-	EmployerLastName   string
-	EmployerPosition   string
-	CompanyName        string
-	CompanyDescription string
-	Website            string
-	EmployerEmail      string
+	ID                 uint64 `json:"employerName"`
+	EmployerName       string `json:"employerLastName"`
+	EmployerLastName   string `json:"employerPosition"`
+	EmployerPosition   string `json:"companyName"`
+	CompanyName        string `json:"companyDescription"`
+	CompanyDescription string `json:"website"`
+	Website            string `json:"employerEmail"`
+	EmployerEmail      string `json:"employerPassword"`
 	EmployerPassword   string `json:"-"`
 }
 
