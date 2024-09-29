@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -13,9 +12,13 @@ import (
 
 func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(11)
 		defer r.Body.Close()
-
+		isoption := storage.Isoption(w, r)
+		if isoption {
+			return
+		}
+		storage.SetSecureHeaders(w)
+		w.Header().Set("Content-Type", "application/json")
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.EmployerInput)
@@ -37,7 +40,7 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 				Password: newUserInput.EmployerPassword,
 			}
 			LoginFromAnyware(w, UserInputForToken)
-			storage.SetSecureHeaders(w)
+
 			userdata, _ := json.Marshal(user)
 			w.Write([]byte(userdata))
 		}

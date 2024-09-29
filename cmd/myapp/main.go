@@ -11,6 +11,7 @@ import (
 func main() {
 	BD.MakeVacancies()
 
+	BD.MakeUsers()
 	Mux := http.NewServeMux()
 
 	workerHandler := handler.CreateWorkerHandler(&BD.HandlersWorker)

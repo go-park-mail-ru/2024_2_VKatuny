@@ -14,27 +14,33 @@ import (
 func LoginHandler() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+		isoption := storage.Isoption(w, r)
+		if isoption {
+			return
+		}
 
+		storage.SetSecureHeaders(w)
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.UserInput)
 		decErr := decoder.Decode(newUserInput)
 		fmt.Println(newUserInput, decErr)
 		if decErr != nil {
+			w.WriteHeader(400)
 			return
 		}
-		LoginFromAnyware(w, newUserInput)
-
+		err := LoginFromAnyware(w, newUserInput)
+		if err != nil {
+			w.WriteHeader(401)
+		}
 	}
 	return http.HandlerFunc(fn)
 }
 
-func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) {
+func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 	SID, err := service.TryAddSession(w, newUserInput)
-
 	if err != nil {
-		http.Error(w, `no user`, 404)
-		return
+		return fmt.Errorf(`no user`)
 	}
 	fmt.Println("Cooky", SID)
 	del := &http.Cookie{
@@ -57,5 +63,6 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) {
 	}
 	storage.SetSecureHeaders(w)
 	http.SetCookie(w, cookie)
-	//w.Write([]byte("{allok : true}"))
+	// w.Write([]byte("{allok : true}"))
+	return nil
 }

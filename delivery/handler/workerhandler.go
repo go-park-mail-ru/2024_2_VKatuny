@@ -13,7 +13,12 @@ import (
 func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-
+		isoption := storage.Isoption(w, r)
+		if isoption {
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		storage.SetSecureHeaders(w)
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.WorkerInput)
@@ -36,7 +41,7 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 				Password: newUserInput.WorkerPassword,
 			}
 			LoginFromAnyware(w, UserInputForToken)
-			storage.SetSecureHeaders(w)
+
 			userdata, _ := json.Marshal(user)
 			w.Write([]byte(userdata))
 		}
