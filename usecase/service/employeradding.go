@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
@@ -9,7 +9,7 @@ import (
 
 func TryCreateEmployer(h *BD.EmployerHandlers, newUserInput *BD.EmployerInput) (BD.Employer, error) {
 	_, rErr := storage.GetEmployerByEmail(h, newUserInput.EmployerEmail)
-	fmt.Println(rErr)
+	//fmt.Println(rErr)
 	if rErr != nil {
 		h.Mu.Lock()
 		var id uint64 = h.Amount + 1
@@ -25,6 +25,7 @@ func TryCreateEmployer(h *BD.EmployerHandlers, newUserInput *BD.EmployerInput) (
 			EmployerPassword:   storage.HashPassword(newUserInput.EmployerPassword),
 		}
 		h.Mu.Unlock()
+		log.Println("employer registrated")
 		return h.Users[newUserInput.EmployerEmail], nil
 	} else {
 		return BD.Employer{}, rErr

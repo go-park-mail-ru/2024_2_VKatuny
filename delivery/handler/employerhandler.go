@@ -6,13 +6,19 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/usecase/service"
 )
 
 func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-
+		isoption := storage.Isoption(w, r)
+		if isoption {
+			return
+		}
+		storage.SetSecureHeaders(w)
+		w.Header().Set("Content-Type", "application/json")
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.EmployerInput)
@@ -29,6 +35,12 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
 			w.Write([]byte("{}"))
 		} else {
+			UserInputForToken := &BD.UserInput{
+				Email:    newUserInput.EmployerEmail,
+				Password: newUserInput.EmployerPassword,
+			}
+			LoginFromAnyware(w, UserInputForToken)
+
 			userdata, _ := json.Marshal(user)
 			w.Write([]byte(userdata))
 		}
