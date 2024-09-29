@@ -4,6 +4,7 @@ import (
 	"sync"
 )
 
+// Это зачем?
 const FRONTAPI = "127.0.0.1"
 
 type WorkerHandlers struct {
@@ -78,4 +79,41 @@ type UserInput struct {
 	TypeUser string `json:"userType"`
 	Email    string `json:"login"`
 	Password string `json:"password"`
+}
+
+type Vacancy struct {
+	ID          uint64
+	Position    string
+	Description string
+	Salary      string
+	EmployerID  uint64
+	CreatedAt   string
+}
+
+var Vacancies = []Vacancy{
+	{
+		ID: 0,
+		Position: "Продавец консультант",
+		Description: "Ищем продавца на полную ставку в ближайший магазин." +
+			"Требуются ответственные личности, способные на тяжелую работу." +
+			"Своевременную оплату гарантируем.",
+		Salary: "Не указана",
+		EmployerID: 0,
+		CreatedAt: "2024.09.29 16:55:00",  // YYYY.MM.DD HH:MM:SS
+	},
+}
+
+// another employers for list of vacancies
+var Employers = []Employer{
+	{
+		ID: 0,
+		EmployerName: "", 
+		EmployerLastName: "",
+		EmployerPosition: "",
+		CompanyName: "X5-Group",
+		CompanyDescription: "",
+		Website: "x5.ru",
+		EmployerEmail: "",
+		EmployerPassword: "",
+	},
 }
