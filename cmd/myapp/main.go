@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	BD.MakeUsers()
 	Mux := http.NewServeMux()
 
 	workerHandler := handler.CreateWorkerHandler(&BD.HandlersWorker)

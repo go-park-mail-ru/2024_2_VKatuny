@@ -81,5 +81,24 @@ type UserInput struct {
 }
 
 func MakeUsers() {
+	HandlersWorker.Users["a@mail.ru"] = Worker{
+		ID:              1,
+		WorkerName:      "Vasia",
+		WorkerLastName:  "Vasion",
+		WorkerBirthDate: "12-12-2012",
+		WorkerEmail:     "a@mail.ru",
+		WorkerPassword:  "pass1234",
+	}
+	HandlersEmployer.Users["b@mail.ru"] = Employer{
+		ID:                 1,
+		EmployerName:       "Ilia",
+		EmployerLastName:   "Ilin",
+		EmployerPosition:   "CEO",
+		CompanyName:        "Ilia Ilin Enterprices",
+		CompanyDescription: "Ilia Ilin best company",
+		Website:            "Ilin.com",
+		EmployerEmail:      "b@mail.ru",
+		EmployerPassword:   "pass4321",
+	}
 
 }

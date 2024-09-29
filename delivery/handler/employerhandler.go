@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -13,7 +12,10 @@ import (
 
 func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(11)
+		isoption := storage.Isoption(w, r)
+		if isoption {
+			return
+		}
 		defer r.Body.Close()
 
 		decoder := json.NewDecoder(r.Body)

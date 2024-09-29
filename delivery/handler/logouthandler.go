@@ -11,6 +11,10 @@ import (
 
 func LogoutHandler() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		isoption := storage.Isoption(w, r)
+		if isoption {
+			return
+		}
 		session, err := r.Cookie("session_id")
 		if err == http.ErrNoCookie {
 			log.Println(err)

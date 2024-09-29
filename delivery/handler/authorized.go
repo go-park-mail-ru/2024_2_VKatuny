@@ -11,8 +11,8 @@ import (
 
 func AuthorizedHandler() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
-			storage.SetSecureHeaders(w)
+		isoption := storage.Isoption(w, r)
+		if isoption {
 			return
 		}
 		authorized := fmt.Errorf("no user with session")
