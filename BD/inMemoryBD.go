@@ -4,6 +4,8 @@ import (
 	"sync"
 )
 
+const FRONTAPI = "127.0.0.1"
+
 type WorkerHandlers struct {
 	Sessions map[string]uint64
 	Users    map[string]Worker
@@ -19,15 +21,17 @@ type EmployerHandlers struct {
 }
 
 var HandlersWorker = WorkerHandlers{
-	Users:  make(map[string]Worker, 0),
-	Mu:     &sync.RWMutex{},
-	Amount: 0,
+	Sessions: make(map[string]uint64, 0),
+	Users:    make(map[string]Worker, 0),
+	Mu:       &sync.RWMutex{},
+	Amount:   0,
 }
 
 var HandlersEmployer = EmployerHandlers{
-	Users:  make(map[string]Employer, 0),
-	Mu:     &sync.RWMutex{},
-	Amount: 0,
+	Sessions: make(map[string]uint64, 0),
+	Users:    make(map[string]Employer, 0),
+	Mu:       &sync.RWMutex{},
+	Amount:   0,
 }
 
 type WorkerInput struct {
@@ -71,6 +75,6 @@ type Employer struct {
 }
 
 type UserInput struct {
-	Email    string // `json:"email"`
-	Password string // `json:"password"`
+	Email    string `json:"login"`
+	Password string `json:"password"`
 }

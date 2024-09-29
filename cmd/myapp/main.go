@@ -18,7 +18,13 @@ func main() {
 	Mux.Handle("/api/registration/employer/", employerHandler)
 
 	loginHandler := handler.LoginHandler()
-	Mux.Handle("/api/login/", loginHandler)
+	Mux.Handle("/api/login", loginHandler)
+
+	logoutHandler := handler.LogoutHandler()
+	Mux.Handle("/api/logout", logoutHandler)
+
+	authorizedHandler := handler.AuthorizedHandler()
+	Mux.Handle("/api/authorized", authorizedHandler)
 
 	log.Print("Listening...")
 	http.ListenAndServe("0.0.0.0:8080", Mux)
