@@ -81,6 +81,11 @@ type UserInput struct {
 	Password string `json:"password"`
 }
 
+type VacanciesHandler struct {
+	Vacancy []Vacancy
+	Mutex		*sync.RWMutex 
+}
+
 type Vacancy struct {
 	ID          uint64
 	Position    string
