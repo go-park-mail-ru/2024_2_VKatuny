@@ -53,7 +53,7 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest) 
-			w.Write([]byte(`{"status": 400, "error": "count isn't number"}`))
+			w.Write([]byte(`{"status": 400, "error": "num isn't number"}`))
 			return
 		}
 
