@@ -10,26 +10,37 @@ import (
 )
 
 func TryAddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, error) {
-	workerBase := BD.HandlersWorker
-	employerBase := BD.HandlersEmployer
-	userWorker, ok := storage.GetWorkerByEmail(&workerBase, newUserInput.Email)
-	userEmployer, ok1 := storage.GetEmployerByEmail(&employerBase, newUserInput.Email)
-	log.Println(userWorker, ok)
-	log.Println(userEmployer, ok1)
+	var SID string
+	if newUserInput.TypeUser == "worker" {
+		workerBase := BD.HandlersWorker
+		userWorker, ok := storage.GetWorkerByEmail(&workerBase, newUserInput.Email)
+		log.Println(userWorker, ok)
 
-	if ok != nil && ok1 != nil {
-		return "", fmt.Errorf(`no user`)
-	}
-	if (ok == nil && !storage.EqualHashedPasswords(userWorker.WorkerPassword, newUserInput.Password)) || (ok1 == nil && !storage.EqualHashedPasswords(userEmployer.EmployerPassword, newUserInput.Password)) {
-		return "", fmt.Errorf(`bad pass`)
-	}
+		if ok != nil {
+			return "", fmt.Errorf(`no user`)
+		}
+		if ok == nil && !storage.EqualHashedPasswords(userWorker.WorkerPassword, newUserInput.Password) {
+			return "", fmt.Errorf(`bad pass`)
+		}
+		SID = storage.RandStringRunes(32)
 
-	SID := storage.RandStringRunes(32)
-	if ok == nil {
 		workerBase.Mu.RLock()
 		workerBase.Sessions[SID] = userWorker.ID
 		workerBase.Mu.RUnlock()
-	} else {
+
+	} else if newUserInput.TypeUser == "employer" {
+		employerBase := BD.HandlersEmployer
+		userEmployer, ok1 := storage.GetEmployerByEmail(&employerBase, newUserInput.Email)
+		log.Println(userEmployer, ok1)
+
+		if ok1 != nil {
+			return "", fmt.Errorf(`no user`)
+		}
+		if ok1 == nil && !storage.EqualHashedPasswords(userEmployer.EmployerPassword, newUserInput.Password) {
+			return "", fmt.Errorf(`bad pass`)
+		}
+
+		SID = storage.RandStringRunes(32)
 		employerBase.Mu.RLock()
 		fmt.Println("BD", SID)
 		employerBase.Sessions[SID] = userEmployer.ID

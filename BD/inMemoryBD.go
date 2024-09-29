@@ -75,6 +75,7 @@ type Employer struct {
 }
 
 type UserInput struct {
+	TypeUser string `json:"userType"`
 	Email    string `json:"login"`
 	Password string `json:"password"`
 }

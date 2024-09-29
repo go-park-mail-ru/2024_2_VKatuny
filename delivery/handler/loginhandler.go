@@ -57,5 +57,5 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) {
 	}
 	storage.SetSecureHeaders(w)
 	http.SetCookie(w, cookie)
-	w.Write([]byte("{allok : true}"))
+	//w.Write([]byte("{allok : true}"))
 }
