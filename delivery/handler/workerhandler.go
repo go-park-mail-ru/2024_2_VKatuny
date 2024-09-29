@@ -12,11 +12,11 @@ import (
 
 func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 		isoption := storage.Isoption(w, r)
 		if isoption {
 			return
 		}
-		defer r.Body.Close()
 
 		decoder := json.NewDecoder(r.Body)
 
