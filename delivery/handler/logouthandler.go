@@ -16,6 +16,7 @@ func LogoutHandler() http.Handler {
 		if isoption {
 			return
 		}
+		storage.SetSecureHeaders(w)
 		session, err := r.Cookie("session_id")
 		if err == http.ErrNoCookie {
 			log.Println(err)
@@ -28,7 +29,7 @@ func LogoutHandler() http.Handler {
 			http.Error(w, `no sess`, 401)
 			return
 		}
-		storage.SetSecureHeaders(w)
+
 		session.Expires = time.Now().AddDate(0, 0, -1)
 		http.SetCookie(w, session)
 

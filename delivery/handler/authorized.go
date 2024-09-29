@@ -16,6 +16,8 @@ func AuthorizedHandler() http.Handler {
 		if isoption {
 			return
 		}
+		storage.SetSecureHeaders(w)
+		w.Header().Set("Content-Type", "application/json")
 		authorized := fmt.Errorf("no user with session")
 		session, err := r.Cookie("session_id1")
 		var id uint64
@@ -34,7 +36,7 @@ func AuthorizedHandler() http.Handler {
 				fmt.Println(authorized)
 			}
 		}
-		storage.SetSecureHeaders(w)
+
 		if authorized == nil {
 			w.Write([]byte("{statusCode: 200, {id: " + strconv.Itoa(int(id)) + ", usertype: " + userType + "}}"))
 		} else {

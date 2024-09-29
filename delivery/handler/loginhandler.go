@@ -19,7 +19,6 @@ func LoginHandler() http.Handler {
 			return
 		}
 
-		w.Header().Set("Content-Type", "application/json")
 		storage.SetSecureHeaders(w)
 		decoder := json.NewDecoder(r.Body)
 
