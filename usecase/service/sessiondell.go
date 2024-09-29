@@ -22,10 +22,12 @@ func TryDellSession(session *http.Cookie) error {
 		return fmt.Errorf(`no sess`)
 	}
 	if ok == nil {
+		log.Println("worker sesion dell")
 		workerBase.Mu.Lock()
 		delete(workerBase.Sessions, session.Value)
 		workerBase.Mu.Unlock()
 	} else {
+		log.Println("employer sesion dell")
 		employerBase.Mu.Lock()
 		delete(employerBase.Sessions, session.Value)
 		employerBase.Mu.Unlock()

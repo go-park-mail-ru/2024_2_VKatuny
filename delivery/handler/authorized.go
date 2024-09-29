@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -25,17 +26,15 @@ func AuthorizedHandler() http.Handler {
 		workerBase := BD.HandlersWorker
 		employerBase := BD.HandlersEmployer
 
-		fmt.Println(BD.HandlersEmployer)
-
 		if err == nil && session != nil {
 			id, authorized = storage.GetWorkerBySession(&workerBase, session)
 
 			userType = "worker"
 			if authorized != nil {
-				fmt.Println(authorized)
+				log.Println(authorized)
 				id, authorized = storage.GetEmployerBySession(&employerBase, session)
 				userType = "employer"
-				fmt.Println(authorized)
+				log.Println(authorized)
 			}
 		}
 

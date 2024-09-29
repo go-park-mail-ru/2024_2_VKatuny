@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -31,56 +32,61 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 
 		offsetStr := queryParams.Get("offset")
 		if offsetStr == "" {
-			w.WriteHeader(http.StatusBadRequest)  // HTTP 400
+			log.Println("status 400 offset is empty")
+			w.WriteHeader(http.StatusBadRequest) // HTTP 400
 			w.Write([]byte(`{"status": 400, "error": "offset is empty"}`))
 			return
 		}
 
 		offset, err := strconv.Atoi(offsetStr)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest) 
+			log.Println("status 400 offset isn't number")
+			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`{"status": 400, "error": "offset isn't number"}`))
 			return
 		}
 
 		numStr := queryParams.Get("num")
 		if numStr == "" {
-			w.WriteHeader(http.StatusBadRequest) 
+			log.Println("status 400 num is empty")
+			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`{"status": 400, "error": "num is empty"}`))
 			return
 		}
 
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest) 
+			log.Println("status 400 num isn't number")
+			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`{"status": 400, "error": "num isn't number"}`))
 			return
 		}
 
-		leftBound  := offset
+		leftBound := offset
 		rightBound := offset + num
 		// covering cases when offset is out of slice bounds
 		if leftBound > int(vacanciesTable.Count) {
 			rightBound = leftBound
-		} else if rightBound > int(vacanciesTable.Count) { 
+		} else if rightBound > int(vacanciesTable.Count) {
 			rightBound = int(vacanciesTable.Count)
 		}
 
 		vacanciesTable.Mutex.Lock()
-		vacancies := vacanciesTable.Vacancy[leftBound : rightBound]
+		vacancies := vacanciesTable.Vacancy[leftBound:rightBound]
 		vacanciesTable.Mutex.Unlock()
 
 		response := map[string]interface{}{
-			"status": 200,
+			"status":    200,
 			"vacancies": vacancies,
 		}
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+			log.Println("status 500")
 			w.Write([]byte(`{"status": 500, "error": "encoding error"}`))
 			return
 		}
-		
+
 		w.WriteHeader(http.StatusOK)
 	}
 	return http.HandlerFunc(fn)

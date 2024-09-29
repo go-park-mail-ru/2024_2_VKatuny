@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -18,13 +19,12 @@ func LoginHandler() http.Handler {
 		if isoption {
 			return
 		}
-		// fmt.Println(BD.HandlersEmployer)
 		storage.SetSecureHeaders(w)
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.UserInput)
 		decErr := decoder.Decode(newUserInput)
-		fmt.Println(newUserInput, decErr)
+		log.Println(newUserInput, decErr)
 		if decErr != nil {
 			w.WriteHeader(400)
 			return
@@ -42,7 +42,7 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 	if err != nil {
 		return fmt.Errorf(`no user`)
 	}
-	fmt.Println("Cooky", SID)
+	log.Println("Cooky resived")
 
 	cookie := &http.Cookie{
 		Name:     "session_id1",
@@ -55,6 +55,5 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 	}
 	storage.SetSecureHeaders(w)
 	http.SetCookie(w, cookie)
-	// w.Write([]byte("{allok : true}"))
 	return nil
 }
