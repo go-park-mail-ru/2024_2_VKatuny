@@ -83,6 +83,7 @@ type UserInput struct {
 
 type VacanciesHandler struct {
 	Vacancy []Vacancy
+	Count   uint64
 	Mutex   *sync.RWMutex 
 }
 
@@ -99,10 +100,12 @@ type Vacancy struct {
 
 var Vacancies = VacanciesHandler{
 	Vacancy: make([]Vacancy, 0),
+	Count: 0,
 	Mutex: &sync.RWMutex{},
 }
 
 func MakeVacancies() {
+	Vacancies.Count = 25
 	for i := uint64(0); i < 25; i += 5 {
 		Vacancies.Vacancy = append(Vacancies.Vacancy, Vacancy{
 			ID: i,
