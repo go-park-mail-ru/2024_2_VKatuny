@@ -174,7 +174,7 @@ func MakeUsers() {
 		WorkerLastName:  "Vasion",
 		WorkerBirthDate: "12-12-2012",
 		WorkerEmail:     "a@mail.ru",
-		WorkerPassword:  "pass1234",
+		WorkerPassword:  "$2a$10$nOPg8rvfOOSNrYv.zfzz7eKVDJvcHhXXGciR/SuHTekTOYTjZr4oa", // pass1234
 	}
 	HandlersEmployer.Users["b@mail.ru"] = Employer{
 		ID:                 1,
@@ -185,7 +185,7 @@ func MakeUsers() {
 		CompanyDescription: "Ilia Ilin best company",
 		Website:            "Ilin.com",
 		EmployerEmail:      "b@mail.ru",
-		EmployerPassword:   "pass4321",
+		EmployerPassword:   "$2a$10$aw9A84PCPKXvvUMD4eQtyulfXNnlhN3.Wts7PF9xiuJWJd0bV3o9i", // pass4321
 	}
 
 }

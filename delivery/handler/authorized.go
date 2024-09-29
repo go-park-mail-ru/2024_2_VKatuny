@@ -25,6 +25,8 @@ func AuthorizedHandler() http.Handler {
 		workerBase := BD.HandlersWorker
 		employerBase := BD.HandlersEmployer
 
+		fmt.Println(BD.HandlersEmployer)
+
 		if err == nil && session != nil {
 			id, authorized = storage.GetWorkerBySession(&workerBase, session)
 
