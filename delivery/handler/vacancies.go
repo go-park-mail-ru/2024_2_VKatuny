@@ -9,7 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 )
 
-// HTTP GET. ?offset=10&count=5
+// HTTP GET. ?offset=10&num=5
 func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
@@ -43,22 +43,22 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 			return
 		}
 
-		countStr := queryParams.Get("count")
-		if countStr == "" {
+		numStr := queryParams.Get("num")
+		if numStr == "" {
 			w.WriteHeader(http.StatusBadRequest) 
-			w.Write([]byte(`{"status": 400, "error": "count is empty"}`))
+			w.Write([]byte(`{"status": 400, "error": "num is empty"}`))
 			return
 		}
 
-		count, err := strconv.Atoi(queryParams.Get("count"))
+		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest) 
-			w.Write([]byte(`{"status": 400, "error": "offset isn't number"}`))
+			w.Write([]byte(`{"status": 400, "error": "count isn't number"}`))
 			return
 		}
 
 		leftBound  := offset
-		rightBound := offset + count
+		rightBound := offset + num
 		// covering cases when offset is out of slice bounds
 		if leftBound > int(vacanciesTable.Count) {
 			rightBound = leftBound
