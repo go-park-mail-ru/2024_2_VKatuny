@@ -11,6 +11,7 @@ func TryCreateEmployer(h *BD.EmployerHandlers, newUserInput *BD.EmployerInput) (
 	_, rErr := storage.GetEmployerByEmail(h, newUserInput.EmployerEmail)
 	//fmt.Println(rErr)
 	if rErr != nil {
+		hashed := storage.HashPassword(newUserInput.EmployerPassword)
 		h.Mu.Lock()
 		var id uint64 = h.Amount + 1
 		h.Users[newUserInput.EmployerEmail] = BD.Employer{
@@ -22,7 +23,7 @@ func TryCreateEmployer(h *BD.EmployerHandlers, newUserInput *BD.EmployerInput) (
 			CompanyDescription: newUserInput.CompanyDescription,
 			Website:            newUserInput.Website,
 			EmployerEmail:      newUserInput.EmployerEmail,
-			EmployerPassword:   storage.HashPassword(newUserInput.EmployerPassword),
+			EmployerPassword:   hashed,
 		}
 		h.Mu.Unlock()
 		log.Println("employer registrated")
