@@ -92,7 +92,7 @@ type Vacancy struct {
 	Position    string `json:"position"`
 	Description string `json:"description"`
 	Salary      string `json:"salary"`
-	Employer  	string `json:"employer"`
+	Employer    string `json:"employer"`
 	Location    string `json:"location"`
 	CreatedAt   string `json:"createdAt"`
 	Logo        string `json:"logo"`

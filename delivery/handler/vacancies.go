@@ -80,7 +80,7 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 			w.Write([]byte(`{"status": 500, "error": "encoding error"}`))
 			return
 		}
-	
+		
 		w.WriteHeader(http.StatusOK)
 	}
 	return http.HandlerFunc(fn)
