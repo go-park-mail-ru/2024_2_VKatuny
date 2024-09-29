@@ -18,7 +18,7 @@ func LoginHandler() http.Handler {
 		if isoption {
 			return
 		}
-
+		//fmt.Println(BD.HandlersEmployer)
 		storage.SetSecureHeaders(w)
 		decoder := json.NewDecoder(r.Body)
 
