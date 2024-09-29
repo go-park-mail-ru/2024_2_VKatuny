@@ -11,6 +11,7 @@ func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Wor
 	_, rErr := storage.GetWorkerByEmail(h, newUserInput.WorkerEmail)
 
 	if rErr != nil {
+		hash := storage.HashPassword(newUserInput.WorkerPassword)
 		h.Mu.Lock()
 		var id uint64 = h.Amount + 1
 		h.Users[newUserInput.WorkerEmail] = BD.Worker{
@@ -19,7 +20,7 @@ func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Wor
 			WorkerLastName:  newUserInput.WorkerLastName,
 			WorkerBirthDate: newUserInput.WorkerBirthDate,
 			WorkerEmail:     newUserInput.WorkerEmail,
-			WorkerPassword:  storage.HashPassword(newUserInput.WorkerPassword),
+			WorkerPassword:  hash,
 		}
 		h.Mu.Unlock()
 		log.Println("worker registrated")
