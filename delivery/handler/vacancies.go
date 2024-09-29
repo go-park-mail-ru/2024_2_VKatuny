@@ -2,24 +2,15 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 )
 
-type vacanciesListResponse struct {
-	Id          uint64 `json:id"` 
-	Position    string `json:"position"`
-	Discription string `json:"description"`
-	Employer    string `json:"employer"`
-	Location    string `json:"location"`
-	Salary      string `json:"salary"`
-	CreatedAt   string `json:"createdAt"`
-}
-
 // HTTP GET. ?offset=10&count=5
-func VacanciesHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
 		queryParams := r.URL.Query()
@@ -31,7 +22,8 @@ func VacanciesHandler() http.Handler {
 			return
 		}
 
-		if offset, err := strconv.Atoi(offsetStr); err != nil {
+		offset, err := strconv.Atoi(offsetStr)
+		if err != nil {
 			w.WriteHeader(http.StatusBadRequest) 
 			w.Write([]byte(`{"statusCode": 400, "error": "offset isn't number"}`))
 			return
@@ -44,12 +36,25 @@ func VacanciesHandler() http.Handler {
 			return
 		}
 
-		if count, err := strconv.Atoi(queryParams.Get("count")); err != nil {
+		count, err := strconv.Atoi(queryParams.Get("count"))
+		if err != nil {
 			w.WriteHeader(http.StatusBadRequest) 
 			w.Write([]byte(`{"statusCode": 400, "error": "offset isn't number"}`))
 			return
 		}
 
-		
-	})
+		responseJson := "{"
+		for _, vacancy := range vacanciesTable.Vacancy[offset : offset + count] {
+			vacanciesTable.Mutex.Lock()
+
+			res, _ := json.Marshal(vacancy)
+			responseJson += (string(res) + ",")
+			
+			vacanciesTable.Mutex.Unlock()
+		}
+		responseJson += "}"
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(responseJson))
+	}
+	return http.HandlerFunc(fn)
 }

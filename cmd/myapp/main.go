@@ -9,6 +9,8 @@ import (
 )
 
 func main() {
+	BD.MakeVacancies()
+
 	Mux := http.NewServeMux()
 
 	workerHandler := handler.CreateWorkerHandler(&BD.HandlersWorker)
@@ -25,6 +27,9 @@ func main() {
 
 	authorizedHandler := handler.AuthorizedHandler()
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
+
+	vacanciesListHandler := handler.VacanciesHandler(&BD.Vacancies)
+	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	log.Print("Listening...")
 	http.ListenAndServe("0.0.0.0:8080", Mux)
