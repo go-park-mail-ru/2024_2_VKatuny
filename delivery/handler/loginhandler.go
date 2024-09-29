@@ -43,15 +43,6 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 		return fmt.Errorf(`no user`)
 	}
 	fmt.Println("Cooky", SID)
-	del := &http.Cookie{
-		Name:     "session_id1",
-		Value:    SID,
-		Expires:  time.Now().Add(-10 * time.Hour),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
-	}
-	http.SetCookie(w, del)
 
 	cookie := &http.Cookie{
 		Name:     "session_id1",
