@@ -43,7 +43,7 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 		} else {
 			w.WriteHeader(400)
 			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
-			w.Write([]byte("{userAlreadyExist: true}"))
+			w.Write([]byte(`{"userAlreadyExist": true}`))
 		}
 
 	}
