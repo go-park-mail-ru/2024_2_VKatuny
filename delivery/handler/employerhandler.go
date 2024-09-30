@@ -31,14 +31,15 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 		}
 		user, err := service.TryCreateEmployer(h, newUserInput)
 		if err == nil {
-			UserInputForToken := &BD.UserInput{
-				Email:    newUserInput.EmployerEmail,
-				Password: newUserInput.EmployerPassword,
-			}
-			LoginFromAnyware(w, UserInputForToken)
+			// UserInputForToken := &BD.UserInput{
+			// 	Email:    newUserInput.EmployerEmail,
+			// 	Password: newUserInput.EmployerPassword,
+			// }
+			// LoginFromAnyware(w, UserInputForToken)
 
 			userdata, _ := json.Marshal(user)
 			w.Write([]byte(userdata))
+			return
 
 		} else {
 			w.WriteHeader(400)

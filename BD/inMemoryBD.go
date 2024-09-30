@@ -35,19 +35,19 @@ var HandlersEmployer = EmployerHandlers{
 }
 
 type WorkerInput struct {
-	WorkerName      string // `json:"workerName"`
-	WorkerLastName  string // `json:"workerLastName"`
-	WorkerBirthDate string // `json:"workerBirthDate"`
-	WorkerEmail     string // `json:"workerEmail"`
-	WorkerPassword  string // `json:"workerPassword"`
+	WorkerName      string `json:"workerName"`
+	WorkerLastName  string `json:"workerLastName"`
+	WorkerBirthDate string `json:"workerBirthDate"`
+	WorkerEmail     string `json:"workerEmail"`
+	WorkerPassword  string `json:"workerPassword"`
 }
 
 type Worker struct {
-	ID              uint64 //`json:"id"`
-	WorkerName      string // `json:"workerFirstName"`
-	WorkerLastName  string // `json:"workerLastName"`
-	WorkerBirthDate string // `json:"workerBirthDate"`
-	WorkerEmail     string // `json:"workerEmail"`
+	ID              uint64 `json:"id"`
+	WorkerName      string `json:"workerFirstName"`
+	WorkerLastName  string `json:"workerLastName"`
+	WorkerBirthDate string `json:"workerBirthDate"`
+	WorkerEmail     string `json:"workerEmail"`
 	WorkerPassword  string `json:"-"`
 }
 

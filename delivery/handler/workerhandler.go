@@ -31,11 +31,11 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 		}
 		user, err := service.TryCreateWorker(h, newUserInput)
 		if err == nil {
-			UserInputForToken := &BD.UserInput{
-				Email:    newUserInput.WorkerEmail,
-				Password: newUserInput.WorkerPassword,
-			}
-			LoginFromAnyware(w, UserInputForToken)
+			// UserInputForToken := &BD.UserInput{
+			// 	Email:    newUserInput.WorkerEmail,
+			// 	Password: newUserInput.WorkerPassword,
+			// }
+			// LoginFromAnyware(w, UserInputForToken)
 
 			userdata, _ := json.Marshal(user)
 			log.Println(userdata)

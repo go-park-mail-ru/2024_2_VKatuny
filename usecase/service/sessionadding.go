@@ -24,9 +24,9 @@ func TryAddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, e
 		}
 		SID = storage.RandStringRunes(32)
 		log.Println("BD worker cooky added")
-		workerBase.Mu.RLock()
+		workerBase.Mu.Lock()
 		workerBase.Sessions[SID] = userWorker.ID
-		workerBase.Mu.RUnlock()
+		workerBase.Mu.Unlock()
 
 	} else if newUserInput.TypeUser == "employer" {
 		employerBase := BD.HandlersEmployer
@@ -41,10 +41,10 @@ func TryAddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, e
 		}
 
 		SID = storage.RandStringRunes(32)
-		employerBase.Mu.RLock()
 		log.Println("BD employer cooky added")
+		employerBase.Mu.Lock()
 		employerBase.Sessions[SID] = userEmployer.ID
-		employerBase.Mu.RUnlock()
+		employerBase.Mu.Unlock()
 	}
 	return SID, nil
 }

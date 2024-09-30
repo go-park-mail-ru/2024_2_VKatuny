@@ -22,7 +22,7 @@ func Fn(w http.ResponseWriter, r *http.Request) {
 	}
 	storage.SetSecureHeaders(w)
 	w.Header().Set("Content-Type", "application/json")
-	authorized := fmt.Errorf("no user with session")
+	authorizationErr := fmt.Errorf("no user with session")
 	session, err := r.Cookie("session_id1")
 	var id uint64
 	var userType string
@@ -30,18 +30,18 @@ func Fn(w http.ResponseWriter, r *http.Request) {
 	employerBase := BD.HandlersEmployer
 
 	if err == nil && session != nil {
-		id, authorized = storage.GetWorkerBySession(&workerBase, session)
+		id, authorizationErr = storage.GetWorkerBySession(&workerBase, session)
 
 		userType = "worker"
-		if authorized != nil {
-			log.Println(authorized)
-			id, authorized = storage.GetEmployerBySession(&employerBase, session)
+		if authorizationErr != nil {
+			log.Println(authorizationErr)
+			id, authorizationErr = storage.GetEmployerBySession(&employerBase, session)
 			userType = "employer"
-			log.Println(authorized)
+			log.Println(authorizationErr)
 		}
 	}
 
-	if authorized == nil {
+	if authorizationErr == nil {
 		w.Write([]byte(`{"statusCode": 200, "user": {"id": ` + strconv.Itoa(int(id)) + `, "usertype": "` + userType + `"}}`))
 	} else {
 		w.WriteHeader(401)
