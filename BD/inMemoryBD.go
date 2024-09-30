@@ -4,8 +4,8 @@ import (
 	"sync"
 )
 
-const IP = "0.0.0.0"
-const FRONTENDIP = "http://" + IP + ":8000"
+const IP = "89.208.199.175"
+const FRONTENDIP = "http://" + IP
 const BACKENDIP = IP + ":8080"
 
 type WorkerHandlers struct {

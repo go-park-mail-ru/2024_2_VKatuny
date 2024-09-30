@@ -49,7 +49,7 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 		Value:    SID,
 		Expires:  time.Now().Add(10 * time.Hour),
 		HttpOnly: true,
-		Secure:   true,
+		//Secure:   true, //ubrat
 		SameSite: http.SameSiteStrictMode,
 		Domain:   BD.BACKENDIP,
 	}
