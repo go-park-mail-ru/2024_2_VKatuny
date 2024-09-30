@@ -1,0 +1,298 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "uArt's API",
+        "contact": {
+            "name": "Ifelsik",
+            "url": "https://github.com/Ifelsik"
+        },
+        "version": "1.0"
+    },
+    "host": "127.0.0.1:8000",
+    "basePath": "/api/v1",
+    "paths": {
+        "/authorized": {
+            "post": {
+                "description": "Gets cookie from user and checks authentication",
+                "tags": [
+                    "AuthStatus"
+                ],
+                "summary": "Checks user's authorization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID (Cookie)",
+                        "name": "session_id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/login/": {
+            "post": {
+                "description": "-",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Login"
+                ],
+                "summary": "Realises authentication",
+                "parameters": [
+                    {
+                        "description": "User's email",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "User's password",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/logout/": {
+            "post": {
+                "description": "-",
+                "tags": [
+                    "Logout"
+                ],
+                "summary": "Realises deauthentication",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID (Cookie)",
+                        "name": "session_id",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/registration/employer/": {
+            "post": {
+                "description": "-",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Registration"
+                ],
+                "summary": "Creates a new user as a employer",
+                "parameters": [
+                    {
+                        "description": "User's email",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "User's password",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BD.UserInput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/registration/worker/": {
+            "post": {
+                "description": "-",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Registration"
+                ],
+                "summary": "Creates a new user as a worker",
+                "parameters": [
+                    {
+                        "description": "User's email",
+                        "name": "email",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "User's password",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BD.UserInput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/vacancies": {
+            "get": {
+                "description": "Accepts offset and number of vacancies with id \u003e= offset. Returns vacancies",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vacancies"
+                ],
+                "summary": "Gets list of vacancies",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "num",
+                        "name": "num",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"status\": 200, \"vacancies\": [{\"id\": 1, \"position\": \"Продавец\", \"description\": \"Описание\", \"salary\": \"100\", \"employer\": \"Магазин\", \"location\": \"Tokyo\", \"createdAt\": \"2024.09.30 13:47:45\"}]}",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"status\": 400, \"error\": \"num isn't number\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.badResponse"
+                        }
+                    },
+                    "405": {
+                        "description": "{\"status\": 405, \"error\": \"http request method isn't a GET\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.badResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"status\": 500, \"error\": \"encoding error\"}",
+                        "schema": {
+                            "$ref": "#/definitions/handler.badResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "BD.UserInput": {
+            "type": "object",
+            "properties": {
+                "login": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "userType": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.badResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
