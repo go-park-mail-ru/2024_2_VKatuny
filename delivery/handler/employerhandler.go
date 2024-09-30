@@ -30,11 +30,7 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 			return
 		}
 		user, err := service.TryCreateEmployer(h, newUserInput)
-		if err != nil {
-			w.WriteHeader(400)
-			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
-			w.Write([]byte("{}"))
-		} else {
+		if err == nil {
 			UserInputForToken := &BD.UserInput{
 				Email:    newUserInput.EmployerEmail,
 				Password: newUserInput.EmployerPassword,
@@ -43,6 +39,11 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 
 			userdata, _ := json.Marshal(user)
 			w.Write([]byte(userdata))
+
+		} else {
+			w.WriteHeader(400)
+			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
+			w.Write([]byte("{userAlreadyExist: true}"))
 		}
 
 	}

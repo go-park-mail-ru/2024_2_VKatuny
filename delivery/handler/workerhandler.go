@@ -29,13 +29,9 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 			w.Write([]byte("{}"))
 			return
 		}
-
 		user, err := service.TryCreateWorker(h, newUserInput)
-		if err != nil {
-			w.WriteHeader(400)
-			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
-			w.Write([]byte("{}"))
-		} else {
+		log.Println("!!!32134s", err)
+		if err == nil {
 			UserInputForToken := &BD.UserInput{
 				Email:    newUserInput.WorkerEmail,
 				Password: newUserInput.WorkerPassword,
@@ -43,7 +39,13 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 			LoginFromAnyware(w, UserInputForToken)
 
 			userdata, _ := json.Marshal(user)
+			log.Println(userdata)
 			w.Write([]byte(userdata))
+		} else {
+			log.Println("!!!", err)
+			w.WriteHeader(400)
+			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
+			w.Write([]byte("{userAlreadyExist: true}"))
 		}
 
 	}

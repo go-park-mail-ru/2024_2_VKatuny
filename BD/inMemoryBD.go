@@ -80,15 +80,14 @@ type UserInput struct {
 	Password string `json:"password"`
 }
 
-
 type VacanciesHandler struct {
 	Vacancy []Vacancy
 	Count   uint64
-	Mutex   *sync.RWMutex 
+	Mutex   *sync.RWMutex
 }
 
 type Vacancy struct {
-	ID          uint64 `json:"id"` 
+	ID          uint64 `json:"id"`
 	Position    string `json:"position"`
 	Description string `json:"description"`
 	Salary      string `json:"salary"`
@@ -100,72 +99,71 @@ type Vacancy struct {
 
 var Vacancies = VacanciesHandler{
 	Vacancy: make([]Vacancy, 0),
-	Count: 0,
-	Mutex: &sync.RWMutex{},
+	Count:   0,
+	Mutex:   &sync.RWMutex{},
 }
 
 func MakeVacancies() {
 	Vacancies.Count = 25
 	for i := uint64(0); i < 25; i += 5 {
 		Vacancies.Vacancy = append(Vacancies.Vacancy, Vacancy{
-			ID: i,
+			ID:       i,
 			Position: "Продавец консультант",
 			Description: `Ищем продавца на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
-			Salary: "Не указана",
-			Employer: "X-Retail Group",
-			Location: "Moscow",
-			CreatedAt: "2024.09.29 16:55:00",  // YYYY.MM.DD HH:MM:SS
-			Logo: "/img/picture_name.png",
+			Salary:    "Не указана",
+			Employer:  "X-Retail Group",
+			Location:  "Moscow",
+			CreatedAt: "2024.09.29 16:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:      "img/picture_name1.png",
 		})
 		Vacancies.Vacancy = append(Vacancies.Vacancy, Vacancy{
-			ID: i + 1,
+			ID:       i + 1,
 			Position: "Продавец",
 			Description: `Ищем продавца на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
-			Salary: "80 000",
-			Employer: "X-Retail Group",
-			Location: "Moscow",
-			CreatedAt: "2024.09.29 17:55:00",  // YYYY.MM.DD HH:MM:SS
-			Logo: "/img/picture_name.png",
+			Salary:    "80 000",
+			Employer:  "X-Retail Group",
+			Location:  "Moscow",
+			CreatedAt: "2024.09.29 17:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:      "img/picture_name2.png",
 		})
 		Vacancies.Vacancy = append(Vacancies.Vacancy, Vacancy{
-			ID: i + 2,
+			ID:       i + 2,
 			Position: "Администратор",
 			Description: `Ищем продавца на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
-			Salary: "100 500",
-			Employer: "X-Retail Group",
-			Location: "Moscow",
-			CreatedAt: "2024.09.29 18:55:00",  // YYYY.MM.DD HH:MM:SS
-			Logo: "/img/picture_name.png",
+			Salary:    "100 500",
+			Employer:  "X-Retail Group",
+			Location:  "Moscow",
+			CreatedAt: "2024.09.29 18:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:      "img/picture_name3.png",
 		})
 		Vacancies.Vacancy = append(Vacancies.Vacancy, Vacancy{
-			ID: i + 3,
+			ID:       i + 3,
 			Position: "Охранник",
 			Description: `Ищем продавца на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
-			Salary: "Не указана",
-			Employer: "X-Retail Group",
-			Location: "Moscow",
-			CreatedAt: "2024.09.29 19:55:00",  // YYYY.MM.DD HH:MM:SS
-			Logo: "/img/picture_name.png",
+			Salary:    "Не указана",
+			Employer:  "X-Retail Group",
+			Location:  "Moscow",
+			CreatedAt: "2024.09.29 19:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:      "img/picture_name4.png",
 		})
 		Vacancies.Vacancy = append(Vacancies.Vacancy, Vacancy{
-			ID: i + 4,
+			ID:       i + 4,
 			Position: "Уборщик помещений",
 			Description: `Ищем продавца на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
-			Salary: "50 000",
-			Employer: "X-Retail Group",
-			Location: "Moscow",
-			CreatedAt: "2024.09.29 20:55:00",  // YYYY.MM.DD HH:MM:SS
-			Logo: "/img/picture_name.png",
+			Salary:    "50 000",
+			Employer:  "X-Retail Group",
+			Location:  "Moscow",
+			CreatedAt: "2024.09.29 20:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:      "img/picture_name5.png",
 		})
 	}
-	
-}
 
+}
 
 func MakeUsers() {
 	HandlersWorker.Users["a@mail.ru"] = Worker{

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
@@ -8,12 +9,17 @@ import (
 )
 
 func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Worker, error) {
+	log.Println("1", h)
 	_, rErr := storage.GetWorkerByEmail(h, newUserInput.WorkerEmail)
-
-	if rErr != nil {
+	log.Println("errerreeeeeeeeee ", h, rErr)
+	if rErr == nil {
+		return BD.Worker{}, fmt.Errorf("User exist")
+	} else {
+		//if rErr.Error() == "No worker with such email" {
 		hash := storage.HashPassword(newUserInput.WorkerPassword)
-		h.Mu.Lock()
 		var id uint64 = h.Amount + 1
+		h.Mu.Lock()
+		h.Amount += 1
 		h.Users[newUserInput.WorkerEmail] = BD.Worker{
 			ID:              id,
 			WorkerName:      newUserInput.WorkerName,
@@ -25,7 +31,5 @@ func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Wor
 		h.Mu.Unlock()
 		log.Println("worker registrated")
 		return h.Users[newUserInput.WorkerEmail], nil
-	} else {
-		return BD.Worker{}, rErr
 	}
 }
