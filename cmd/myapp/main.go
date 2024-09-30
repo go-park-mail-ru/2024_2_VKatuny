@@ -33,5 +33,5 @@ func main() {
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	log.Print("Listening...")
-	http.ListenAndServe("0.0.0.0:8080", Mux)
+	http.ListenAndServe(BD.BACKENDIP, Mux)
 }

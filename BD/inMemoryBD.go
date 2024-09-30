@@ -4,7 +4,9 @@ import (
 	"sync"
 )
 
-const FRONTAPI = "http://127.0.0.1:8000"
+const IP = "0.0.0.0"
+const FRONTENDIP = "http://" + IP + ":8000"
+const BACKENDIP = IP + ":8080"
 
 type WorkerHandlers struct {
 	Sessions map[string]uint64
