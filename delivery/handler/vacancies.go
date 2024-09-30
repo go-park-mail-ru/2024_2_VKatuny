@@ -10,7 +10,18 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 )
 
-// HTTP GET. ?offset=10&num=5
+// GetVacancies godoc
+// @Summary     Gets list of vacancies
+// @Description Accepts offset and number of vacancies with id >= offset. Returns vacancies
+// @Tags        Vacancies
+// @Produce     json
+// @Param       offset query int true "offset"
+// @Param       num    query int true "num"
+// @Success     200    
+// @Failure     400    
+// @Failure     405    
+// @Failure     500    
+// @Router      /vacancies [get]
 func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()

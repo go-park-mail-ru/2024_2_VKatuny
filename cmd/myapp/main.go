@@ -3,11 +3,19 @@ package main
 import (
 	"log"
 	"net/http"
-
+	
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/delivery/handler"
 )
 
+// @title   uArt's API
+// @version 1.0
+
+// @contact.name Ifelsik
+// @contact.url  https://github.com/Ifelsik
+
+// @host     127.0.0.1:8000
+// @BasePath /api/v1
 func main() {
 	BD.MakeVacancies()
 

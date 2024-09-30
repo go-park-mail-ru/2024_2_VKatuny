@@ -8,6 +8,15 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/usecase/service"
 )
 
+// Logout godoc
+// @Summary     Realises deauthentication
+// @Description -
+// @Tags        Logout
+// @Param       session_id header string true "Session ID (Cookie)"
+// @Success     200 
+// @Failure     400 
+// @Failure     401 
+// @Router      /logout/ [post]
 func LogoutHandler() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()

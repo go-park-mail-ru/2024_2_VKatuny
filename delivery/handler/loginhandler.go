@@ -12,6 +12,17 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/usecase/service"
 )
 
+// Login godoc
+// @Summary     Realises authentication
+// @Description -
+// @Tags        Login
+// @Accept      json
+// @Param       email    body string  true "User's email"
+// @Param       password body string  true "User's password"
+// @Success     200 {object} map[string]interface{}
+// @Failure     400 {object} map[string]interface{}
+// @Failure     401 {object} map[string]interface{}
+// @Router      /login/ [post]
 func LoginHandler() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()

@@ -10,6 +10,14 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 )
 
+// Authorized godoc
+// @Summary     Checks user's authorization 
+// @Description Gets cookie from user and checks authentication
+// @Tags        AuthStatus
+// @Param       session_id header string true "Session ID (Cookie)"
+// @Success     200
+// @Failure     401
+// @Router      /authorized [post]
 func AuthorizedHandler() http.Handler {
 	return http.HandlerFunc(Fn)
 }

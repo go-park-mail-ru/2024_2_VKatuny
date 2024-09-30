@@ -10,6 +10,17 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/usecase/service"
 )
 
+// CreateWorker godoc
+// @Summary     Creates a new user as a worker
+// @Description -
+// @Tags        Registration
+// @Accept      json
+// @Produce     json
+// @Param       email    body string true "User's email"
+// @Param       password body string true "User's password"
+// @Success     200 {object} BD.UserInput
+// @Failure     400 {object} nil
+// @Router      /registration/worker/ [post]
 func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
