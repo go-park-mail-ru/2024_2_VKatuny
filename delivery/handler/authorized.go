@@ -42,7 +42,7 @@ func Fn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if authorized == nil {
-		w.Write([]byte(`{"statusCode": 200, "user": {"id": ` + strconv.Itoa(int(id)) + `, "usertype": ` + userType + "}}"))
+		w.Write([]byte(`{"statusCode": 200, "user": {"id": ` + strconv.Itoa(int(id)) + `, "usertype": "` + userType + `"}}`))
 	} else {
 		w.WriteHeader(401)
 	}

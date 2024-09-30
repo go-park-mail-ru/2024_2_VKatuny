@@ -11,7 +11,7 @@ import (
 
 func TryAddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, error) {
 	var SID string
-	if newUserInput.TypeUser == "worker" {
+	if newUserInput.TypeUser == "applicant" {
 		workerBase := BD.HandlersWorker
 		userWorker, ok := storage.GetWorkerByEmail(&workerBase, newUserInput.Email)
 		log.Println(userWorker, ok)

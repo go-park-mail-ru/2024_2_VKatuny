@@ -42,7 +42,7 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 	if err != nil {
 		return fmt.Errorf(`no user`)
 	}
-	log.Println("Cooky resived")
+	log.Println("Cooky resived", SID)
 
 	cookie := &http.Cookie{
 		Name:     "session_id1",
@@ -51,7 +51,7 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteStrictMode,
-		Domain:   "https://127.0.0.1:8080",
+		Domain:   "127.0.0.1:8080",
 	}
 	storage.SetSecureHeaders(w)
 	http.SetCookie(w, cookie)
