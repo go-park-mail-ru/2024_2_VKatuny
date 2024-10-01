@@ -53,7 +53,7 @@ func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
 	if err != nil {
 		return fmt.Errorf(`no user`)
 	}
-	log.Println("Cooky resived", SID)
+	log.Println("Cookie received", SID)
 
 	cookie := &http.Cookie{
 		Name:     "session_id1",

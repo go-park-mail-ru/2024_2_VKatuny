@@ -23,7 +23,7 @@ func TryAddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, e
 			return "", fmt.Errorf(`bad pass`)
 		}
 		SID = storage.RandStringRunes(32)
-		log.Println("BD worker cooky added")
+		log.Println("BD worker cookie added")
 		workerBase.Mu.Lock()
 		workerBase.Sessions[SID] = userWorker.ID
 		workerBase.Mu.Unlock()
@@ -41,7 +41,7 @@ func TryAddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, e
 		}
 
 		SID = storage.RandStringRunes(32)
-		log.Println("BD employer cooky added")
+		log.Println("BD employer cookie added")
 		employerBase.Mu.Lock()
 		employerBase.Sessions[SID] = userEmployer.ID
 		employerBase.Mu.Unlock()

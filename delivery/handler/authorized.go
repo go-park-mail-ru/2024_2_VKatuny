@@ -30,6 +30,7 @@ func Fn(w http.ResponseWriter, r *http.Request) {
 	}
 	storage.SetSecureHeaders(w)
 	w.Header().Set("Content-Type", "application/json")
+	
 	authorizationErr := fmt.Errorf("no user with session")
 	session, err := r.Cookie("session_id1")
 	var id uint64

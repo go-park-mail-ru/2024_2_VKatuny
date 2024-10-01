@@ -9,6 +9,8 @@ const FRONTENDIP = "http://" + IP
 const BACKENDIP = IP + ":8080"
 
 type WorkerHandlers struct {
+	// key   -    (Cookie.Value)
+	// value - ID (Worker.ID, Employer.ID)
 	Sessions map[string]uint64
 	Users    map[string]Worker
 	Mu       *sync.RWMutex
