@@ -27,12 +27,14 @@ func LogoutHandler() http.Handler {
 		storage.SetSecureHeaders(w)
 		session, err := r.Cookie("session_id1")
 		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusOK)  // client doesn't have a cookie
 			return
 		}
 
 		errD := service.TryDellSession(session)
 		if errD != nil {
-			http.Error(w, `no sess`, 401)
+			w.WriteHeader(http.StatusOK) // no user with this session
+			http.Error(w, `no sess`, http.StatusUnauthorized)
 			return
 		}
 

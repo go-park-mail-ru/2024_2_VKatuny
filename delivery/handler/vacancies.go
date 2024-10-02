@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 )
 
 // GetVacancies godoc
@@ -25,13 +25,6 @@ import (
 func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-
-		isoption := storage.Isoption(w, r)
-		if isoption {
-			return
-		}
-		storage.SetSecureHeaders(w)
-		w.Header().Set("Content-Type", "application/json")
 
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -100,5 +93,5 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 
 		w.WriteHeader(http.StatusOK)
 	}
-	return http.HandlerFunc(fn)
+	return HttpHeadersWrapper(http.HandlerFunc(fn))
 }

@@ -37,12 +37,12 @@ func LoginHandler() http.Handler {
 		decErr := decoder.Decode(newUserInput)
 		log.Println(newUserInput, decErr)
 		if decErr != nil {
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		err := LoginFromAnyware(w, newUserInput)
 		if err != nil {
-			w.WriteHeader(401)
+			w.WriteHeader(http.StatusUnauthorized)
 		}
 	}
 	return http.HandlerFunc(fn)

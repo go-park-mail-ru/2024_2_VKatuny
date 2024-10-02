@@ -5,6 +5,7 @@ import (
 )
 
 const IP = "89.208.199.175"
+// const IP = "127.0.0.1"
 const FRONTENDIP = "http://" + IP
 const BACKENDIP = IP + ":8080"
 

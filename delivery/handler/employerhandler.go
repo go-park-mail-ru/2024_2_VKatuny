@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/usecase/service"
 )
 
@@ -25,18 +24,13 @@ import (
 func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		isoption := storage.Isoption(w, r)
-		if isoption {
-			return
-		}
-		storage.SetSecureHeaders(w)
-		w.Header().Set("Content-Type", "application/json")
+
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.EmployerInput)
 		decErr := decoder.Decode(newUserInput)
 		if decErr != nil {
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			log.Printf("error while unmarshalling employer  JSON: %s", decErr)
 			w.Write([]byte("{}"))
 			return
@@ -45,7 +39,7 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 			len(newUserInput.CompanyName) < 3 || len(newUserInput.CompanyDescription) < 10 ||
 			len(newUserInput.Website) < 5 || strings.Index(newUserInput.EmployerEmail, "@") < 0 ||
 			len(newUserInput.EmployerPassword) < 4 {
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			log.Printf("error while unmarshalling employer  JSON: %s", decErr)
 			w.Write([]byte("{}"))
 			return
@@ -58,16 +52,17 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 			// }
 			// LoginFromAnyware(w, UserInputForToken)
 
+			w.WriteHeader(http.StatusOK)
 			userdata, _ := json.Marshal(user)
 			w.Write([]byte(userdata))
 			return
 
 		} else {
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
 			w.Write([]byte(`{"userAlreadyExist": true}`))
 		}
 
 	}
-	return http.HandlerFunc(fn)
+	return HttpHeadersWrapper(http.HandlerFunc(fn))
 }

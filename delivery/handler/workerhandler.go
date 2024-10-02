@@ -20,7 +20,7 @@ import (
 // @Param       email    body string true "User's email"
 // @Param       password body string true "User's password"
 // @Success     200 {object} BD.UserInput
-// @Failure     400 {object} nil
+// @Failure     http.StatusBadRequest {object} nil
 // @Router      /registration/worker/ [post]
 func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
@@ -36,14 +36,14 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 		newUserInput := new(BD.WorkerInput)
 		decErr := decoder.Decode(newUserInput)
 		if decErr != nil {
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			log.Printf("error while unmarshalling worker JSON: %s", decErr)
 			w.Write([]byte("{}"))
 			return
 		}
 		if len(newUserInput.WorkerName) < 3 || len(newUserInput.WorkerLastName) < 3 ||
 			strings.Index(newUserInput.WorkerEmail, "@") < 0 || len(newUserInput.WorkerPassword) < 4 {
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			log.Printf("error while unmarshalling employer  JSON: %s", decErr)
 			w.Write([]byte("{}"))
 			return
@@ -61,7 +61,7 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 			w.Write([]byte(userdata))
 		} else {
 			log.Println("!!!", err)
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
 			w.Write([]byte(`{"userAlreadyExist": true}`))
 		}
