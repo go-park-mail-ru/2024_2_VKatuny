@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
@@ -37,6 +38,13 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 		if decErr != nil {
 			w.WriteHeader(400)
 			log.Printf("error while unmarshalling worker JSON: %s", decErr)
+			w.Write([]byte("{}"))
+			return
+		}
+		if len(newUserInput.WorkerName) < 3 || len(newUserInput.WorkerLastName) < 3 ||
+			strings.Index(newUserInput.WorkerEmail, "@") < 0 || len(newUserInput.WorkerPassword) < 4 {
+			w.WriteHeader(400)
+			log.Printf("error while unmarshalling employer  JSON: %s", decErr)
 			w.Write([]byte("{}"))
 			return
 		}
