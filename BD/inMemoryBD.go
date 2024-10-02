@@ -67,14 +67,14 @@ type EmployerInput struct {
 }
 
 type Employer struct {
-	ID                 uint64 `json:"employerName"`
-	EmployerName       string `json:"employerLastName"`
-	EmployerLastName   string `json:"employerPosition"`
-	EmployerPosition   string `json:"companyName"`
-	CompanyName        string `json:"companyDescription"`
-	CompanyDescription string `json:"website"`
-	Website            string `json:"employerEmail"`
-	EmployerEmail      string `json:"employerPassword"`
+	ID                 uint64 `json:"id"`
+	EmployerName       string `json:"employerName"`
+	EmployerLastName   string `json:"employerLastName"`
+	EmployerPosition   string `json:"employerPosition"`
+	CompanyName        string `json:"companyName"`
+	CompanyDescription string `json:"companyDescription"`
+	Website            string `json:"website"`
+	EmployerEmail      string `json:"employerEmail"`
 	EmployerPassword   string `json:"-"`
 }
 
