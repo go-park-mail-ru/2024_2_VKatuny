@@ -18,7 +18,7 @@ import (
 // @Failure     401
 // @Router      /logout/ [post]
 func LogoutHandler() http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		session, err := r.Cookie("session_id1")
 		if err == http.ErrNoCookie {
@@ -35,6 +35,5 @@ func LogoutHandler() http.Handler {
 
 		session.Expires = time.Now().AddDate(0, 0, -1)
 		http.SetCookie(w, session)
-	}
-	return HttpHeadersWrapper(http.HandlerFunc(fn))
+	}))
 }

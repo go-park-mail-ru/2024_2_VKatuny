@@ -23,7 +23,7 @@ import (
 // @Failure     http.StatusBadRequest {object} nil
 // @Router      /registration/worker/ [post]
 func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		decoder := json.NewDecoder(r.Body)
 
@@ -49,6 +49,5 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
 		}
 
-	}
-	return HttpHeadersWrapper(http.HandlerFunc(fn))
+	}))
 }

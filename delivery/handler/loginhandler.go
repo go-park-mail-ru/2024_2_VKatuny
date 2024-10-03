@@ -24,7 +24,7 @@ import (
 // @Failure     401 {object} map[string]interface{}
 // @Router      /login/ [post]
 func LoginHandler() http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		decoder := json.NewDecoder(r.Body)
 
@@ -39,8 +39,7 @@ func LoginHandler() http.Handler {
 		if err != nil {
 			storage.UniversalMarshal(w, http.StatusUnauthorized, nil)
 		}
-	}
-	return HttpHeadersWrapper(http.HandlerFunc(fn))
+	}))
 }
 
 func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {

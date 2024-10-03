@@ -23,7 +23,7 @@ import (
 // @Failure     500
 // @Router      /vacancies [get]
 func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
 		if r.Method != http.MethodGet {
@@ -80,6 +80,5 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 		}
 
 		storage.UniversalMarshal(w, http.StatusOK, response)
-	}
-	return HttpHeadersWrapper(http.HandlerFunc(fn))
+	}))
 }
