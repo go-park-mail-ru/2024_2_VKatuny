@@ -47,6 +47,7 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 			log.Println("!!!", err)
 			w.WriteHeader(400)
 			storage.UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
+			w.WriteHeader(400)
 			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
 		}
 
