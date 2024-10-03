@@ -112,8 +112,8 @@ var Vacancies = VacanciesHandler{
 // type userType string
 
 const (
-	WORKER   = "worker"   //userType("worker")
-	EMPLOYER = "employer" //userType("employer")
+	WORKER   = "applicant" //userType("worker")
+	EMPLOYER = "employer"  //userType("employer")
 )
 
 type UserAlreadyExist struct {
