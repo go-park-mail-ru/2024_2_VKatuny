@@ -9,13 +9,12 @@ import (
 )
 
 func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Worker, error) {
-	log.Println("1", h)
-	_, rErr := storage.GetWorkerByEmail(h, newUserInput.WorkerEmail)
-	log.Println("errerreeeeeeeeee ", h, rErr)
-	if rErr == nil {
+	_, err := storage.GetWorkerByEmail(h, newUserInput.WorkerEmail)
+	log.Println("err ", h, err)
+	if err == nil {
 		return BD.Worker{}, fmt.Errorf("User exist")
 	} else {
-		//if rErr.Error() == "No worker with such email" {
+		//if err.Error() == "No worker with such email" {
 		hash := storage.HashPassword(newUserInput.WorkerPassword)
 		var id uint64 = h.Amount + 1
 		h.Mu.Lock()

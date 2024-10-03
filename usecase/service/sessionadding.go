@@ -9,9 +9,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 )
 
-func TryAddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, error) {
+func AddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, error) {
 	var SID string
-	if newUserInput.TypeUser == "applicant" {
+	if newUserInput.TypeUser == BD.WORKER {
 		workerBase := BD.HandlersWorker
 		userWorker, ok := storage.GetWorkerByEmail(&workerBase, newUserInput.Email)
 		log.Println(userWorker, ok)
@@ -28,15 +28,15 @@ func TryAddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, e
 		workerBase.Sessions[SID] = userWorker.ID
 		workerBase.Mu.Unlock()
 
-	} else if newUserInput.TypeUser == "employer" {
+	} else if newUserInput.TypeUser == BD.EMPLOYER {
 		employerBase := BD.HandlersEmployer
-		userEmployer, ok1 := storage.GetEmployerByEmail(&employerBase, newUserInput.Email)
-		log.Println(userEmployer, ok1)
+		userEmployer, ok := storage.GetEmployerByEmail(&employerBase, newUserInput.Email)
+		log.Println(userEmployer, ok)
 
-		if ok1 != nil {
+		if ok != nil {
 			return "", fmt.Errorf(`no user`)
 		}
-		if ok1 == nil && !storage.EqualHashedPasswords(userEmployer.EmployerPassword, newUserInput.Password) {
+		if ok == nil && !storage.EqualHashedPasswords(userEmployer.EmployerPassword, newUserInput.Password) {
 			return "", fmt.Errorf(`bad pass`)
 		}
 

@@ -9,13 +9,10 @@ import (
 )
 
 func TryCreateEmployer(h *BD.EmployerHandlers, newUserInput *BD.EmployerInput) (BD.Employer, error) {
-	log.Println(h)
-	_, rErr := storage.GetEmployerByEmail(h, newUserInput.EmployerEmail)
-	//fmt.Println(rErr)
-	if rErr == nil {
+	_, err := storage.GetEmployerByEmail(h, newUserInput.EmployerEmail)
+	if err == nil {
 		return BD.Employer{}, fmt.Errorf("User exist")
 	} else {
-		//if rErr.Error() == "No employer with such email" {
 		hashed := storage.HashPassword(newUserInput.EmployerPassword)
 		var id uint64 = h.Amount + 1
 		h.Mu.Lock()

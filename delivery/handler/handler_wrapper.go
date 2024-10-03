@@ -15,14 +15,13 @@ func HttpHeadersWrapper(wrappedHandlerFunc http.HandlerFunc) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept")
-		
-		// Set up content-type header
-		w.Header().Set("Content-Type", "application/json")
 
 		if r.Method == http.MethodOptions {
 			// should i return http.StatusOK?
 			return
 		}
+		// Set up content-type header
+		w.Header().Set("Content-Type", "application/json")
 
 		wrappedHandlerFunc(w, r)
 	}

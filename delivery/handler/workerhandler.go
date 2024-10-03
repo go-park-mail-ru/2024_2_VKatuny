@@ -25,47 +25,33 @@ import (
 func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		isoption := storage.Isoption(w, r)
-		if isoption {
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		storage.SetSecureHeaders(w)
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.WorkerInput)
-		decErr := decoder.Decode(newUserInput)
-		if decErr != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("error while unmarshalling worker JSON: %s", decErr)
-			w.Write([]byte("{}"))
+		err := decoder.Decode(newUserInput)
+		if err != nil {
+			storage.UniversalMarshal(w, http.StatusBadRequest, nil)
+			log.Printf("error while unmarshalling worker JSON: %s", err)
 			return
 		}
 		if len(newUserInput.WorkerName) < 3 || len(newUserInput.WorkerLastName) < 3 ||
 			strings.Index(newUserInput.WorkerEmail, "@") < 0 || len(newUserInput.WorkerPassword) < 4 {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Printf("error while unmarshalling employer  JSON: %s", decErr)
-			w.Write([]byte("{}"))
+			storage.UniversalMarshal(w, http.StatusBadRequest, nil)
+			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
 		user, err := service.TryCreateWorker(h, newUserInput)
 		if err == nil {
-			// UserInputForToken := &BD.UserInput{
-			// 	Email:    newUserInput.WorkerEmail,
-			// 	Password: newUserInput.WorkerPassword,
-			// }
-			// LoginFromAnyware(w, UserInputForToken)
-
-			userdata, _ := json.Marshal(user)
-			log.Println(userdata)
-			w.Write([]byte(userdata))
+			storage.UniversalMarshal(w, http.StatusOK, user)
+			// userdata, _ := json.Marshal(user)
+			// log.Println(userdata)
+			// w.Write([]byte(userdata))
 		} else {
 			log.Println("!!!", err)
-			w.WriteHeader(http.StatusBadRequest)
+			storage.UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
 			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
-			w.Write([]byte(`{"userAlreadyExist": true}`))
 		}
 
 	}
-	return http.HandlerFunc(fn)
+	return HttpHeadersWrapper(http.HandlerFunc(fn))
 }

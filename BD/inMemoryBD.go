@@ -5,6 +5,7 @@ import (
 )
 
 const IP = "89.208.199.175"
+
 // const IP = "127.0.0.1"
 const FRONTENDIP = "http://" + IP
 const BACKENDIP = IP + ":8080"
@@ -106,6 +107,31 @@ var Vacancies = VacanciesHandler{
 	Vacancy: make([]Vacancy, 0),
 	Count:   0,
 	Mutex:   &sync.RWMutex{},
+}
+
+// type userType string
+
+const (
+	WORKER   = "worker"   //userType("worker")
+	EMPLOYER = "employer" //userType("employer")
+)
+
+type UserAlreadyExist struct {
+	UserAlreadyExist bool `json:"userAlreadyExist"`
+}
+
+type ErrorMessages struct {
+	Status  int    `json:"status"`
+	ErrText string `json:"errText"`
+}
+
+type AuthorizedUserFields struct {
+	Id         uint64 `json:"id"`
+	TypeOfUser string //userType `json:"typeOfUser"`
+}
+type ReturnUserFields struct {
+	StatusCode int                  `json:"statusCode"`
+	User       AuthorizedUserFields `json:"user"`
 }
 
 func MakeVacancies() {
