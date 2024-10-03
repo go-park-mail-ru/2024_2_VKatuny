@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -80,12 +79,7 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 			"vacancies": vacancies,
 		}
 
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			storage.UniversalMarshal(w, http.StatusInternalServerError, BD.ErrorMessages{405, "encoding error"})
-			log.Println("status 500")
-			return
-		}
-		storage.UniversalMarshal(w, http.StatusOK, nil)
+		storage.UniversalMarshal(w, http.StatusOK, response)
 	}
 	return HttpHeadersWrapper(http.HandlerFunc(fn))
 }
