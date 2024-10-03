@@ -46,9 +46,6 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 		user, err := service.TryCreateEmployer(h, newUserInput)
 		if err == nil {
 			storage.UniversalMarshal(w, http.StatusOK, user)
-			// w.WriteHeader(http.StatusOK)
-			// userdata, _ := json.Marshal(user)
-			// w.Write([]byte(userdata))
 			return
 
 		} else {
