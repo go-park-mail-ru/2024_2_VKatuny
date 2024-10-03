@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 )
 
 // Authorized godoc
-// @Summary     Checks user's authorization 
+// @Summary     Checks user's authorization
 // @Description Gets cookie from user and checks authentication
 // @Tags        AuthStatus
 // @Param       session_id header string true "Session ID (Cookie)"
@@ -19,40 +18,32 @@ import (
 // @Failure     401
 // @Router      /authorized [post]
 func AuthorizedHandler() http.Handler {
-	return http.HandlerFunc(Fn)
-}
+	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
 
-func Fn(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-	isoption := storage.Isoption(w, r)
-	if isoption {
-		return
-	}
-	storage.SetSecureHeaders(w)
-	w.Header().Set("Content-Type", "application/json")
-	
-	authorizationErr := fmt.Errorf("no user with session")
-	session, err := r.Cookie("session_id1")
-	var id uint64
-	var userType string
-	workerBase := BD.HandlersWorker
-	employerBase := BD.HandlersEmployer
+		authorizationErr := fmt.Errorf("no user with session")
+		session, err := r.Cookie("session_id1")
+		var id uint64
+		var typeOfUser string
+		workerBase := BD.HandlersWorker
+		employerBase := BD.HandlersEmployer
 
-	if err == nil && session != nil {
-		id, authorizationErr = storage.GetWorkerBySession(&workerBase, session)
+		if err == nil && session != nil {
+			id, authorizationErr = storage.GetWorkerBySession(&workerBase, session)
 
-		userType = "worker"
-		if authorizationErr != nil {
-			log.Println(authorizationErr)
-			id, authorizationErr = storage.GetEmployerBySession(&employerBase, session)
-			userType = "employer"
-			log.Println(authorizationErr)
+			typeOfUser = BD.WORKER
+			if authorizationErr != nil {
+				log.Println(authorizationErr)
+				id, authorizationErr = storage.GetEmployerBySession(&employerBase, session)
+				typeOfUser = BD.EMPLOYER
+				log.Println(authorizationErr)
+			}
 		}
-	}
 
-	if authorizationErr == nil {
-		w.Write([]byte(`{"statusCode": 200, "user": {"id": ` + strconv.Itoa(int(id)) + `, "usertype": "` + userType + `"}}`))
-	} else {
-		w.WriteHeader(401)
-	}
+		if authorizationErr == nil {
+			storage.UniversalMarshal(w, http.StatusOK, BD.ReturnUserFields{200, BD.AuthorizedUserFields{id, typeOfUser}})
+		} else {
+			storage.UniversalMarshal(w, http.StatusUnauthorized, nil)
+		}
+	}))
 }

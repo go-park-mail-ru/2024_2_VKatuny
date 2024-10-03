@@ -23,51 +23,36 @@ import (
 // @Failure     400      {object}       nil
 // @Router      /registration/employer/ [post]
 func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		isoption := storage.Isoption(w, r)
-		if isoption {
-			return
-		}
-		storage.SetSecureHeaders(w)
-		w.Header().Set("Content-Type", "application/json")
+
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(BD.EmployerInput)
-		decErr := decoder.Decode(newUserInput)
-		if decErr != nil {
-			w.WriteHeader(400)
-			log.Printf("error while unmarshalling employer  JSON: %s", decErr)
-			w.Write([]byte("{}"))
+		err := decoder.Decode(newUserInput)
+		if err != nil {
+			storage.UniversalMarshal(w, http.StatusBadRequest, nil)
+			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
 		if len(newUserInput.EmployerName) < 3 || len(newUserInput.EmployerLastName) < 3 || len(newUserInput.EmployerPosition) < 3 ||
 			len(newUserInput.CompanyName) < 3 || len(newUserInput.CompanyDescription) < 10 ||
 			len(newUserInput.Website) < 5 || strings.Index(newUserInput.EmployerEmail, "@") < 0 ||
 			len(newUserInput.EmployerPassword) < 4 {
-			w.WriteHeader(400)
-			log.Printf("error while unmarshalling employer  JSON: %s", decErr)
-			w.Write([]byte("{}"))
+			storage.UniversalMarshal(w, http.StatusBadRequest, nil)
+			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
 		user, err := service.TryCreateEmployer(h, newUserInput)
 		if err == nil {
-			// UserInputForToken := &BD.UserInput{
-			// 	Email:    newUserInput.EmployerEmail,
-			// 	Password: newUserInput.EmployerPassword,
-			// }
-			// LoginFromAnyware(w, UserInputForToken)
-
-			userdata, _ := json.Marshal(user)
-			w.Write([]byte(userdata))
+			storage.UniversalMarshal(w, http.StatusOK, user)
 			return
 
 		} else {
-			w.WriteHeader(400)
+
+			storage.UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
 			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
-			w.Write([]byte(`{"userAlreadyExist": true}`))
 		}
 
-	}
-	return http.HandlerFunc(fn)
+	}))
 }

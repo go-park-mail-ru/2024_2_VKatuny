@@ -7,12 +7,9 @@ import (
 )
 
 func GetWorkerByEmail(table *BD.WorkerHandlers, email string) (BD.Worker, error) {
-	fmt.Println("$")
 	table.Mu.RLock()
 	user, err := table.Users[email]
 	table.Mu.RUnlock()
-	fmt.Println("$$", err)
-	fmt.Println(table)
 	if err == true {
 		return user, nil //fmt.Errorf("User exist")
 	} else {

@@ -17,3 +17,6 @@ tests:
 
 clean:
 	go clean
+
+lint:
+	revive -config reviveconfig.toml -formatter friendly ./...

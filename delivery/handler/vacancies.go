@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/storage"
 )
 
 // GetVacancies godoc
@@ -17,25 +17,17 @@ import (
 // @Produce     json
 // @Param       offset query int true "offset"
 // @Param       num    query int true "num"
-// @Success     200    
-// @Failure     400    
-// @Failure     405    
-// @Failure     500    
+// @Success     200
+// @Failure     400
+// @Failure     405
+// @Failure     500
 // @Router      /vacancies [get]
 func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
+	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		isoption := storage.Isoption(w, r)
-		if isoption {
-			return
-		}
-		storage.SetSecureHeaders(w)
-		w.Header().Set("Content-Type", "application/json")
-
 		if r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			w.Write([]byte(`{"status": 405, "error": "http request method isn't a GET"}`))
+			storage.UniversalMarshal(w, http.StatusMethodNotAllowed, BD.ErrorMessages{405, "http request method isn't a GET"})
 			return
 		}
 
@@ -44,32 +36,28 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 		offsetStr := queryParams.Get("offset")
 		if offsetStr == "" {
 			log.Println("status 400 offset is empty")
-			w.WriteHeader(http.StatusBadRequest) // HTTP 400
-			w.Write([]byte(`{"status": 400, "error": "offset is empty"}`))
+			storage.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset is empty"})
 			return
 		}
 
 		offset, err := strconv.Atoi(offsetStr)
 		if err != nil {
 			log.Println("status 400 offset isn't number")
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"status": 400, "error": "offset isn't number"}`))
+			storage.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset isn't number"})
 			return
 		}
 
 		numStr := queryParams.Get("num")
 		if numStr == "" {
 			log.Println("status 400 num is empty")
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"status": 400, "error": "num is empty"}`))
+			storage.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num is empty"})
 			return
 		}
 
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			log.Println("status 400 num isn't number")
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"status": 400, "error": "num isn't number"}`))
+			storage.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num isn't number"})
 			return
 		}
 
@@ -82,23 +70,15 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 			rightBound = int(vacanciesTable.Count)
 		}
 
-		vacanciesTable.Mutex.Lock()
+		vacanciesTable.Mutex.RLock()
 		vacancies := vacanciesTable.Vacancy[leftBound:rightBound]
-		vacanciesTable.Mutex.Unlock()
+		vacanciesTable.Mutex.RUnlock()
 
 		response := map[string]interface{}{
 			"status":    200,
 			"vacancies": vacancies,
 		}
 
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Println("status 500")
-			w.Write([]byte(`{"status": 500, "error": "encoding error"}`))
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-	}
-	return http.HandlerFunc(fn)
+		storage.UniversalMarshal(w, http.StatusOK, response)
+	}))
 }
