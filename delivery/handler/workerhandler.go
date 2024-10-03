@@ -40,16 +40,13 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
-		user, err1 := service.TryCreateWorker(h, newUserInput)
-		if err1 == nil {
+		user, err := service.TryCreateWorker(h, newUserInput)
+		if err == nil {
 			storage.UniversalMarshal(w, http.StatusOK, user)
-			// userdata, _ := json.Marshal(user)
-			// log.Println(userdata)
-			// w.Write([]byte(userdata))
 		} else {
-			log.Println("!!!", err1)
+			log.Println("!!!", err)
+			w.WriteHeader(400)
 			storage.UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
-			w.WriteHeader(401)
 			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
 		}
 

@@ -14,7 +14,6 @@ func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Wor
 	if err == nil {
 		return BD.Worker{}, fmt.Errorf("User exist")
 	} else {
-		//if err.Error() == "No worker with such email" {
 		hash := storage.HashPassword(newUserInput.WorkerPassword)
 		var id uint64 = h.Amount + 1
 		h.Mu.Lock()
