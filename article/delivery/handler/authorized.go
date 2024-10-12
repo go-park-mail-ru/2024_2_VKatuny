@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
 )
 
 // Authorized godoc
@@ -29,21 +29,21 @@ func AuthorizedHandler() http.Handler {
 		employerBase := BD.HandlersEmployer
 
 		if err == nil && session != nil {
-			id, authorizationErr = storage.GetWorkerBySession(&workerBase, session)
+			id, authorizationErr = repository.GetWorkerBySession(&workerBase, session)
 
 			typeOfUser = BD.WORKER
 			if authorizationErr != nil {
 				log.Println(authorizationErr)
-				id, authorizationErr = storage.GetEmployerBySession(&employerBase, session)
+				id, authorizationErr = repository.GetEmployerBySession(&employerBase, session)
 				typeOfUser = BD.EMPLOYER
 				log.Println(authorizationErr)
 			}
 		}
 
 		if authorizationErr == nil {
-			storage.UniversalMarshal(w, http.StatusOK, BD.ReturnUserFields{200, BD.AuthorizedUserFields{id, typeOfUser}})
+			repository.UniversalMarshal(w, http.StatusOK, BD.ReturnUserFields{200, BD.AuthorizedUserFields{id, typeOfUser}})
 		} else {
-			storage.UniversalMarshal(w, http.StatusUnauthorized, nil)
+			repository.UniversalMarshal(w, http.StatusUnauthorized, nil)
 		}
 	}))
 }

@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
-	
+
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/delivery/handler"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/delivery/handler"
 )
 
 // @title   uArt's API

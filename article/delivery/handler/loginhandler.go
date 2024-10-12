@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/usecase/service"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase"
 )
 
 // Login godoc
@@ -32,18 +32,18 @@ func LoginHandler() http.Handler {
 		decErr := decoder.Decode(newUserInput)
 		log.Println(newUserInput, decErr)
 		if decErr != nil {
-			storage.UniversalMarshal(w, http.StatusBadRequest, nil)
+			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
 			return
 		}
 		err := LoginFromAnyware(w, newUserInput)
 		if err != nil {
-			storage.UniversalMarshal(w, http.StatusUnauthorized, nil)
+			repository.UniversalMarshal(w, http.StatusUnauthorized, nil)
 		}
 	}))
 }
 
 func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
-	SID, err := service.AddSession(w, newUserInput)
+	SID, err := usecase.AddSession(w, newUserInput)
 	if err != nil {
 		return fmt.Errorf(`no user`)
 	}

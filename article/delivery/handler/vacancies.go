@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
-	// "github.com/go-park-mail-ru/2024_2_VKatuny/storage"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase"
 )
 
 // GetVacancies godoc
@@ -27,7 +27,7 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 		defer r.Body.Close()
 
 		if r.Method != http.MethodGet {
-			storage.UniversalMarshal(w, http.StatusMethodNotAllowed, BD.ErrorMessages{405, "http request method isn't a GET"})
+			repository.UniversalMarshal(w, http.StatusMethodNotAllowed, BD.ErrorMessages{405, "http request method isn't a GET"})
 			return
 		}
 
@@ -36,28 +36,28 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 		offsetStr := queryParams.Get("offset")
 		if offsetStr == "" {
 			log.Println("status 400 offset is empty")
-			storage.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset is empty"})
+			repository.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset is empty"})
 			return
 		}
 
 		offset, err := strconv.Atoi(offsetStr)
 		if err != nil {
 			log.Println("status 400 offset isn't number")
-			storage.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset isn't number"})
+			repository.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset isn't number"})
 			return
 		}
 
 		numStr := queryParams.Get("num")
 		if numStr == "" {
 			log.Println("status 400 num is empty")
-			storage.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num is empty"})
+			repository.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num is empty"})
 			return
 		}
 
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			log.Println("status 400 num isn't number")
-			storage.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num isn't number"})
+			repository.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num isn't number"})
 			return
 		}
 
@@ -79,6 +79,6 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 			"vacancies": vacancies,
 		}
 
-		storage.UniversalMarshal(w, http.StatusOK, response)
+		repository.UniversalMarshal(w, http.StatusOK, response)
 	}))
 }

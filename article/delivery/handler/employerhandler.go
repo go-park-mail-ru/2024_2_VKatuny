@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/usecase/service"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase"
 )
 
 // CreateEmployer godoc
@@ -31,7 +31,7 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 		newUserInput := new(BD.EmployerInput)
 		err := decoder.Decode(newUserInput)
 		if err != nil {
-			storage.UniversalMarshal(w, http.StatusBadRequest, nil)
+			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
 			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
@@ -39,18 +39,18 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 			len(newUserInput.CompanyName) < 3 || len(newUserInput.CompanyDescription) < 10 ||
 			len(newUserInput.Website) < 5 || strings.Index(newUserInput.EmployerEmail, "@") < 0 ||
 			len(newUserInput.EmployerPassword) < 4 {
-			storage.UniversalMarshal(w, http.StatusBadRequest, nil)
+			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
 			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
-		user, err := service.TryCreateEmployer(h, newUserInput)
+		user, err := usecase.TryCreateEmployer(h, newUserInput)
 		if err == nil {
-			storage.UniversalMarshal(w, http.StatusOK, user)
+			repository.UniversalMarshal(w, http.StatusOK, user)
 			return
 
 		} else {
 
-			storage.UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
+			repository.UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
 			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
 		}
 

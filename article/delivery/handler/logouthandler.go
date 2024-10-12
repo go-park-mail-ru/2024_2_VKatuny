@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/usecase/service"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase"
 )
 
 // Logout godoc
@@ -22,13 +22,13 @@ func LogoutHandler() http.Handler {
 		defer r.Body.Close()
 		session, err := r.Cookie("session_id1")
 		if err == http.ErrNoCookie {
-			storage.UniversalMarshal(w, http.StatusOK, nil) // client doesn't have a cookie
+			repository.UniversalMarshal(w, http.StatusOK, nil) // client doesn't have a cookie
 			return
 		}
 
-		errD := service.TryDellSession(session)
+		errD := usecase.TryDellSession(session)
 		if errD != nil {
-			storage.UniversalMarshal(w, http.StatusOK, nil) // no user with this session
+			repository.UniversalMarshal(w, http.StatusOK, nil) // no user with this session
 			http.Error(w, `no sess`, http.StatusUnauthorized)
 			return
 		}
