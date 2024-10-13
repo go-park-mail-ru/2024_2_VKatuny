@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"fmt"
@@ -7,7 +7,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 )
 
-func GetWorkerBySession(table *BD.WorkerHandlers, session *http.Cookie) (uint64, error) {
+func GetWorkerBySession(session *http.Cookie) (uint64, error) {
+	table := BD.HandlersWorker
 	table.Mu.RLock()
 	id, err := table.Sessions[session.Value]
 	table.Mu.RUnlock()
@@ -18,7 +19,8 @@ func GetWorkerBySession(table *BD.WorkerHandlers, session *http.Cookie) (uint64,
 	}
 }
 
-func GetEmployerBySession(table *BD.EmployerHandlers, session *http.Cookie) (uint64, error) {
+func GetEmployerBySession(session *http.Cookie) (uint64, error) {
+	table := BD.HandlersEmployer
 	table.Mu.RLock()
 	fmt.Println(table.Sessions, session.Value)
 	id, err := table.Sessions[session.Value]

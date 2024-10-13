@@ -1,4 +1,4 @@
-package storage
+package repository
 
 import (
 	"fmt"
@@ -6,7 +6,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 )
 
-func GetWorkerByEmail(table *BD.WorkerHandlers, email string) (BD.Worker, error) {
+func GetWorkerByEmail(email string) (BD.Worker, error) {
+	table := BD.HandlersWorker
 	table.Mu.RLock()
 	user, err := table.Users[email]
 	table.Mu.RUnlock()
@@ -17,7 +18,8 @@ func GetWorkerByEmail(table *BD.WorkerHandlers, email string) (BD.Worker, error)
 	}
 }
 
-func GetEmployerByEmail(table *BD.EmployerHandlers, email string) (BD.Employer, error) {
+func GetEmployerByEmail(email string) (BD.Employer, error) {
+	table := BD.HandlersEmployer
 	table.Mu.RLock()
 	user, ok := table.Users[email]
 	table.Mu.RUnlock()

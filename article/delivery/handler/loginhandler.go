@@ -2,14 +2,13 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
 // Login godoc
@@ -35,29 +34,24 @@ func LoginHandler() http.Handler {
 			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
 			return
 		}
-		err := LoginFromAnyware(w, newUserInput)
+		SID, err := service.AddSession(w, newUserInput)
+		if err != nil {
+			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
+			return
+		}
+		log.Println("Cookie received")
+		cookie := &http.Cookie{
+			Name:     "session_id1",
+			Value:    SID,
+			Expires:  time.Now().Add(10 * time.Hour),
+			HttpOnly: true,
+			//Secure:   true, //ubrat
+			SameSite: http.SameSiteStrictMode,
+			Domain:   BD.BACKENDIP,
+		}
+		http.SetCookie(w, cookie)
 		if err != nil {
 			repository.UniversalMarshal(w, http.StatusUnauthorized, nil)
 		}
 	}))
-}
-
-func LoginFromAnyware(w http.ResponseWriter, newUserInput *BD.UserInput) error {
-	SID, err := usecase.AddSession(w, newUserInput)
-	if err != nil {
-		return fmt.Errorf(`no user`)
-	}
-	log.Println("Cookie received")
-
-	cookie := &http.Cookie{
-		Name:     "session_id1",
-		Value:    SID,
-		Expires:  time.Now().Add(10 * time.Hour),
-		HttpOnly: true,
-		//Secure:   true, //ubrat
-		SameSite: http.SameSiteStrictMode,
-		Domain:   BD.BACKENDIP,
-	}
-	http.SetCookie(w, cookie)
-	return nil
 }

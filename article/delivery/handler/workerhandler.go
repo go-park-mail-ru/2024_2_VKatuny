@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
 // CreateWorker godoc
@@ -40,7 +40,7 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
-		user, err := usecase.TryCreateWorker(h, newUserInput)
+		user, err := service.TryCreateWorker(h, newUserInput)
 		if err == nil {
 			repository.UniversalMarshal(w, http.StatusOK, user)
 		} else {

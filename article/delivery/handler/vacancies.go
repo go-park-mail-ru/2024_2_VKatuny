@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
-	// "github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase"
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
 // GetVacancies godoc

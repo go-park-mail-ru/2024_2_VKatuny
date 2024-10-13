@@ -25,16 +25,14 @@ func AuthorizedHandler() http.Handler {
 		session, err := r.Cookie("session_id1")
 		var id uint64
 		var typeOfUser string
-		workerBase := BD.HandlersWorker
-		employerBase := BD.HandlersEmployer
 
 		if err == nil && session != nil {
-			id, authorizationErr = repository.GetWorkerBySession(&workerBase, session)
+			id, authorizationErr = repository.GetWorkerBySession(session)
 
 			typeOfUser = BD.WORKER
 			if authorizationErr != nil {
 				log.Println(authorizationErr)
-				id, authorizationErr = repository.GetEmployerBySession(&employerBase, session)
+				id, authorizationErr = repository.GetEmployerBySession(session)
 				typeOfUser = BD.EMPLOYER
 				log.Println(authorizationErr)
 			}

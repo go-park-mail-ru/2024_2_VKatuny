@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
 // Logout godoc
@@ -26,7 +26,7 @@ func LogoutHandler() http.Handler {
 			return
 		}
 
-		errD := usecase.TryDellSession(session)
+		errD := service.TryDellSession(session)
 		if errD != nil {
 			repository.UniversalMarshal(w, http.StatusOK, nil) // no user with this session
 			http.Error(w, `no sess`, http.StatusUnauthorized)

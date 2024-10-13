@@ -5,16 +5,16 @@ import (
 	"log"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
 )
 
 func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Worker, error) {
-	_, err := storage.GetWorkerByEmail(h, newUserInput.WorkerEmail)
+	_, err := repository.GetWorkerByEmail(newUserInput.WorkerEmail)
 	log.Println("err ", h, err)
 	if err == nil {
 		return BD.Worker{}, fmt.Errorf("User exist")
 	} else {
-		hash := storage.HashPassword(newUserInput.WorkerPassword)
+		hash := repository.HashPassword(newUserInput.WorkerPassword)
 		var id uint64 = h.Amount + 1
 		h.Mu.Lock()
 		h.Amount += 1
