@@ -1,22 +1,19 @@
-package service
+package repository
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/storage"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
-func TryCreateEmployer(h *BD.EmployerHandlers, newUserInput *BD.EmployerInput) (BD.Employer, error) {
-	log.Println(h)
-	_, rErr := storage.GetEmployerByEmail(h, newUserInput.EmployerEmail)
-	//fmt.Println(rErr)
-	if rErr == nil {
+func CreateEmployer(h *BD.EmployerHandlers, newUserInput *BD.EmployerInput) (BD.Employer, error) {
+	_, err := GetEmployerByEmail(newUserInput.EmployerEmail)
+	if err == nil {
 		return BD.Employer{}, fmt.Errorf("User exist")
 	} else {
-		//if rErr.Error() == "No employer with such email" {
-		hashed := storage.HashPassword(newUserInput.EmployerPassword)
+		hashed := service.HashPassword(newUserInput.EmployerPassword)
 		var id uint64 = h.Amount + 1
 		h.Mu.Lock()
 		h.Amount += 1
