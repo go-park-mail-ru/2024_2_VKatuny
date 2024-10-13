@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
+	//"github.com/go-park-mail-ru/2024_2_VKatuny/article/delivery/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
 // Login godoc
@@ -31,12 +31,12 @@ func LoginHandler() http.Handler {
 		decErr := decoder.Decode(newUserInput)
 		log.Println(newUserInput, decErr)
 		if decErr != nil {
-			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
+			UniversalMarshal(w, http.StatusBadRequest, nil)
 			return
 		}
-		SID, err := service.AddSession(w, newUserInput)
+		SID, err := repository.AddSession(w, newUserInput)
 		if err != nil {
-			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
+			UniversalMarshal(w, http.StatusBadRequest, nil)
 			return
 		}
 		log.Println("Cookie received")
@@ -51,7 +51,7 @@ func LoginHandler() http.Handler {
 		}
 		http.SetCookie(w, cookie)
 		if err != nil {
-			repository.UniversalMarshal(w, http.StatusUnauthorized, nil)
+			UniversalMarshal(w, http.StatusUnauthorized, nil)
 		}
 	}))
 }

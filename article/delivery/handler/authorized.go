@@ -39,9 +39,9 @@ func AuthorizedHandler() http.Handler {
 		}
 
 		if authorizationErr == nil {
-			repository.UniversalMarshal(w, http.StatusOK, BD.ReturnUserFields{200, BD.AuthorizedUserFields{id, typeOfUser}})
+			UniversalMarshal(w, http.StatusOK, BD.ReturnUserFields{200, BD.AuthorizedUserFields{id, typeOfUser}})
 		} else {
-			repository.UniversalMarshal(w, http.StatusUnauthorized, nil)
+			UniversalMarshal(w, http.StatusUnauthorized, nil)
 		}
 	}))
 }

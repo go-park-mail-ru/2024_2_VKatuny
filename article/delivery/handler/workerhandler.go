@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
+	//"github.com/go-park-mail-ru/2024_2_VKatuny/article/delivery/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
 // CreateWorker godoc
@@ -30,22 +30,22 @@ func CreateWorkerHandler(h *BD.WorkerHandlers) http.Handler {
 		newUserInput := new(BD.WorkerInput)
 		err := decoder.Decode(newUserInput)
 		if err != nil {
-			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
+			UniversalMarshal(w, http.StatusBadRequest, nil)
 			log.Printf("error while unmarshalling worker JSON: %s", err)
 			return
 		}
 		if len(newUserInput.WorkerName) < 3 || len(newUserInput.WorkerLastName) < 3 ||
 			strings.Index(newUserInput.WorkerEmail, "@") < 0 || len(newUserInput.WorkerPassword) < 4 {
-			repository.UniversalMarshal(w, http.StatusBadRequest, nil)
+			UniversalMarshal(w, http.StatusBadRequest, nil)
 			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
-		user, err := service.TryCreateWorker(h, newUserInput)
+		user, err := repository.TryCreateWorker(h, newUserInput)
 		if err == nil {
-			repository.UniversalMarshal(w, http.StatusOK, user)
+			UniversalMarshal(w, http.StatusOK, user)
 		} else {
 			log.Println("!!!", err)
-			repository.UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
+			UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
 			log.Printf("error user with this email already exists: %s", newUserInput.WorkerEmail)
 		}
 

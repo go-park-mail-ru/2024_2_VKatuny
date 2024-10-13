@@ -1,20 +1,20 @@
-package service
+package repository
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
 func TryCreateWorker(h *BD.WorkerHandlers, newUserInput *BD.WorkerInput) (BD.Worker, error) {
-	_, err := repository.GetWorkerByEmail(newUserInput.WorkerEmail)
+	_, err := GetWorkerByEmail(newUserInput.WorkerEmail)
 	log.Println("err ", h, err)
 	if err == nil {
 		return BD.Worker{}, fmt.Errorf("User exist")
 	} else {
-		hash := repository.HashPassword(newUserInput.WorkerPassword)
+		hash := service.HashPassword(newUserInput.WorkerPassword)
 		var id uint64 = h.Amount + 1
 		h.Mu.Lock()
 		h.Amount += 1

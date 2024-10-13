@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
+	//"github.com/go-park-mail-ru/2024_2_VKatuny/article/delivery/middleware"
 	// "github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
 )
 
@@ -27,7 +28,7 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 		defer r.Body.Close()
 
 		if r.Method != http.MethodGet {
-			repository.UniversalMarshal(w, http.StatusMethodNotAllowed, BD.ErrorMessages{405, "http request method isn't a GET"})
+			UniversalMarshal(w, http.StatusMethodNotAllowed, BD.ErrorMessages{405, "http request method isn't a GET"})
 			return
 		}
 
@@ -36,49 +37,43 @@ func VacanciesHandler(vacanciesTable *BD.VacanciesHandler) http.Handler {
 		offsetStr := queryParams.Get("offset")
 		if offsetStr == "" {
 			log.Println("status 400 offset is empty")
-			repository.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset is empty"})
+			UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset is empty"})
 			return
 		}
 
 		offset, err := strconv.Atoi(offsetStr)
 		if err != nil {
 			log.Println("status 400 offset isn't number")
-			repository.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset isn't number"})
+			UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "offset isn't number"})
 			return
 		}
 
 		numStr := queryParams.Get("num")
 		if numStr == "" {
 			log.Println("status 400 num is empty")
-			repository.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num is empty"})
+			UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num is empty"})
 			return
 		}
 
 		num, err := strconv.Atoi(numStr)
 		if err != nil {
 			log.Println("status 400 num isn't number")
-			repository.UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num isn't number"})
+			UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{405, "num isn't number"})
 			return
 		}
 
-		leftBound := offset
-		rightBound := offset + num
-		// covering cases when offset is out of slice bounds
-		if leftBound > int(vacanciesTable.Count) {
-			rightBound = leftBound
-		} else if rightBound > int(vacanciesTable.Count) {
-			rightBound = int(vacanciesTable.Count)
-		}
+		vacancies, ok := repository.GetSomeVacancies(offset, offset+num)
 
-		vacanciesTable.Mutex.RLock()
-		vacancies := vacanciesTable.Vacancy[leftBound:rightBound]
-		vacanciesTable.Mutex.RUnlock()
+		if ok != nil {
+			log.Println("status 500 BD has problems")
+			UniversalMarshal(w, http.StatusBadRequest, BD.ErrorMessages{500, "BD has problems"})
+		}
 
 		response := map[string]interface{}{
 			"status":    200,
 			"vacancies": vacancies,
 		}
 
-		repository.UniversalMarshal(w, http.StatusOK, response)
+		UniversalMarshal(w, http.StatusOK, response)
 	}))
 }
