@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -18,6 +19,7 @@ import (
 // @host     127.0.0.1:8000
 // @BasePath /api/v1
 func main() {
+
 	inmemorydb.MakeVacancies()
 
 	inmemorydb.MakeUsers()
@@ -43,4 +45,5 @@ func main() {
 
 	log.Print("Listening...")
 	http.ListenAndServe(inmemorydb.BACKENDIP, Mux)
+	fmt.Print("started")
 }

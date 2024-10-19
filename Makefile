@@ -1,7 +1,7 @@
 # define executable
 EXECUTABLE=uArt
 
-# siurce dir
+# source dir
 SRC_DIR=./cmd/app
 
 # flags for compilation
@@ -20,3 +20,6 @@ clean:
 
 lint:
 	revive -config reviveconfig.toml -formatter friendly ./...
+
+run:
+	go run $(SRC_DIR)/main.go
