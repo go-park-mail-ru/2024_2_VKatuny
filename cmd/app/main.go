@@ -1,11 +1,12 @@
+// Package main starts server and all handlers
 package main
 
 import (
 	"log"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/delivery/handler"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
 )
 
 // @title   uArt's API
@@ -17,15 +18,15 @@ import (
 // @host     127.0.0.1:8000
 // @BasePath /api/v1
 func main() {
-	BD.MakeVacancies()
+	inmemorydb.MakeVacancies()
 
-	BD.MakeUsers()
+	inmemorydb.MakeUsers()
 	Mux := http.NewServeMux()
 
-	workerHandler := handler.CreateWorkerHandler(&BD.HandlersWorker)
+	workerHandler := handler.CreateWorkerHandler(&inmemorydb.HandlersWorker)
 	Mux.Handle("/api/v1/registration/worker", workerHandler)
 
-	employerHandler := handler.CreateEmployerHandler(&BD.HandlersEmployer)
+	employerHandler := handler.CreateEmployerHandler(&inmemorydb.HandlersEmployer)
 	Mux.Handle("/api/v1/registration/employer", employerHandler)
 
 	loginHandler := handler.LoginHandler()
@@ -37,9 +38,9 @@ func main() {
 	authorizedHandler := handler.AuthorizedHandler()
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
-	vacanciesListHandler := handler.VacanciesHandler(&BD.Vacancies)
+	vacanciesListHandler := handler.VacanciesHandler() //(&db.Vacancies)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	log.Print("Listening...")
-	http.ListenAndServe(BD.BACKENDIP, Mux)
+	http.ListenAndServe(inmemorydb.BACKENDIP, Mux)
 }

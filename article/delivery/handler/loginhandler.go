@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
 	//"github.com/go-park-mail-ru/2024_2_VKatuny/article/delivery/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
 )
 
+// LoginHandler set cookies for users after login
 // Login godoc
 // @Summary     Realises authentication
 // @Description -
@@ -23,18 +24,18 @@ import (
 // @Failure     401 {object} map[string]interface{}
 // @Router      /login/ [post]
 func LoginHandler() http.Handler {
-	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return HTTPHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		decoder := json.NewDecoder(r.Body)
 
-		newUserInput := new(BD.UserInput)
+		newUserInput := new(inmemorydb.UserInput)
 		decErr := decoder.Decode(newUserInput)
 		log.Println(newUserInput, decErr)
 		if decErr != nil {
 			UniversalMarshal(w, http.StatusBadRequest, nil)
 			return
 		}
-		SID, err := repository.AddSession(w, newUserInput)
+		SID, err := repository.AddSession(newUserInput)
 		if err != nil {
 			UniversalMarshal(w, http.StatusBadRequest, nil)
 			return
@@ -47,11 +48,8 @@ func LoginHandler() http.Handler {
 			HttpOnly: true,
 			//Secure:   true, //ubrat
 			SameSite: http.SameSiteStrictMode,
-			Domain:   BD.BACKENDIP,
+			Domain:   inmemorydb.BACKENDIP,
 		}
 		http.SetCookie(w, cookie)
-		if err != nil {
-			UniversalMarshal(w, http.StatusUnauthorized, nil)
-		}
 	}))
 }

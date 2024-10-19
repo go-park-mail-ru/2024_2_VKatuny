@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
 	//"github.com/go-park-mail-ru/2024_2_VKatuny/article/delivery/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
 )
 
+// CreateEmployerHandler creates employers in db
 // CreateEmployer godoc
 // @Summary     Creates a new user as a employer
 // @Description -
@@ -19,16 +20,16 @@ import (
 // @Produce     json
 // @Param       email    body string    true         "User's email"
 // @Param       password body string    true         "User's password"
-// @Success     200      {object}       BD.UserInput
+// @Success     200      {object}       inmemorydb.UserInput
 // @Failure     400      {object}       nil
 // @Router      /registration/employer/ [post]
-func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
-	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func CreateEmployerHandler(h *inmemorydb.EmployerHandlers) http.Handler {
+	return HTTPHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
 		decoder := json.NewDecoder(r.Body)
 
-		newUserInput := new(BD.EmployerInput)
+		newUserInput := new(inmemorydb.EmployerInput)
 		err := decoder.Decode(newUserInput)
 		if err != nil {
 			UniversalMarshal(w, http.StatusBadRequest, nil)
@@ -47,12 +48,9 @@ func CreateEmployerHandler(h *BD.EmployerHandlers) http.Handler {
 		if err == nil {
 			UniversalMarshal(w, http.StatusOK, user)
 			return
-
-		} else {
-
-			UniversalMarshal(w, http.StatusBadRequest, BD.UserAlreadyExist{true})
-			log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
 		}
+		UniversalMarshal(w, http.StatusBadRequest, inmemorydb.UserAlreadyExist{true})
+		log.Printf("error user with this email already exists: %s", newUserInput.EmployerEmail)
 
 	}))
 }

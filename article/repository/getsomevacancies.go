@@ -1,11 +1,12 @@
 package repository
 
 import (
-	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
 )
 
-func GetSomeVacancies(offset, num int) ([]BD.Vacancy, error) {
-	vacanciesTable := BD.Vacancies
+// GetSomeVacancies get some num amount of vacancies from db starting from offset
+func GetSomeVacancies(offset, num int) ([]inmemorydb.Vacancy, error) {
+	vacanciesTable := inmemorydb.Vacancies
 	leftBound := offset
 	rightBound := offset + num
 	// covering cases when offset is out of slice bounds

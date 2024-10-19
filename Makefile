@@ -1,11 +1,11 @@
 # define executable
-EXECUTABLE="uArt"
+EXECUTABLE=uArt
 
 # siurce dir
-SRC_DIR="./cmd/myapp"
+SRC_DIR=./cmd/app
 
 # flags for compilation
-BUILD_FLAGS=""
+BUILD_FLAGS=
 
 all: build
 

@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/repository"
 )
 
+// LogoutHandler deletes cookies when user want to logout
 // Logout godoc
 // @Summary     Realises deauthentication
 // @Description -
@@ -18,7 +19,7 @@ import (
 // @Failure     401
 // @Router      /logout/ [post]
 func LogoutHandler() http.Handler {
-	return HttpHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return HTTPHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		session, err := r.Cookie("session_id1")
 		if err == http.ErrNoCookie {
@@ -26,7 +27,7 @@ func LogoutHandler() http.Handler {
 			return
 		}
 
-		errD := repository.TryDellSession(session)
+		errD := repository.DellSession(session)
 		if errD != nil {
 			UniversalMarshal(w, http.StatusOK, nil) // no user with this session
 			http.Error(w, `no sess`, http.StatusUnauthorized)

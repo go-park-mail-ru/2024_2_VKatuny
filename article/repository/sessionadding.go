@@ -3,33 +3,33 @@ package repository
 import (
 	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/article/usecase/service"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
 )
 
-func AddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, error) {
+// AddSession adding session to db
+func AddSession(newUserInput *inmemorydb.UserInput) (string, error) {
 	var SID string
-	if newUserInput.TypeUser == BD.WORKER {
-		workerBase := BD.HandlersWorker
+	if newUserInput.TypeUser == inmemorydb.WORKER {
+		workerBase := inmemorydb.HandlersWorker
 		userWorker, ok := GetWorkerByEmail(newUserInput.Email)
 		log.Println(userWorker, ok)
 
 		if ok != nil {
 			return "", fmt.Errorf(`no user`)
 		}
-		if ok == nil && !service.EqualHashedPasswords(userWorker.WorkerPassword, newUserInput.Password) {
+		if !service.EqualHashedPasswords(userWorker.WorkerPassword, newUserInput.Password) {
 			return "", fmt.Errorf(`bad pass`)
 		}
 		SID = service.RandStringRunes(32)
-		log.Println("BD worker cookie added")
+		log.Println("inmemorydb worker cookie added")
 		workerBase.Mu.Lock()
 		workerBase.Sessions[SID] = userWorker.ID
 		workerBase.Mu.Unlock()
 
-	} else if newUserInput.TypeUser == BD.EMPLOYER {
-		employerBase := BD.HandlersEmployer
+	} else if newUserInput.TypeUser == inmemorydb.EMPLOYER {
+		employerBase := inmemorydb.HandlersEmployer
 		userEmployer, ok := GetEmployerByEmail(newUserInput.Email)
 		log.Println(userEmployer, ok)
 
@@ -41,7 +41,7 @@ func AddSession(w http.ResponseWriter, newUserInput *BD.UserInput) (string, erro
 		}
 
 		SID = service.RandStringRunes(32)
-		log.Println("BD employer cookie added")
+		log.Println("inmemorydb employer cookie added")
 		employerBase.Mu.Lock()
 		employerBase.Sessions[SID] = userEmployer.ID
 		employerBase.Mu.Unlock()

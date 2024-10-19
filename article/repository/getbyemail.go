@@ -3,29 +3,29 @@ package repository
 import (
 	"fmt"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/BD"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
 )
 
-func GetWorkerByEmail(email string) (BD.Worker, error) {
-	table := BD.HandlersWorker
-	table.Mu.RLock()
-	user, err := table.Users[email]
-	table.Mu.RUnlock()
-	if err == true {
-		return user, nil //fmt.Errorf("User exist")
-	} else {
-		return BD.Worker{}, fmt.Errorf("No worker with such email")
-	}
-}
-
-func GetEmployerByEmail(email string) (BD.Employer, error) {
-	table := BD.HandlersEmployer
+// GetWorkerByEmail finding worker in db by email
+func GetWorkerByEmail(email string) (inmemorydb.Worker, error) {
+	table := inmemorydb.HandlersWorker
 	table.Mu.RLock()
 	user, ok := table.Users[email]
 	table.Mu.RUnlock()
-	if ok == true {
+	if ok {
 		return user, nil //fmt.Errorf("User exist")
-	} else {
-		return BD.Employer{}, fmt.Errorf("No employer with such email")
 	}
+	return inmemorydb.Worker{}, fmt.Errorf("No worker with such email")
+}
+
+// GetEmployerByEmail finding employer in db by email
+func GetEmployerByEmail(email string) (inmemorydb.Employer, error) {
+	table := inmemorydb.HandlersEmployer
+	table.Mu.RLock()
+	user, ok := table.Users[email]
+	table.Mu.RUnlock()
+	if ok {
+		return user, nil //fmt.Errorf("User exist")
+	}
+	return inmemorydb.Employer{}, fmt.Errorf("No employer with such email")
 }
