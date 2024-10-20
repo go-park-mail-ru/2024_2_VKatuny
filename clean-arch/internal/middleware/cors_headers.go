@@ -2,12 +2,14 @@ package middleware
 
 import (
 	"net/http"
+
+	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
 )
 
-// HTTPHeadersWrapper Accepts wrappedHandlerFunc and sets up CORS and content-type headers
-// Returns function with headers
-func HTTPHeadersWrapper(wrappedHandlerFunc http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+// SetSecurityAndOptionsHeaders Accepts funcion next and sets up CORS and content-type headers
+// Returns wrapped function next with headers
+func SetSecurityAndOptionsHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set up CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", inmemorydb.FRONTENDIP)
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -21,6 +23,6 @@ func HTTPHeadersWrapper(wrappedHandlerFunc http.HandlerFunc) http.HandlerFunc {
 		// Set up content-type header
 		w.Header().Set("Content-Type", "application/json")
 
-		wrappedHandlerFunc(w, r)
-	}
+		next.ServeHTTP(w, r)
+	})
 }
