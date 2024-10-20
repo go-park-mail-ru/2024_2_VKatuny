@@ -1,4 +1,4 @@
-package vacanciesDelivery
+package delivery
 
 import (
 	"log"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/inmemorydb"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies"
 )
 
 // VacanciesHandler returns list of vacancies
@@ -23,8 +23,8 @@ import (
 // @Failure     405
 // @Failure     500
 // @Router      /vacancies [get]
-func VacanciesHandler() http.Handler { //vacanciesTable *inmemorydb.VacanciesHandler
-	return middleware.HTTPHeadersWrapper(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable *inmemorydb.VacanciesHandler
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
 		if r.Method != http.MethodGet {
@@ -63,7 +63,9 @@ func VacanciesHandler() http.Handler { //vacanciesTable *inmemorydb.VacanciesHan
 			return
 		}
 
-		vacancies, err := repository.GetSomeVacancies(offset, offset+num)
+		// May cause a bug when the offset and num is negative
+		// Because of type casting
+		vacancies, err := repo.GetWithOffset(uint64(offset), uint64(offset+num))
 
 		if err != nil {
 			log.Println("status 500 inmemorydb has problems")
@@ -76,5 +78,5 @@ func VacanciesHandler() http.Handler { //vacanciesTable *inmemorydb.VacanciesHan
 		}
 
 		middleware.UniversalMarshal(w, http.StatusOK, response)
-	}))
+	})
 }

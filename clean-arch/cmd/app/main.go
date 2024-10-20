@@ -56,10 +56,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/inmemorydb"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
+	worker_delivery     "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/delivery"
+	worker_repository   "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/repository"
 	employer_delivery   "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/repository"
+	vacancies_delivery  "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/delivery"
+	vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/repository"
 )
 
 // @title   uArt's API
@@ -71,23 +75,26 @@ import (
 // @host     127.0.0.1:8000
 // @BasePath /api/v1
 func main() {
-
-	inmemorydb.MakeVacancies()
+	// fill db with data using vacancies/repostory
+	// inmemorydb.MakeVacancies()
 
 	inmemorydb.MakeUsers()
 	Mux := http.NewServeMux()
 
-	workerHandler := worker_delivery.CreateWorkerHandler(&inmemorydb.HandlersWorker)
+	workerRepository := worker_repository.NewRepo()
+	workerHandler := worker_delivery.CreateWorkerHandler(workerRepository)
 	workerHandler = middleware.SetSecurityAndOptionsHeaders(workerHandler)
+	workerHandler = middleware.Panic(workerHandler)
 	Mux.Handle("/api/v1/registration/worker", workerHandler)
 
 	employerRepository := employer_repository.NewRepo()
 	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository)
 	employerHandler =  middleware.SetSecurityAndOptionsHeaders(employerHandler)
+	employerHandler = middleware.Panic(employerHandler)
 	Mux.Handle("/api/v1/registration/employer", employerHandler)
 
 	// change handler's destination
-	// loginHandler := handler.LoginHandler()
+	// loginHandler := .LoginHandler()
 	// Mux.Handle("/api/v1/login", loginHandler)
 
 	// change handler's destination
@@ -98,9 +105,10 @@ func main() {
 	// authorizedHandler := handler.AuthorizedHandler()
 	// Mux.Handle("/api/v1/authorized", authorizedHandler)
 
-	// change handler's destination
-	vacanciesListHandler := vacanciesDelivery.VacanciesHandler() //(&db.Vacancies)
+	vacanciesRepository := vacancies_repostory.NewRepo()
+	vacanciesListHandler := vacancies_delivery.VacanciesHandler(vacanciesRepository) //(&db.Vacancies)
 	vacanciesListHandler =  middleware.SetSecurityAndOptionsHeaders(vacanciesListHandler)
+	vacanciesListHandler = middleware.Panic(vacanciesListHandler)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	log.Print("Listening...")
