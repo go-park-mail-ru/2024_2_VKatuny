@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
-	employer_delivery    "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/delivery"
+	employer_delivery   "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/repository"
 )
 

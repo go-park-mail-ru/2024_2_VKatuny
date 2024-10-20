@@ -1,11 +1,13 @@
 package models
 
 type Employer struct {
-	ID       uint32 `json:"id"`
-	Name     string `json:"name"`
-	Surname  string `json:"lastName"`
-	Company  string `json:"company"`
-	Position string `json:"position"`
-	Email    string `json:"email"`
-	Password string `json:"-"`
+	ID          uint64 `json:"id"`
+	Name        string `json:"employerName"`
+	LastName    string `json:"employerLastName"`
+	Position    string `json:"employerPosition"`
+	CompanyName string `json:"companyName"`
+	Description string `json:"companyDescription"`
+	Website     string `json:"website"`
+	Email       string `json:"employerEmail"`
+	Password    string `json:"-"`
 }
