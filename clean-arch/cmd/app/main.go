@@ -52,7 +52,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -64,6 +63,7 @@ import (
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/repository"
 	vacancies_delivery  "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/delivery"
 	vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/configs"
 )
 
 // @title   uArt's API
@@ -72,9 +72,11 @@ import (
 // @contact.name Ifelsik
 // @contact.url  https://github.com/Ifelsik
 
-// @host     127.0.0.1:8000
+// @host     127.0.0.1:8080
 // @BasePath /api/v1
 func main() {
+	conf, _ := configs.ReadConfig("./configs/conf.yml")
+
 	// fill db with data using vacancies/repostory
 	// inmemorydb.MakeVacancies()
 
@@ -111,7 +113,6 @@ func main() {
 	vacanciesListHandler = middleware.Panic(vacanciesListHandler)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
-	log.Print("Listening...")
-	http.ListenAndServe(inmemorydb.BACKENDIP, Mux)
-	fmt.Print("started")
+	log.Printf("Server running at %s", conf.Server.GetAddr())
+	http.ListenAndServe(conf.Server.GetAddr(), Mux)
 }
