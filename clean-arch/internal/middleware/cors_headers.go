@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/inmemorydb"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/inmemorydb"
 )
 
 // SetSecurityAndOptionsHeaders Accepts funcion next and sets up CORS and content-type headers

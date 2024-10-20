@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 )
 
 // DOES NOT SUPPORT ASYNC
@@ -9,8 +9,8 @@ import (
 // implementation of repository.Employer interface
 // temp in-memory-db
 type employerRepo struct {
-	lastID   uint32
-	data     []*models.Employer
+	lastID uint64
+	data   []*models.Employer
 }
 
 // DOES NOT SUPPORT ASYNC
@@ -25,7 +25,7 @@ func NewRepo() *employerRepo {
 // Creates new employer
 // Accepts pointer to employer model
 // Returns ID of created employer and error
-func (repo *employerRepo) Create(employer *models.Employer) (uint32, error) {
+func (repo *employerRepo) Create(employer *models.Employer) (uint64, error) {
 	repo.lastID++
 	employer.ID = repo.lastID
 	repo.data = append(repo.data, employer)
@@ -36,9 +36,9 @@ func (repo *employerRepo) Create(employer *models.Employer) (uint32, error) {
 // Accepts ID
 // Returns pointer to employer and error
 // !!!if NOT FOUND DOESN'T return error yet!!!
-func (repo *employerRepo) GetByID(id uint32) (*models.Employer, error) {
+func (repo *employerRepo) GetByID(id uint64) (*models.Employer, error) {
 	if id > repo.lastID {
 		return nil, nil
-	} 
+	}
 	return repo.data[id], nil
 }

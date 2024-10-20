@@ -1,15 +1,21 @@
-package BD
+// Package inmemorydb is for inmemory db and structures
+package inmemorydb
 
 import (
 	"sync"
 )
 
-const IP = "89.208.199.175"
+// IP of our server
+// const IP = "89.208.199.175"
+const IP = "127.0.0.1"
 
-// const IP = "127.0.0.1"
+// FRONTENDIP is our fronted server ip, later it was const IP = "127.0.0.1"
 const FRONTENDIP = "http://" + IP
+
+// BACKENDIP is our backend server ip
 const BACKENDIP = IP + ":8080"
 
+// WorkerHandlers struct for worker table
 type WorkerHandlers struct {
 	// key   -    (Cookie.Value)
 	// value - ID (Worker.ID, Employer.ID)
@@ -19,6 +25,7 @@ type WorkerHandlers struct {
 	Amount   uint64
 }
 
+// EmployerHandlers struct for employer table
 type EmployerHandlers struct {
 	Sessions map[string]uint64
 	Users    map[string]Employer
@@ -26,6 +33,7 @@ type EmployerHandlers struct {
 	Amount   uint64
 }
 
+// HandlersWorker simulates worker db
 var HandlersWorker = WorkerHandlers{
 	Sessions: make(map[string]uint64, 0),
 	Users:    make(map[string]Worker, 0),
@@ -33,6 +41,7 @@ var HandlersWorker = WorkerHandlers{
 	Amount:   0,
 }
 
+// HandlersEmployer simulates employer db
 var HandlersEmployer = EmployerHandlers{
 	Sessions: make(map[string]uint64, 0),
 	Users:    make(map[string]Employer, 0),
@@ -40,6 +49,7 @@ var HandlersEmployer = EmployerHandlers{
 	Amount:   0,
 }
 
+// WorkerInput data getting from registration worker
 type WorkerInput struct {
 	WorkerName      string `json:"workerName"`
 	WorkerLastName  string `json:"workerLastName"`
@@ -48,6 +58,7 @@ type WorkerInput struct {
 	WorkerPassword  string `json:"workerPassword"`
 }
 
+// Worker is columns of worker db
 type Worker struct {
 	ID              uint64 `json:"id"`
 	WorkerName      string `json:"workerFirstName"`
@@ -57,6 +68,7 @@ type Worker struct {
 	WorkerPassword  string `json:"-"`
 }
 
+// EmployerInput data getting from registration employer
 type EmployerInput struct {
 	EmployerName       string `json:"employerName"`
 	EmployerLastName   string `json:"employerLastName"`
@@ -68,6 +80,7 @@ type EmployerInput struct {
 	EmployerPassword   string `json:"employerPassword"`
 }
 
+// Employer is columns of employer db
 type Employer struct {
 	ID                 uint64 `json:"id"`
 	EmployerName       string `json:"employerName"`
@@ -80,18 +93,21 @@ type Employer struct {
 	EmployerPassword   string `json:"-"`
 }
 
+// UserInput data getting from login
 type UserInput struct {
 	TypeUser string `json:"userType"`
 	Email    string `json:"login"`
 	Password string `json:"password"`
 }
 
+// VacanciesHandler struct for vacancy table
 type VacanciesHandler struct {
 	Vacancy []Vacancy
 	Count   uint64
 	Mutex   *sync.RWMutex
 }
 
+// Vacancy is columns of vacancy db
 type Vacancy struct {
 	ID          uint64 `json:"id"`
 	Position    string `json:"position"`
@@ -103,6 +119,7 @@ type Vacancy struct {
 	Logo        string `json:"logo"`
 }
 
+// Vacancies simulate vacancies db
 var Vacancies = VacanciesHandler{
 	Vacancy: make([]Vacancy, 0),
 	Count:   0,
@@ -112,28 +129,36 @@ var Vacancies = VacanciesHandler{
 // type userType string
 
 const (
-	WORKER   = "applicant" //userType("worker")
-	EMPLOYER = "employer"  //userType("employer")
+	// WORKER global name
+	WORKER = "applicant" //userType("worker")
+	// EMPLOYER global name
+	EMPLOYER = "employer" //userType("employer")
 )
 
+// UserAlreadyExist err struct for existing user
 type UserAlreadyExist struct {
 	UserAlreadyExist bool `json:"userAlreadyExist"`
 }
 
+// ErrorMessages err struct
 type ErrorMessages struct {
 	Status  int    `json:"status"`
 	ErrText string `json:"errText"`
 }
 
+// AuthorizedUserFields struct for response of handler after login
 type AuthorizedUserFields struct {
-	Id         uint64 `json:"id"`
+	ID         uint64 `json:"id"`
 	TypeOfUser string //userType `json:"typeOfUser"`
 }
+
+// ReturnUserFields struct for response of handler after registration
 type ReturnUserFields struct {
 	StatusCode int                  `json:"statusCode"`
 	User       AuthorizedUserFields `json:"user"`
 }
 
+// MakeVacancies fill db with test vacancies
 func MakeVacancies() {
 	Vacancies.Count = 25
 	for i := uint64(0); i < 25; i += 5 {
@@ -196,6 +221,7 @@ func MakeVacancies() {
 
 }
 
+// MakeUsers fill db with test users
 func MakeUsers() {
 	HandlersWorker.Users["a@mail.ru"] = Worker{
 		ID:              1,

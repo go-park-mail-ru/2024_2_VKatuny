@@ -6,9 +6,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/inmemorydb"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
 )
 
 // CreateEmployerHandler creates employers in db
@@ -36,8 +37,8 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 			log.Printf("error while unmarshalling employer  JSON: %s", err)
 			return
 		}
-		if len(newUserInput.Name) < 3 || len(newUserInput.Surname) < 3 || len(newUserInput.Position) < 3 ||
-			len(newUserInput.Company) < 3 || strings.Index(newUserInput.Email, "@") < 0 ||
+		if len(newUserInput.Name) < 3 || len(newUserInput.LastName) < 3 || len(newUserInput.Position) < 3 ||
+			len(newUserInput.CompanyName) < 3 || strings.Index(newUserInput.Email, "@") < 0 ||
 			len(newUserInput.Password) < 4 {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, nil)
 			log.Printf("error while unmarshalling employer  JSON: %s", err)
