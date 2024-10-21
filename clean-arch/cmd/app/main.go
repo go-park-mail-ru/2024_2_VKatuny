@@ -113,6 +113,9 @@ func main() {
 	vacanciesListHandler = middleware.Panic(vacanciesListHandler)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
-	log.Printf("Server running at %s", conf.Server.GetAddr())
-	http.ListenAndServe(conf.Server.GetAddr(), Mux)
+	log.Printf("Server starting at %s", conf.Server.GetAddr())
+	err := http.ListenAndServe(conf.Server.GetAddr(), Mux)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
