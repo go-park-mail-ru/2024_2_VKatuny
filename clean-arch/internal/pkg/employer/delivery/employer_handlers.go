@@ -28,6 +28,8 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		// logger, ok := r.Context().Value(LoggerKey).(logrus.FieldLogger)
+
 		decoder := json.NewDecoder(r.Body)
 
 		newUserInput := new(models.Employer)

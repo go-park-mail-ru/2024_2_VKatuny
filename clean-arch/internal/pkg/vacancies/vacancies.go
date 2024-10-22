@@ -5,7 +5,7 @@ import (
 )
 
 // Interface for Vacancies.
-// Now implemented as a in memory db.
+// Now implemented as a in-memory db.
 // Implementation locates in ./repository
 type Repository interface {
 	Add(vacancy *models.Vacancy) (uint64, error)

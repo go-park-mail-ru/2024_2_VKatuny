@@ -52,6 +52,7 @@
 package main
 
 import (
+
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/inmemorydb"
@@ -111,10 +112,11 @@ func main() {
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	// Wrapped multiplexer
-	// Mux implements http.Handler so it's possible to wrap
+	// Mux implements http.Handler interface so it's possible to wrap
 	handlers := middleware.SetSecurityAndOptionsHeaders(Mux)
 	handlers = middleware.AccessLogger(handlers, logger)
-	logger.Infof("Server starting at %s", conf.Server.GetAddr())
+	handlers = middleware.SetContext(handlers, logger)
+	logger.Infof("Server is starting at %s", conf.Server.GetAddr())
 	err := http.ListenAndServe(conf.Server.GetAddr(), handlers)
 	if err != nil {
 		logger.Fatal(err)
