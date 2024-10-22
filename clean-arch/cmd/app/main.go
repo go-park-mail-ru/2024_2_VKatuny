@@ -52,18 +52,18 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/inmemorydb"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
-	worker_delivery     "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/delivery"
-	worker_repository   "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/repository"
-	employer_delivery   "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/delivery"
-	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/repository"
-	vacancies_delivery  "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/delivery"
-	vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/configs"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/logger"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
+	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/delivery"
+	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/repository"
+	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/delivery"
+	vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/repository"
+	worker_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/delivery"
+	worker_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/repository"
 )
 
 // @title   uArt's API
@@ -76,7 +76,7 @@ import (
 // @BasePath /api/v1
 func main() {
 	conf, _ := configs.ReadConfig("./configs/conf.yml")
-
+	logger := logger.NewLogrusLogger()
 	// fill db with data using vacancies/repostory
 	// inmemorydb.MakeVacancies()
 
@@ -85,13 +85,11 @@ func main() {
 
 	workerRepository := worker_repository.NewRepo()
 	workerHandler := worker_delivery.CreateWorkerHandler(workerRepository)
-	workerHandler = middleware.SetSecurityAndOptionsHeaders(workerHandler)
 	workerHandler = middleware.Panic(workerHandler)
 	Mux.Handle("/api/v1/registration/worker", workerHandler)
 
 	employerRepository := employer_repository.NewRepo()
 	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository)
-	employerHandler =  middleware.SetSecurityAndOptionsHeaders(employerHandler)
 	employerHandler = middleware.Panic(employerHandler)
 	Mux.Handle("/api/v1/registration/employer", employerHandler)
 
@@ -109,13 +107,16 @@ func main() {
 
 	vacanciesRepository := vacancies_repostory.NewRepo()
 	vacanciesListHandler := vacancies_delivery.VacanciesHandler(vacanciesRepository) //(&db.Vacancies)
-	vacanciesListHandler =  middleware.SetSecurityAndOptionsHeaders(vacanciesListHandler)
 	vacanciesListHandler = middleware.Panic(vacanciesListHandler)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
-	log.Printf("Server starting at %s", conf.Server.GetAddr())
-	err := http.ListenAndServe(conf.Server.GetAddr(), Mux)
+	// Wrapped multiplexer
+	// Mux implements http.Handler so it's possible to wrap
+	handlers := middleware.SetSecurityAndOptionsHeaders(Mux)
+	handlers = middleware.AccessLogger(handlers, logger)
+	logger.Infof("Server starting at %s", conf.Server.GetAddr())
+	err := http.ListenAndServe(conf.Server.GetAddr(), handlers)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }

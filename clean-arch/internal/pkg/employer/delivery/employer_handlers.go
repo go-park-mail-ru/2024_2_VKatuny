@@ -49,6 +49,7 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 			middleware.UniversalMarshal(w, http.StatusOK, user)
 			return
 		}
+		// remove inmemorydb
 		middleware.UniversalMarshal(w, http.StatusBadRequest, inmemorydb.UserAlreadyExist{true})
 		log.Printf("error user with this email already exists: %s", newUserInput.Email)
 
