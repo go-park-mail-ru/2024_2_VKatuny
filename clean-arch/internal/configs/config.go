@@ -14,8 +14,9 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Host string `yaml:"host"`
-	Port int    `yaml:"port"`
+	Scheme string `yaml:"scheme"`
+	Host   string `yaml:"host"`
+	Port   int    `yaml:"port"`
 }
 
 // Reads file with configuration.
@@ -38,6 +39,10 @@ func ReadConfig(confPath string) (*Config, error) {
 }
 
 // Returns address of server
-func (s *ServerConfig) GetAddr() string {
+func (s *ServerConfig) GetAddress() string {
 	return s.Host + ":" + strconv.Itoa(s.Port)
+}
+
+func (s *ServerConfig) GetHostWithScheme() string {
+	return s.Scheme + "://" + s.Host
 }

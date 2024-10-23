@@ -12,6 +12,8 @@ func NewLogrusLogger() *logrus.Logger {
 		Formatter:    &logrus.TextFormatter{
 			ForceColors: true,
 			FullTimestamp: true,
+			DisableLevelTruncation: true,
+			PadLevelText: true,
 			TimestampFormat: "2006.01.02 15:04:05",  // default go time format
 			// SortingFunc: ,
 		},

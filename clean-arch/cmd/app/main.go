@@ -86,12 +86,12 @@ func main() {
 
 	workerRepository := worker_repository.NewRepo()
 	workerHandler := worker_delivery.CreateWorkerHandler(workerRepository)
-	workerHandler = middleware.Panic(workerHandler)
+	// workerHandler = middleware.Panic(workerHandler)
 	Mux.Handle("/api/v1/registration/worker", workerHandler)
 
 	employerRepository := employer_repository.NewRepo()
 	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository)
-	employerHandler = middleware.Panic(employerHandler)
+	// employerHandler = middleware.Panic(employerHandler)
 	Mux.Handle("/api/v1/registration/employer", employerHandler)
 
 	// change handler's destination
@@ -102,22 +102,24 @@ func main() {
 	// logoutHandler := handler.LogoutHandler()
 	// Mux.Handle("/api/v1/logout", logoutHandler)
 
+	// CSRF token should be retuned from handler
 	// change handler's destination
 	// authorizedHandler := handler.AuthorizedHandler()
 	// Mux.Handle("/api/v1/authorized", authorizedHandler)
 
 	vacanciesRepository := vacancies_repostory.NewRepo()
 	vacanciesListHandler := vacancies_delivery.VacanciesHandler(vacanciesRepository) //(&db.Vacancies)
-	vacanciesListHandler = middleware.Panic(vacanciesListHandler)
+	// vacanciesListHandler = middleware.Panic(vacanciesListHandler)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
-	handlers := middleware.SetSecurityAndOptionsHeaders(Mux)
+	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.GetHostWithScheme())
+	handlers = middleware.Panic(handlers)
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetContext(handlers, logger)
-	logger.Infof("Server is starting at %s", conf.Server.GetAddr())
-	err := http.ListenAndServe(conf.Server.GetAddr(), handlers)
+	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
+	err := http.ListenAndServe(conf.Server.GetAddress(), handlers)
 	if err != nil {
 		logger.Fatal(err)
 	}
