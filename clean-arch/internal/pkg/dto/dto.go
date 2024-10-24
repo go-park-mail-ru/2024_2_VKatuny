@@ -14,3 +14,10 @@ type JsonResponse struct {
 	Body       interface{} `json:"body"`
 	Error      string      `json:"error"`
 }
+
+// use this struct as a field 'Body' in struct JsonResponse
+type JsonUserBody struct {
+	UserType string `json:"userType"`
+	ID       uint64 `json:"id"`
+}
+
