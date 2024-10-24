@@ -42,17 +42,17 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 		if err != nil {
 			logger.Errorf("function %s: got err %s", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
-				HttpStatus:  http.StatusBadRequest,
-				Error: "can't unmarshal JSON",
+				HttpStatus: http.StatusBadRequest,
+				Error:      "can't unmarshal JSON",
 			})
 			return
 		}
 		if len(newUserInput.Name) < 3 || len(newUserInput.LastName) < 3 ||
-			strings.Index(newUserInput.Email, "@") < 0 || len(newUserInput.Password) < 4 {
-			logger.Errorf("function %s: User's fields aren't valid %v", funcName, newUserInput)
+			strings.Index(newUserInput.Email, "@") > 0 || len(newUserInput.Password) < 4 {
+			logger.Errorf("function %s: User's fields aren't valid %+v", funcName, newUserInput)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
-				HttpStatus:  http.StatusBadRequest,
-				Error: "user's fields aren't valid",
+				HttpStatus: http.StatusBadRequest,
+				Error:      "user's fields aren't valid",
 			})
 			return
 		}
@@ -60,8 +60,8 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 		userId, err := repo.Add(newUserInput)
 		if err == nil {
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JsonResponse{
-				HttpStatus:  http.StatusOK,
-				Body:       dto.JsonUserBody{
+				HttpStatus: http.StatusOK,
+				Body: dto.JsonUserBody{
 					UserType: "applicant",
 					ID:       userId,
 				}, // check in postman
@@ -70,8 +70,8 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 			// is there actually should be HTTP 400?
 			logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
-				HttpStatus:  http.StatusBadRequest,
-				Error: "can't add applicant to db",
+				HttpStatus: http.StatusBadRequest,
+				Error:      "can't add applicant to db",
 			})
 		}
 

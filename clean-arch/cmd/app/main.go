@@ -87,7 +87,7 @@ func main() {
 	workerRepository := worker_repository.NewRepo()
 	workerHandler := worker_delivery.CreateWorkerHandler(workerRepository)
 	// workerHandler = middleware.Panic(workerHandler)
-	Mux.Handle("/api/v1/registration/worker", workerHandler)
+	Mux.Handle("/api/v1/registration/applicant", workerHandler)
 
 	employerRepository := employer_repository.NewRepo()
 	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository)

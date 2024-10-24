@@ -1,8 +1,6 @@
 package dto
 
-import (
-	// "github.com/sirupsen/logrus"
-)
+// "github.com/sirupsen/logrus"
 
 type loggerKey int
 
@@ -17,7 +15,6 @@ type JsonResponse struct {
 
 // use this struct as a field 'Body' in struct JsonResponse
 type JsonUserBody struct {
-	UserType string `json:"userType"`
+	UserType string `json:"userType"` // "applicant" or "employer"
 	ID       uint64 `json:"id"`
 }
-
