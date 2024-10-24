@@ -30,8 +30,9 @@ func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable
 		defer r.Body.Close()
 
 		funcName := "VacanciesHandler"
-
+		fmt.Println("s122134")
 		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
+		logger.Debugf("yo")
 		if !ok {
 			fmt.Printf("%s: can't get logger from context\n", funcName)
 		}
@@ -40,10 +41,10 @@ func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable
 			logger.Errorf("Got %s method; allowed %s", r.Method, http.MethodGet)
 			middleware.UniversalMarshal(
 				w,
-				http.StatusMethodNotAllowed, 
+				http.StatusMethodNotAllowed,
 				dto.JsonResponse{
 					HttpStatus: http.StatusMethodNotAllowed,
-					Error: "http request method isn't a GET",
+					Error:      "http request method isn't a GET",
 				},
 			)
 			return
@@ -60,7 +61,7 @@ func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable
 				http.StatusBadRequest,
 				dto.JsonResponse{
 					HttpStatus: http.StatusBadRequest,
-					Error: "query parameter offset is empty",
+					Error:      "query parameter offset is empty",
 				},
 			)
 			return
@@ -74,7 +75,7 @@ func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable
 				http.StatusBadRequest,
 				dto.JsonResponse{
 					HttpStatus: http.StatusBadRequest,
-					Error: "query parameter offset isn't a number",
+					Error:      "query parameter offset isn't a number",
 				},
 			)
 			return
@@ -88,7 +89,7 @@ func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable
 				http.StatusBadRequest,
 				dto.JsonResponse{
 					HttpStatus: http.StatusBadRequest,
-					Error: "query parameter num is empty",
+					Error:      "query parameter num is empty",
 				},
 			)
 			return
@@ -99,10 +100,10 @@ func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable
 			logger.Errorf("function: %s; got err: %s; num = %s", funcName, err, numStr)
 			middleware.UniversalMarshal(
 				w,
-				http.StatusBadRequest,	
+				http.StatusBadRequest,
 				dto.JsonResponse{
 					HttpStatus: http.StatusBadRequest,
-					Error: "query parameter num isn't a number",
+					Error:      "query parameter num isn't a number",
 				},
 			)
 			return
@@ -120,7 +121,7 @@ func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable
 				http.StatusBadRequest,
 				dto.JsonResponse{
 					HttpStatus: http.StatusBadRequest,
-					Error: "can't get vacancies from db",
+					Error:      "can't get vacancies from db",
 				},
 			)
 		}

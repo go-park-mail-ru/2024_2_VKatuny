@@ -52,7 +52,6 @@
 package main
 
 import (
-
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/inmemorydb"
@@ -61,6 +60,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
 	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/repository"
+	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session/delivery"
 	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/delivery"
 	vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/repository"
 	worker_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/delivery"
@@ -86,30 +86,24 @@ func main() {
 
 	workerRepository := worker_repository.NewRepo()
 	workerHandler := worker_delivery.CreateWorkerHandler(workerRepository)
-	// workerHandler = middleware.Panic(workerHandler)
 	Mux.Handle("/api/v1/registration/applicant", workerHandler)
 
 	employerRepository := employer_repository.NewRepo()
 	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository)
-	// employerHandler = middleware.Panic(employerHandler)
 	Mux.Handle("/api/v1/registration/employer", employerHandler)
 
-	// change handler's destination
-	// loginHandler := .LoginHandler()
-	// Mux.Handle("/api/v1/login", loginHandler)
+	sessionRepository := session_delivery.NewRepo() // just do it!
+	loginHandler := session_delivery.LoginHandler(sessionRepository, conf.Server.GetAddress())
+	Mux.Handle("/api/v1/login", loginHandler)
 
-	// change handler's destination
-	// logoutHandler := handler.LogoutHandler()
-	// Mux.Handle("/api/v1/logout", logoutHandler)
+	logoutHandler := session_delivery.LogoutHandler(sessionRepository)
+	Mux.Handle("/api/v1/logout", logoutHandler)
 
-	// CSRF token should be retuned from handler
-	// change handler's destination
-	// authorizedHandler := handler.AuthorizedHandler()
-	// Mux.Handle("/api/v1/authorized", authorizedHandler)
+	authorizedHandler := session_delivery.AuthorizedHandler(sessionRepository)
+	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
 	vacanciesRepository := vacancies_repostory.NewRepo()
 	vacanciesListHandler := vacancies_delivery.VacanciesHandler(vacanciesRepository) //(&db.Vacancies)
-	// vacanciesListHandler = middleware.Panic(vacanciesListHandler)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	// Wrapped multiplexer

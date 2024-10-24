@@ -48,7 +48,7 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 			return
 		}
 		if len(newUserInput.Name) < 3 || len(newUserInput.LastName) < 3 ||
-			strings.Index(newUserInput.Email, "@") > 0 || len(newUserInput.Password) < 4 {
+			strings.Index(newUserInput.Email, "@") < 0 || len(newUserInput.Password) < 4 {
 			logger.Errorf("function %s: User's fields aren't valid %+v", funcName, newUserInput)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
 				HttpStatus: http.StatusBadRequest,
