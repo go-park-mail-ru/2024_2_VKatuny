@@ -1,0 +1,157 @@
+erDiagram
+    applicant ||--o{ cv : has
+    applicant {
+        bigint id PK
+        text first-name "NOT NULL"
+        text last-name "NOT NULL"
+        text city-id FK "NOT NULL"
+        date birth-date "NOT NULL"
+        text path-to-profile-avatar "NOT NULL, default static/default-profile.png"
+        text contacts
+        text email "UNIQUE, NOT NULL"
+        text password "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    employer ||--o{ vacancy : has
+    employer {
+        bigint id PK
+        text first-name "NOT NULL"
+        text last-name "NOT NULL"
+        text city-id FK "NOT NULL"
+        text position "NOT NULL"
+        int company-name-id FK "NOT NULL"
+        text company-description "NOT NULL"
+        text website "NOT NULL"
+        text path-to-profile-avatar "NOT NULL, default static/default-profile.png"
+        text contacts
+        text email "UNIQUE, NOT NULL"
+        text password "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    employer }o--|| company : has
+    company{
+        int id PK
+        text name "UNIQUE, NOT NULL"
+    }
+    applicant }o--|| city : has
+    employer }o--||  city : has
+    city{
+        int id PK
+        text name "UNIQUE, NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    applicant ||--o{ portfolio : has
+    portfolio {
+        bigint id PK
+        sting name "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    portfolio ||--o{ applicant-creation-to-portfolio : has
+    applicant-creation ||--o{ applicant-creation-to-portfolio : has
+    applicant-creation-to-portfolio{
+        bigint portfolio-id FK "NOT NULL"
+        bigint applicant-creation-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    portfolio ||--o{ cv-to-portfolio : has
+    cv ||--o{cv-to-portfolio : has
+    cv-to-portfolio{
+        bigint cv-id FK "NOT NULL"
+        bigint portfolio-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    cv {
+        bigint id PK
+        bigint user-id FK "NOT NULL"
+        text position-rus "NOT NULL"
+        text position-eng
+        int job-search-status-id "NOT NULL"
+        text working-experience
+        text path-to-cv-avatar  "NOT NULL, default static/default-profile.png"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    cv ||--o{ cv-subscriber : has
+    employer ||--o{ cv-subscriber : has
+    cv-subscriber {
+        bigint cv-id "NOT NULL"
+        bigint employer-id "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    job-search-status ||--o{ cv : has
+    job-search-status{
+        int id PK
+        text status-name "UNIQUE, NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    cv-to-position-tags }o--|| cv : has
+    cv-to-position-tags }o--|| position-tags : has
+    cv-to-position-tags{
+        int position-tag-id FK "NOT NULL"
+        bigint cv-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    position-tags{
+        int id PK
+        text position-tag-name "UNIQUE, NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    vacancy {
+        bigint id PK
+        bigint employer-id FK "NOT NULL"
+        text path-to-company-avatar "NOT NULL, default static/default-company.png"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    vacancy-subscriber }o--|| vacancy : has
+    vacancy-subscriber }o--|| applicant : has
+    vacancy-subscriber {
+        bigint vacancy-id FK "NOT NULL"
+        bigint applicant-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    
+    applicant-creation {
+        bigint id PK
+        text name "NOT NULL"
+        text creation  "UNIQUE, NOT NULL"
+        bigint creation-type-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    applicant-creation }o--|| creation-type : has
+    creation-type{
+        bigint id PK
+        text type-name "UNIQUE, NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    applicant ||--o{ session : has
+    employer ||--o{ session : has
+    session{
+        bigint id PK
+        text cooky-token "UNIQUE, NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    applicant-creation |o--o{ user-rate-to-creation : has
+    applicant ||--o{ user-rate-to-creation : has
+    employer ||--o{ user-rate-to-creation : has
+    user-rate-to-creation{
+        int rate "NOT NULL"
+        bigint user-id FK "NOT NULL"
+        bigint creation-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
