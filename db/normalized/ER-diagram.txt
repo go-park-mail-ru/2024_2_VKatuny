@@ -10,6 +10,7 @@ erDiagram
         text contacts
         text email "UNIQUE, NOT NULL"
         text password "NOT NULL"
+        bigint session-id FK "NOT NULL, UNIQUE"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
@@ -27,6 +28,7 @@ erDiagram
         text contacts
         text email "UNIQUE, NOT NULL"
         text password "NOT NULL"
+        bigint session-id FK "NOT NULL, UNIQUE"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
@@ -46,6 +48,7 @@ erDiagram
     applicant ||--o{ portfolio : has
     portfolio {
         bigint id PK
+        int applicant-id FK "NOT NULL"
         sting name "NOT NULL"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
@@ -68,10 +71,10 @@ erDiagram
     }
     cv {
         bigint id PK
-        bigint user-id FK "NOT NULL"
+        bigint applicant-id FK "NOT NULL"
         text position-rus "NOT NULL"
         text position-eng
-        int job-search-status-id "NOT NULL"
+        int job-search-status-id FK "NOT NULL"
         text working-experience
         text path-to-cv-avatar  "NOT NULL, default static/default-profile.png"
         timestamptz created-at "NOT NULL"
@@ -80,8 +83,8 @@ erDiagram
     cv ||--o{ cv-subscriber : has
     employer ||--o{ cv-subscriber : has
     cv-subscriber {
-        bigint cv-id "NOT NULL"
-        bigint employer-id "NOT NULL"
+        bigint cv-id FK "NOT NULL"
+        bigint employer-id FK "NOT NULL"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
@@ -145,13 +148,22 @@ erDiagram
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
-    applicant-creation |o--o{ user-rate-to-creation : has
-    applicant ||--o{ user-rate-to-creation : has
-    employer ||--o{ user-rate-to-creation : has
-    user-rate-to-creation{
+    applicant-creation |o--o{ applicant-rate-to-applicant-creation : has
+    applicant ||--o{ applicant-rate-to-applicant-creation : has
+    applicant-rate-to-applicant-creation{
         int rate "NOT NULL"
-        bigint user-id FK "NOT NULL"
-        bigint creation-id FK "NOT NULL"
+        bigint applicant-id FK "NOT NULL"
+        bigint applicant-creation-id FK "NOT NULL"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
+    applicant-creation |o--o{ employer-rate-to-applicant-creation : has
+    employer ||--o{ employer-rate-to-applicant-creation : has
+    employer-rate-to-applicant-creation{
+        int rate "NOT NULL"
+        bigint employer-id FK "NOT NULL"
+        bigint applicant-creation-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    
