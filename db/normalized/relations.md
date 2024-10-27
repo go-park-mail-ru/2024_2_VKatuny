@@ -228,20 +228,29 @@ Relation **creation-type to applicant-creation**:\
 {id} -> creation-type-id\
 Связь: Один тип произведения ко многим произведениям работников\
 
-## Таблица session
+## Таблица applicant-session
 
 - **id** - bigint, PRIMARY KEY
+- **applicant-id** - bigint, FK, NOT NULL, id работника получившего эту сессию
 - **cooky-token** - text, NOT NULL, UNIQUE, куки токен длинны 32
 - **created-at** - timestamptz, NOT NULL, дата выдачи куки пользователю
 - **updated-at** - timestamptz, NOT NULL, дата последнего обновления куки пользователя
 
-Relation **session to applicant**:\
-{id} -> session-id\
-Связь: Один сессионный токен одному работнику\
+Relation **applicant to applicant-session**:\
+{id} -> applicant-id\
+Связь: У одного работника может быть несколько сессионных токенов для разных устройств
 
-Relation **session to employer**:\
-{id} -> session-id\
-Связь: Один сессионный токен одному работнику\
+## Таблица employer-session
+
+- **id** - bigint, PRIMARY KEY
+- **employer-id** - bigint, FK, NOT NULL, id работодателя получившего эту сессию
+- **cooky-token** - text, NOT NULL, UNIQUE, куки токен длинны 32
+- **created-at** - timestamptz, NOT NULL, дата выдачи куки пользователю
+- **updated-at** - timestamptz, NOT NULL, дата последнего обновления куки пользователя
+
+Relation **employer to employer-session**:\
+{id} -> employer-id\
+Связь: У одного работодателя может быть несколько сессионных токенов для разных устройств
 
 ## Таблица applicant-rate-to-applicant-creation
 

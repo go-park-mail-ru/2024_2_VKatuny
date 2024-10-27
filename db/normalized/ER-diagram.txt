@@ -10,7 +10,6 @@ erDiagram
         text contacts
         text email "UNIQUE, NOT NULL"
         text password "NOT NULL"
-        bigint session-id FK "NOT NULL, UNIQUE"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
@@ -28,7 +27,6 @@ erDiagram
         text contacts
         text email "UNIQUE, NOT NULL"
         text password "NOT NULL"
-        bigint session-id FK "NOT NULL, UNIQUE"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
@@ -140,10 +138,18 @@ erDiagram
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
-    applicant ||--o{ session : has
-    employer ||--o{ session : has
-    session{
+    applicant ||--o{ applicant-session : has
+    applicant-session{
         bigint id PK
+        bigint applicant-id FK "NOT NULL"
+        text cooky-token "UNIQUE, NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    employer ||--o{  employer-session : has
+    employer-session{
+        bigint id PK
+        bigint employer-id FK "NOT NULL"
         text cooky-token "UNIQUE, NOT NULL"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
@@ -166,4 +172,3 @@ erDiagram
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
-    
