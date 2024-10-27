@@ -93,17 +93,33 @@ erDiagram
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
-    cv-to-position-tags }o--|| cv : has
-    cv-to-position-tags }o--|| position-tags : has
-    cv-to-position-tags{
-        int position-tag-id FK "NOT NULL"
+    cv-to-creation-tags }o--|| cv : has
+    cv-to-creation-tags }o--|| creation-tags : has
+    cv-to-creation-tags{
+        int creation-tag-id FK "NOT NULL"
         bigint cv-id FK "NOT NULL"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
-    position-tags{
+    applicant-creation-to-creation-tags }o--|| applicant-creation : has
+    applicant-creation-to-creation-tags }o--|| creation-tags : has
+    applicant-creation-to-creation-tags{
+        int creation-tag-id FK "NOT NULL"
+        bigint applicant-creation-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    vacancy-to-creation-tags }o--|| vacancy : has
+    vacancy-to-creation-tags }o--|| creation-tags : has
+    vacancy-to-creation-tags{
+        int creation-tag-id FK "NOT NULL"
+        bigint vacancy-id FK "NOT NULL"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    creation-tags{
         int id PK
-        text position-tag-name "UNIQUE, NOT NULL"
+        text creation-tag-name "UNIQUE, NOT NULL"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }

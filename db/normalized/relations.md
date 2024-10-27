@@ -155,31 +155,69 @@ Relation **job-search-status to cv**:\
 {id} -> job-search-status-id\
 Связь: Один статус поиска работы может быть указзан во многих резюме\
 
-## Таблица cv-to-position-tags
+## Таблица cv-to-creation-tags
 
-- **position-tag-id** - int, FK, NOT NULL, id тега должностного статуса который указан в этом резюме
-- **cv-id** - bigint, FK, NOT NULL, id резюме к которому будет прикреплено это портфолио
-- **created-at** - timestamptz, NOT NULL, дата добавления должностного статуса к резюме
-- **updated-at** - timestamptz, NOT NULL, дата последнего обновления должностного статуса в резюме
+- **creation-tag-id** - int, FK, NOT NULL, id  тега произведения который указан в этом резюме
+- **cv-id** - bigint, FK, NOT NULL, id резюме в котором будет указан этот тег произведения
+- **created-at** - timestamptz, NOT NULL, дата добавления тега произведения к резюме
+- **updated-at** - timestamptz, NOT NULL, дата последнего обновления тега произведения в резюме
 
-Связь: многие должностные статусы ко многим резюме реализуемая с помощью промеждуточной таблицы cv-to-position-tags
+Связь: многие теги произведений ко многим резюме реализуемая с помощью промеждуточной таблицы cv-to-creation-tags
 
-Relation **cv to cv-to-position-tags**:\
+Relation **cv to cv-to-creation-tags**:\
 {id} -> cv-id\
-Связь: Одино резюме может быть указано во многих строчках cv-to-position-tags\
-(Один должностной статус может быть указан во многих резюме)
+Связь: Одино резюме может быть указано во многих строчках cv-to-creation-tags\
+(Один тег произведения может быть указан во многих резюме)
 
-Relation **position-tags to cv-to-position-tags**:\
-{id} -> position-tag-id\
-Связь: Одиин должностной статус может быть указан во многих строчках cv-to-position-tags\
-(К одному резюме можно добавить несколько должностных статусов)
+Relation **creation-tags to cv-to-creation-tags**:\
+{id} -> creation-tag-id\
+Связь: Одиин тег произведения может быть указан во многих строчках cv-to-creation-tags\
+(К одному резюме можно добавить несколько тегов произведений)
 
-## Таблица position-tags
+## Таблица applicant-creation-to-creation-tags
+
+- **creation-tag-id** - int, FK, NOT NULL, id  тега для этого произведения
+- **applicant-creation-id** - bigint, FK, NOT NULL, id произведения к которому будет прикреплен этот тег
+- **created-at** - timestamptz, NOT NULL, дата добавления тега этому произведению
+- **updated-at** - timestamptz, NOT NULL, дата последнего обновления тега у этого произведения
+
+Связь: многие теги произведений ко многим произведениям реализуемая с помощью промеждуточной таблицы applicant-creation-to-creation-tags
+
+Relation **applicant-creation to applicant-creation-to-creation-tags**:\
+{id} -> applicant-creation-id\
+Связь: Одино произведение может быть указано во многих строчках applicant-creation-to-creation-tags\
+(У одного произведения может быть много тегов)
+
+Relation **creation-tags to applicant-creation-to-creation-tags**:\
+{id} -> creation-tag-id\
+Связь: Одиин тег произведения может быть указан во многих строчках applicant-creation-to-creation-tags\
+(Один тег может быть отнесен ко многим произвденениям)
+
+## Таблица vacancy-to-creation-tags
+
+- **creation-tag-id** - int, FK, NOT NULL, id  тега произведения который указан в этой вакансии
+- **vacancy-id** - bigint, FK, NOT NULL, id вакансии к которому будет прикреплено это портфолио
+- **created-at** - timestamptz, NOT NULL, дата добавления тега произведения к вакансим
+- **updated-at** - timestamptz, NOT NULL, дата последнего обновления тега произведения в вакансии
+
+Связь: многие теги произведений ко многим вакансиям реализуемая с помощью промеждуточной таблицы vacancy-to-creation-tags
+
+Relation **vacancy to vacancy-to-creation-tags**:\
+{id} -> vacancy-id\
+Связь: Одина вакансия может быть указана во многих строчках vacancy-to-creation-tags\
+(Одина вакансия может иметь много тегов желаемых произведений)
+
+Relation **creation-tags to vacancy-to-creation-tags**:\
+{id} -> creation-tag-id\
+Связь: Одиин тег произведения может быть указан во многих строчках vacancy-to-creation-tags\
+(Один тег произведения может быть указан у многих вакансий как желаемый)
+
+## Таблица creation-tags
 
 - **id** - int, PRIMARY KEY
-- **position-tag-name** - text, NOT NULL, UNIQUE, название должностного статуса
-- **created-at** - timestamptz, NOT NULL, дата добавления должностного статуса
-- **updated-at** - timestamptz, NOT NULL, дата последнего обновления должностного статуса
+- **creation-tag-name** - text, NOT NULL, UNIQUE, название тега произведения
+- **created-at** - timestamptz, NOT NULL, дата добавления тега произведения
+- **updated-at** - timestamptz, NOT NULL, дата последнего обновления тега произведения
 
 ## Таблица vacancy
 
