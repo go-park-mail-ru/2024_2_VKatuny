@@ -9,6 +9,7 @@
 - **birth-date** - date, NOT NULL, дата рождения работника
 - **path-to-profile-avatar** - text, NOT NULL, default (static/default-profile.png) аватарка для профиля работника
 - **contacts** - text, контакты в которых уже сам работник должен указать название соцсети и ник
+- **contacts** - text, образование, сам работник должен указать образование в той форме в которой он хочет
 - **email** - text, UNIQUE, NOT NULL, почта работника UNIQUE
 - **password** - text, NOT NULL, пароль работника
 - **session-id** - bigint, FK, UNIQUE, NOT NULL, связь сессионым токеном

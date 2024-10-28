@@ -8,6 +8,7 @@ erDiagram
         date birth-date "NOT NULL"
         text path-to-profile-avatar "NOT NULL, default static/default-profile.png"
         text contacts
+        text education
         text email "UNIQUE, NOT NULL"
         text password "NOT NULL"
         timestamptz created-at "NOT NULL"
