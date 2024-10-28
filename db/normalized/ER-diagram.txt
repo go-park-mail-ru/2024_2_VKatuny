@@ -2,45 +2,45 @@ erDiagram
     applicant ||--o{ cv : has
     applicant {
         bigint id PK
-        text first-name "NOT NULL"
-        text last-name "NOT NULL"
+        text first-name "NOT NULL, CHECK (LENGTH(first-name)<50)"
+        text last-name "NOT NULL, CHECK (LENGTH(first-name)<50)"
         text city-id FK "NOT NULL"
         date birth-date "NOT NULL"
         text path-to-profile-avatar "NOT NULL, default static/default-profile.png"
-        text contacts
-        text education
-        text email "UNIQUE, NOT NULL"
-        text password "NOT NULL"
+        text contacts "CHECK (LENGTH(first-name)<150)"
+        text education "CHECK (LENGTH(first-name)<150)"
+        text email "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
+        text password "NOT NULL, CHECK (LENGTH(first-name)<50)"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
     employer ||--o{ vacancy : has
     employer {
         bigint id PK
-        text first-name "NOT NULL"
-        text last-name "NOT NULL"
+        text first-name "NOT NULL, CHECK (LENGTH(first-name)<50)"
+        text last-name "NOT NULL, CHECK (LENGTH(first-name)<50)"
         text city-id FK "NOT NULL"
-        text position "NOT NULL"
+        text position "NOT NULL, CHECK (LENGTH(first-name)<50)"
         int company-name-id FK "NOT NULL"
-        text company-description "NOT NULL"
-        text website "NOT NULL"
+        text company-description "NOT NULL, CHECK (LENGTH(first-name)<150)"
+        text website "NOT NULL, CHECK (LENGTH(first-name)<50)"
         text path-to-profile-avatar "NOT NULL, default static/default-profile.png"
-        text contacts
-        text email "UNIQUE, NOT NULL"
-        text password "NOT NULL"
+        text contacts "CHECK (LENGTH(first-name)<50)"
+        text email "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
+        text password "NOT NULL, CHECK (LENGTH(first-name)<50)"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
     employer }o--|| company : has
     company{
         int id PK
-        text name "UNIQUE, NOT NULL"
+        text name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
     }
     applicant }o--|| city : has
     employer }o--||  city : has
     city{
         int id PK
-        text name "UNIQUE, NOT NULL"
+        text name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
@@ -48,7 +48,7 @@ erDiagram
     portfolio {
         bigint id PK
         int applicant-id FK "NOT NULL"
-        sting name "NOT NULL"
+        sting name "NOT NULL, CHECK (LENGTH(first-name)<50)"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
@@ -71,10 +71,10 @@ erDiagram
     cv {
         bigint id PK
         bigint applicant-id FK "NOT NULL"
-        text position-rus "NOT NULL"
-        text position-eng
+        text position-rus "NOT NULL, CHECK (LENGTH(first-name)<50)"
+        text position-eng "CHECK (LENGTH(first-name)<50)"
         int job-search-status-id FK "NOT NULL"
-        text working-experience
+        text working-experience "CHECK (LENGTH(first-name)<1000)"
         text path-to-cv-avatar  "NOT NULL, default static/default-profile.png"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
@@ -90,7 +90,7 @@ erDiagram
     job-search-status ||--o{ cv : has
     job-search-status{
         int id PK
-        text status-name "UNIQUE, NOT NULL"
+        text status-name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
@@ -120,17 +120,29 @@ erDiagram
     }
     creation-tags{
         int id PK
-        text creation-tag-name "UNIQUE, NOT NULL"
+        text creation-tag-name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
     vacancy {
         bigint id PK
         bigint employer-id FK "NOT NULL"
+        int salary "NOT NUL"
+        text position "NOT NUL, CHECK (LENGTH(first-name)<50)"
+        text description "NOT NUL, CHECK (LENGTH(first-name)<1000)"
+        int work-type-id FK "NOT NUL"
         text path-to-company-avatar "NOT NULL, default static/default-company.png"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }
+    vacancy }o--|| work-type : has
+    work-type{
+        int id PK
+        text work-type-name "UNIQUE, NOT NUL, CHECK (LENGTH(first-name)<50)"
+        timestamptz created-at "NOT NULL"
+        timestamptz updated-at "NOT NULL"
+    }
+    
     vacancy-subscriber }o--|| vacancy : has
     vacancy-subscriber }o--|| applicant : has
     vacancy-subscriber {
@@ -142,7 +154,7 @@ erDiagram
     
     applicant-creation {
         bigint id PK
-        text name "NOT NULL"
+        text name "NOT NULL, CHECK (LENGTH(first-name)<50)"
         text creation  "UNIQUE, NOT NULL"
         bigint creation-type-id FK "NOT NULL"
         timestamptz created-at "NOT NULL"
@@ -151,7 +163,7 @@ erDiagram
     applicant-creation }o--|| creation-type : has
     creation-type{
         bigint id PK
-        text type-name "UNIQUE, NOT NULL"
+        text type-name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
         timestamptz created-at "NOT NULL"
         timestamptz updated-at "NOT NULL"
     }

@@ -3,15 +3,15 @@
 ## Таблица applicant
 
 - **id** - bigint, PRIMARY KEY
-- **first-name** - text, NOT NULL, имя работника может использоваться отдельно от фамилии
-- **last-name** - text, NOT NULL, фамилия работника
+- **first-name** - text, NOT NULL, CHECK (LENGTH(first-name)<50),  имя работника может использоваться отдельно от фамилии
+- **last-name** - text, NOT NULL, CHECK (LENGTH(first-name)<50), фамилия работника
 - **city-id** - text, FK NOT NULL, связь с названием города
 - **birth-date** - date, NOT NULL, дата рождения работника
 - **path-to-profile-avatar** - text, NOT NULL, default (static/default-profile.png) аватарка для профиля работника
-- **contacts** - text, контакты в которых уже сам работник должен указать название соцсети и ник
-- **contacts** - text, образование, сам работник должен указать образование в той форме в которой он хочет
-- **email** - text, UNIQUE, NOT NULL, почта работника UNIQUE
-- **password** - text, NOT NULL, пароль работника
+- **contacts** - text, CHECK (LENGTH(first-name)<150), контакты в которых уже сам работник должен указать название соцсети и ник
+- **education** - text, CHECK (LENGTH(first-name)<150), образование, сам работник должен указать образование в той форме в которой он хочет
+- **email** - text, UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50), почта работника UNIQUE
+- **password** - text, NOT NULL, CHECK (LENGTH(first-name)<50), пароль работника
 - **session-id** - bigint, FK, UNIQUE, NOT NULL, связь сессионым токеном
 - **created-at** - timestamptz, NOT NULL, дата создания акаунта
 - **updated-at** - timestamptz, NOT NULL, дата последнего изменения аккаунта
@@ -23,17 +23,17 @@ Relation **applicant to cv**:\
 ## Таблица employer
 
 - **id** - bigint, PRIMARY KEY
-- **first-name** - text, NOT NULL, имя работника может использоваться отдельно от фамилии
-- **last-name** - text, NOT NULL, фамилия работника
+- **first-name** - text, NOT NULL, CHECK (LENGTH(first-name)<50), имя работника может использоваться отдельно от фамилии
+- **last-name** - text, NOT NULL, CHECK (LENGTH(first-name)<50), фамилия работника
 - **city-id** - text, FK, NOT NULL, связь с названием города
-- **position** - text,  NOT NULL, должность занимаемая работодателем
+- **position** - text,  NOT NULL, CHECK (LENGTH(first-name)<50), должность занимаемая работодателем
 - **company-name-id** - int, FK, NOT NULL, id названия компании
-- **company-description** - text, NOT NULL, описании комании (той части за которую ответсвенен этот работодатель)
-- **website** - text, NOT NULL, ссылка на сайт филиала компании за которую ответсвенен этот работодатель
+- **company-description** - text, NOT NULL, CHECK (LENGTH(first-name)<150), описании комании (той части за которую ответсвенен этот работодатель)
+- **website** - text, NOT NULL, CHECK (LENGTH(first-name)<50), ссылка на сайт филиала компании за которую ответсвенен этот работодатель
 - **path-to-profile-avatar** - text, NOT NULL, default (static/default-profile.png) аватарка для профиля работодателя
-- **contacts** - text, контакты в которых уже сам работодатель должен указать название соцсети и ник
-- **email** - text, UNIQUE, NOT NULL, почта работника UNIQUE
-- **password** - text, NOT NULL, пароль работодателя
+- **contacts** - text, CHECK (LENGTH(first-name)<50), контакты в которых уже сам работодатель должен указать название соцсети и ник
+- **email** - text, UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50), почта работника UNIQUE
+- **password** - text, NOT NULL, CHECK (LENGTH(first-name)<50), пароль работодателя
 - **session-id** - bigint, FK, UNIQUE, NOT NULL, связь сессионым токеном
 - **created-at** - timestamptz, NOT NULL, дата создания акаунта
 - **updated-at** - timestamptz, NOT NULL, дата последнего изменения аккаунта
@@ -45,7 +45,7 @@ Relation **employer to vacancy**:\
 ## Таблица company
 
 - **id** - int, PRIMARY KEY
-- **name** - text, NOT NULL, UNIQUE, название комании
+- **name** - text, NOT NULL, UNIQUE, CHECK (LENGTH(first-name)<50), название комании
 
 Relation **employer to company**:\
 {company-name-id} -> id\
@@ -54,7 +54,7 @@ Relation **employer to company**:\
 ## Таблица city
 
 - **id** - int, PRIMARY KEY
-- **name** - text, UNIQUE, NOT NULL, название города
+- **name** - text, UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50), название города
 - **created-at** - timestamptz, NOT NULL, дата появления города в нашей бд
 - **updated-at** - timestamptz, NOT NULL, дата последнего обновления названия города
 
@@ -70,7 +70,7 @@ Relation **employer to city**:\
 
 - **id** - bigint, PRIMARY KEY
 - **applicant-id** - bigint, FK, NOT NULL, id работника которому принадлежит это портфолио
-- **name** - text, NOT NULL, название портфолио
+- **name** - text, NOT NULL, CHECK (LENGTH(first-name)<50), название портфолио
 - **created-at** - timestamptz, NOT NULL, дата появления города в нашей бд
 - **updated-at** - timestamptz, NOT NULL, дата последнего обновления названия города
 
@@ -120,10 +120,10 @@ Relation **cv to cv-to-portfoli**:\
 
 - **id** - bigint, PRIMARY KEY
 - **applicant-id** - bigint, FK, NOT NULL, id работника которому принадлежит это резюме
-- **position-rus** - text, NOT NULL, название желаемой должности на русском
-- **position-eng** - text, название желаемой должности на английском
+- **position-rus** - text, NOT NULL, CHECK (LENGTH(first-name)<50), название желаемой должности на русском
+- **position-eng** - text, CHECK (LENGTH(first-name)<50), название желаемой должности на английском
 - **job-search-status-id** - int, FK, NOT NULL, айди статуса поиска работы по этому резюме
-- **working-experience** - text, описание опыта работы сотрудника
+- **working-experience** - text, CHECK (LENGTH(first-name)<1000), описание опыта работы сотрудника
 - **path-to-cv-avatar** - text, NOT NULL, default (static/default-profile.png) аватарка для резюме работника
 - **created-at** - timestamptz, NOT NULL, дата создания резюме
 - **updated-at** - timestamptz, NOT NULL, дата последнего обновления резюме
@@ -148,7 +148,7 @@ Relation **employer to cv-subscriber**:\
 ## Таблица job-search-status
 
 - **id** - int, PRIMARY KEY
-- **status-name** - text, NOT NULL, UNIQUE, название статуса поиска работы
+- **status-name** - text, NOT NULL, UNIQUE, CHECK (LENGTH(first-name)<50), название статуса поиска работы
 - **created-at** - timestamptz, NOT NULL, дата создания статуса поиска работы
 - **updated-at** - timestamptz, NOT NULL, дата последнего обновления статуса поиска работы
 
@@ -216,7 +216,7 @@ Relation **creation-tags to vacancy-to-creation-tags**:\
 ## Таблица creation-tags
 
 - **id** - int, PRIMARY KEY
-- **creation-tag-name** - text, NOT NULL, UNIQUE, название тега произведения
+- **creation-tag-name** - text, NOT NULL, CHECK (LENGTH(first-name)<50), UNIQUE, название тега произведения
 - **created-at** - timestamptz, NOT NULL, дата добавления тега произведения
 - **updated-at** - timestamptz, NOT NULL, дата последнего обновления тега произведения
 
@@ -224,9 +224,24 @@ Relation **creation-tags to vacancy-to-creation-tags**:\
 
 - **id** - bigint, PRIMARY KEY
 - **employer-id** - bigint, FK, NOT NULL, id работодателя который разместил эту вакансию
+- **salary** - int, NOT NULL зарботная плата предлагаемая сотруднику
+- **position** - text, NOT NULL, CHECK (LENGTH(first-name)<50), должность предлагаемая сотруднику
+- **description** - text, NOT NULL, CHECK (LENGTH(first-name)<100), описание вакансии от работодателя
+- **work-type-id** - int, FK, NOT NULL, ссылка на тип работы (разовая, постоянная, пол ставки и тд)
 - **path-to-company-avatar** - text, NOT NULL, default (static/default-company.png) логотип компании для вакансии
 - **created-at** - timestamptz, NOT NULL, дата добавления вакансии
 - **updated-at** - timestamptz, NOT NULL, дата последнего обновления вакансии
+
+## Таблица work-type
+
+- **id** - int, PRIMARY KEY
+- **work-type-name** - text, NOT NULL, CHECK (LENGTH(first-name)<50), тип работы (разовая, постоянная, пол ставки и тд)
+- **created-at** - timestamptz, NOT NULL, дата подписки работника на вакансию
+- **updated-at** - timestamptz, NOT NULL, дата последнего обновления подписки работника на вакансию
+
+Relation **work-type to vacancy**:\
+{id} -> work-type-id\
+Связь: Один тип работы может быть указан во многих вакансиях
 
 ## Таблица vacancy-subscriber
 
@@ -250,7 +265,7 @@ Relation **vacancy to vacancy-subscriber**:\
 ## Таблица applicant-creation
 
 - **id** - bigint, PRIMARY KEY
-- **name** - text, NOT NULL, UNIQUE, название произвдения которое даст рабоник при загрузке произведения на наш сайт
+- **name** - text, NOT NULL, UNIQUE, CHECK (LENGTH(first-name)<50), название произвдения которое даст рабоник при загрузке произведения на наш сайт
 - **creation** - text, NOT NULL, UNIQUE, адрес у нас а сервере где лежит эта работа
 - **creation-type-id** - bigint, FK, NOT NULL, id типа произведения
 - **created-at** - timestamptz, NOT NULL, дата выгрузки произведения на наш сайт
@@ -259,7 +274,7 @@ Relation **vacancy to vacancy-subscriber**:\
 ## Таблица creation-type
 
 - **id** - bigint, PRIMARY KEY
-- **type-name** - text, NOT NULL, UNIQUE, название типа произведения
+- **type-name** - text, NOT NULL, UNIQUE, CHECK (LENGTH(first-name)<50), название типа произведения
 - **created-at** - timestamptz, NOT NULL, дата добавления типа произведения на наш сайт
 - **updated-at** - timestamptz, NOT NULL, дата последнего обновления типа произведения на наш сайт
 
