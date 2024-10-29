@@ -1,5 +1,5 @@
 # define executable
-EXECUTABLE=uArt
+EXECUTABLE=uArt.exe
 
 # source dir
 SRC_DIR=./cmd/app
