@@ -12,7 +12,6 @@
 - **education** - text, CHECK (LENGTH(first-name)<150), образование, сам работник должен указать образование в той форме в которой он хочет
 - **email** - text, UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50), почта работника UNIQUE
 - **password** - text, NOT NULL, CHECK (LENGTH(first-name)<50), пароль работника
-- **session-id** - bigint, FK, UNIQUE, NOT NULL, связь сессионым токеном
 - **created-at** - timestamptz, NOT NULL, дата создания акаунта
 - **updated-at** - timestamptz, NOT NULL, дата последнего изменения аккаунта
 
@@ -34,7 +33,6 @@ Relation **applicant to cv**:\
 - **contacts** - text, CHECK (LENGTH(first-name)<50), контакты в которых уже сам работодатель должен указать название соцсети и ник
 - **email** - text, UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50), почта работника UNIQUE
 - **password** - text, NOT NULL, CHECK (LENGTH(first-name)<50), пароль работодателя
-- **session-id** - bigint, FK, UNIQUE, NOT NULL, связь сессионым токеном
 - **created-at** - timestamptz, NOT NULL, дата создания акаунта
 - **updated-at** - timestamptz, NOT NULL, дата последнего изменения аккаунта
 
