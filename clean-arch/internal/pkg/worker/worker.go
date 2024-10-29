@@ -1,6 +1,8 @@
 package worker
 
 import (
+	"fmt"
+
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 )
 
@@ -10,4 +12,9 @@ import (
 type Repository interface {
 	Add(worker *models.Worker) (uint64, error)
 	GetByID(ID uint64) (*models.Worker, error)
+	GetByEmail(email string) (*models.Worker, error)
 }
+
+var (
+	ErrNoUserExist = fmt.Errorf("such user doesn't exist")
+)

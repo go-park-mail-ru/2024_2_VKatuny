@@ -2,8 +2,8 @@ package repository
 
 import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker"
 )
-
 
 // DOES NOT SUPPORT ASYNC
 
@@ -42,3 +42,13 @@ func (repo *workerRepo) GetByID(id uint64) (*models.Worker, error) {
 	}
 	return repo.data[id], nil
 }
+
+func (repo *workerRepo) GetByEmail(email string) (*models.Worker, error) {
+	for _, worker := range repo.data {
+		if worker.Email == email {
+			return worker, nil
+		}
+	}
+	return nil, worker.ErrNoUserExist
+}
+

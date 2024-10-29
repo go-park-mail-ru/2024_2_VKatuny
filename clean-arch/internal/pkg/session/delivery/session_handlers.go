@@ -10,8 +10,12 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker"
+
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session/usecase"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,26 +28,40 @@ import (
 // @Success     200
 // @Failure     401
 // @Router      /authorized [post]
-func AuthorizedHandler(repo session.Repository) http.Handler { // just do it!
+func AuthorizedHandler(repoApplicant session.Repository, repoEmployer session.Repository) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+
 		funcName := "AuthorizedHandler"
+
 		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
 		if !ok {
 			fmt.Printf("function %s: can't get logger from context\n", funcName)
 		}
-		err := fmt.Errorf("no user with session")
+
 		session, err := r.Cookie("session_id1")
+
+		if session == nil {
+			logger.Errorf("client doesn't have a cookie")
+			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JsonResponse{
+				HttpStatus: http.StatusUnauthorized,
+				Error:      "client doesn't have a cookie",
+			})
+			return
+		}
+
 		var id uint64
 		var userType string
 
-		if err == nil && session != nil {
-			id, err = repo.GetWorkerBySession(session) // just do it!
+		if sessionId := session.Value; sessionId != "" {
+			logger.WithField("session_id", sessionId).Debug("got session id")
 
-			userType = repo.APPLICANT // just do it!
+			id, err = repoApplicant.GetUserIdBySession(sessionId)
+			userType = dto.UserTypeApplicant
+
 			if err != nil {
-				id, err = repo.GetEmployerBySession(session) // just do it!
-				userType = repo.EMPLOYER                     // just do it!
+				id, err = repoEmployer.GetUserIdBySession(sessionId)
+				userType = dto.UserTypeEmployer
 			}
 		}
 
@@ -78,7 +96,13 @@ func AuthorizedHandler(repo session.Repository) http.Handler { // just do it!
 // @Failure     400 {object} map[string]interface{}
 // @Failure     401 {object} map[string]interface{}
 // @Router      /login/ [post]
-func LoginHandler(repo session.Repository, BACKEND_ADDRESS string) http.Handler { // just do it!
+func LoginHandler(
+	repoApplicantSession session.Repository,
+	repoEmployerSession session.Repository,
+	repoApplicant worker.Repository,
+	repoEmployer employer.Repository,
+	backendAddress string,
+	) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		funcName := "LoginHandler"
@@ -89,9 +113,9 @@ func LoginHandler(repo session.Repository, BACKEND_ADDRESS string) http.Handler 
 
 		decoder := json.NewDecoder(r.Body)
 
-		newUserInput := new(models.LoginForm) // just do it!
-		decErr := decoder.Decode(newUserInput)
-		if decErr != nil {
+		newUserInput := new(dto.JsonLoginForm) // for any request and response use DTOs but not a model!
+		err := decoder.Decode(newUserInput)
+		if err != nil {
 			logger.Errorf("can't unmarshal JSON")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
 				HttpStatus: http.StatusBadRequest,
@@ -99,24 +123,36 @@ func LoginHandler(repo session.Repository, BACKEND_ADDRESS string) http.Handler 
 			})
 			return
 		}
-		SID, err := repo.AddSession(newUserInput) // just do it!
+
+		sessionId := usecase.GenerateSessionToken()
+		if newUserInput.UserType == dto.UserTypeApplicant {
+			// need to validate error
+			user, _ := repoApplicant.GetByEmail(newUserInput.Email)
+			
+			err = repoApplicantSession.Add(user.ID, sessionId)
+		} else if newUserInput.UserType == dto.UserTypeEmployer {
+			// same. Error validation
+			user, _ := repoEmployer.GetByEmail(newUserInput.Email)
+			err = repoEmployerSession.Add(user.ID, sessionId)
+		}
+
 		if err != nil {
-			logger.Errorf("err while generating SID")
+			logger.Errorf("err while generating sessionID")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
 				HttpStatus: http.StatusBadRequest,
-				Error:      "err while generating SID",
+				Error:      "err while generating session ID",
 			})
 			return
 		}
 		logger.Debugf("Cookie received")
 		cookie := &http.Cookie{
-			Name:     "session_id1",
-			Value:    SID,
+			Name:     "session_id1", // why id1?
+			Value:    sessionId,
 			Expires:  time.Now().Add(10 * time.Hour),
 			HttpOnly: true,
-			//Secure:   true, //s etim ne rabotaet i nado li?
+			//Secure:   true, // Enable when using HTTPS
 			SameSite: http.SameSiteStrictMode,
-			Domain:   BACKEND_ADDRESS,
+			Domain:   backendAddress,
 		}
 		http.SetCookie(w, cookie)
 	})
@@ -132,7 +168,7 @@ func LoginHandler(repo session.Repository, BACKEND_ADDRESS string) http.Handler 
 // @Failure     400
 // @Failure     401
 // @Router      /logout/ [post]
-func LogoutHandler(repo session.Repository) http.Handler { // just do it!
+func LogoutHandler(repoApplicant session.Repository, repoEmployer session.Repository) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		funcName := "LogoutHandler"
@@ -150,8 +186,18 @@ func LogoutHandler(repo session.Repository) http.Handler { // just do it!
 			return
 		}
 
-		errD := repo.DellSession(session) // just do it!
-		if errD != nil {
+		// session is a type of *http.Cookie
+		// to delete session i should get session id
+		sessionId := session.Value
+
+		err = repoApplicant.Delete(sessionId) // just do it!
+		// this is useless because Delete method doesn't return a error if user doesn't exist
+		// Oleg it's for you))
+		if err != nil {
+			err = repoEmployer.Delete(sessionId)
+		}
+
+		if err != nil {
 			logger.Errorf("no user with this session")
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JsonResponse{
 				HttpStatus: http.StatusOK,

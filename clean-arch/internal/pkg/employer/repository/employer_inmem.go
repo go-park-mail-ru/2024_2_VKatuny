@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 )
 
@@ -41,4 +42,13 @@ func (repo *employerRepo) GetByID(id uint64) (*models.Employer, error) {
 		return nil, nil
 	}
 	return repo.data[id], nil
+}
+
+func (repo *employerRepo) GetByEmail(email string) (*models.Employer, error) {
+	for _, employer := range repo.data {
+		if employer.Email == email {
+			return employer, nil
+		}
+	}
+	return nil, employer.ErrNoUserExist
 }
