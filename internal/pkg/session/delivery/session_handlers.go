@@ -41,7 +41,7 @@ func AuthorizedHandler(repoApplicant session.Repository, repoEmployer session.Re
 
 		session, err := r.Cookie("session_id1")
 
-		if session == nil {
+		if err != nil || session == nil {
 			logger.Errorf("client doesn't have a cookie")
 			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JsonResponse{
 				HttpStatus: http.StatusUnauthorized,
@@ -102,7 +102,7 @@ func LoginHandler(
 	repoApplicant worker.Repository,
 	repoEmployer employer.Repository,
 	backendAddress string,
-	) http.Handler { // just do it!
+) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		funcName := "LoginHandler"
@@ -128,7 +128,7 @@ func LoginHandler(
 		if newUserInput.UserType == dto.UserTypeApplicant {
 			// need to validate error
 			user, _ := repoApplicant.GetByEmail(newUserInput.Email)
-			
+
 			err = repoApplicantSession.Add(user.ID, sessionId)
 		} else if newUserInput.UserType == dto.UserTypeEmployer {
 			// same. Error validation
