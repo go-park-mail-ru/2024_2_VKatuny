@@ -2,202 +2,202 @@ erDiagram
     applicant ||--o{ cv : has
     applicant {
         bigint id PK
-        text first-name "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        text last-name "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        text city-id FK "NOT NULL"
-        date birth-date "NOT NULL"
-        text path-to-profile-avatar "NOT NULL, default static/default-profile.png"
-        text contacts "CHECK (LENGTH(first-name)<150)"
-        text education "CHECK (LENGTH(first-name)<150)"
-        text email "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
-        text password "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        text first_name "NOT NULL, CHECK (length(first_name)<50)"
+        text last_name "NOT NULL, CHECK (length(last_name)<50)"
+        text city_id FK "NOT NULL"
+        date birth_date "NOT NULL"
+        text path_to_profile_avatar "NOT NULL, default static/default_profile.png"
+        text contacts "CHECK (length(contacts)<150)"
+        text education "CHECK (length(education)<150)"
+        text email "UNIQUE, NOT NULL, CHECK (length(email)<50)"
+        text password_hash "NOT NULL, CHECK (length(password_hash)<250)"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
     employer ||--o{ vacancy : has
     employer {
         bigint id PK
-        text first-name "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        text last-name "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        text city-id FK "NOT NULL"
-        text position "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        int company-name-id FK "NOT NULL"
-        text company-description "NOT NULL, CHECK (LENGTH(first-name)<150)"
-        text website "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        text path-to-profile-avatar "NOT NULL, default static/default-profile.png"
-        text contacts "CHECK (LENGTH(first-name)<50)"
-        text email "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
-        text password "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        text first_name "NOT NULL, CHECK (length(first_name)<50)"
+        text last_name "NOT NULL, CHECK (length(last_name)<50)"
+        text city_id FK "NOT NULL"
+        text position "NOT NULL, CHECK (length(position)<50)"
+        int company_name_id FK "NOT NULL"
+        text company_description "NOT NULL, CHECK (length(company_description)<150)"
+        text website "NOT NULL, CHECK (length(website)<50)"
+        text path_to_profile_avatar "NOT NULL, default static/default_profile.png"
+        text contacts "CHECK (length(contacts)<50)"
+        text email "UNIQUE, NOT NULL, CHECK (length(email)<50)"
+        text password_hash "NOT NULL, CHECK (length(password_hash)<250)"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
     employer }o--|| company : has
     company{
         int id PK
-        text name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
+        text name "UNIQUE, NOT NULL, CHECK (length(name)<50)"
     }
     applicant }o--|| city : has
     employer }o--||  city : has
     city{
         int id PK
-        text name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        text name "UNIQUE, NOT NULL, CHECK (length(name)<50)"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
     applicant ||--o{ portfolio : has
     portfolio {
         bigint id PK
-        int applicant-id FK "NOT NULL"
-        sting name "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        int applicant_id FK "NOT NULL"
+        sting name "NOT NULL, CHECK (length(name)<50)"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    portfolio ||--o{ applicant-creation-to-portfolio : has
-    applicant-creation ||--o{ applicant-creation-to-portfolio : has
-    applicant-creation-to-portfolio{
-        bigint portfolio-id FK "NOT NULL"
-        bigint applicant-creation-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+    portfolio ||--o{ applicant_creation_to_portfolio : has
+    applicant_creation ||--o{ applicant_creation_to_portfolio : has
+    applicant_creation_to_portfolio{
+        bigint portfolio_id FK "NOT NULL"
+        bigint applicant_creation_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    portfolio ||--o{ cv-to-portfolio : has
-    cv ||--o{cv-to-portfolio : has
-    cv-to-portfolio{
-        bigint cv-id FK "NOT NULL"
-        bigint portfolio-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+    portfolio ||--o{ cv_to_portfolio : has
+    cv ||--o{cv_to_portfolio : has
+    cv_to_portfolio{
+        bigint cv_id FK "NOT NULL"
+        bigint portfolio_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
     cv {
         bigint id PK
-        bigint applicant-id FK "NOT NULL"
-        text position-rus "NOT NULL, CHECK (LENGTH(first-name)<50)"
-        text position-eng "CHECK (LENGTH(first-name)<50)"
-        int job-search-status-id FK "NOT NULL"
-        text working-experience "CHECK (LENGTH(first-name)<1000)"
-        text path-to-cv-avatar  "NOT NULL, default static/default-profile.png"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        bigint applicant_id FK "NOT NULL"
+        text position_rus "NOT NULL, CHECK (length(position_rus)<50)"
+        text position_eng "CHECK (length(position_eng)<50)"
+        int job_search_status_id FK "NOT NULL"
+        text working_experience "CHECK (length(working_experience)<1000)"
+        text path_to_cv_avatar  "NOT NULL, default static/default_profile.png"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    cv ||--o{ cv-subscriber : has
-    employer ||--o{ cv-subscriber : has
-    cv-subscriber {
-        bigint cv-id FK "NOT NULL"
-        bigint employer-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+    cv ||--o{ cv_subscriber : has
+    employer ||--o{ cv_subscriber : has
+    cv_subscriber {
+        bigint cv_id FK "NOT NULL"
+        bigint employer_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    job-search-status ||--o{ cv : has
-    job-search-status{
+    job_search_status ||--o{ cv : has
+    job_search_status{
         int id PK
-        text status-name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        text status_name "UNIQUE, NOT NULL, CHECK (length(status_name)<50)"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    cv-to-creation-tags }o--|| cv : has
-    cv-to-creation-tags }o--|| creation-tags : has
-    cv-to-creation-tags{
-        int creation-tag-id FK "NOT NULL"
-        bigint cv-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+    cv_to_creation_tags }o--|| cv : has
+    cv_to_creation_tags }o--|| creation_tags : has
+    cv_to_creation_tags{
+        int creation_tag_id FK "NOT NULL"
+        bigint cv_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    applicant-creation-to-creation-tags }o--|| applicant-creation : has
-    applicant-creation-to-creation-tags }o--|| creation-tags : has
-    applicant-creation-to-creation-tags{
-        int creation-tag-id FK "NOT NULL"
-        bigint applicant-creation-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+    applicant_creation_to_creation_tags }o--|| applicant_creation : has
+    applicant_creation_to_creation_tags }o--|| creation_tags : has
+    applicant_creation_to_creation_tags{
+        int creation_tag_id FK "NOT NULL"
+        bigint applicant_creation_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    vacancy-to-creation-tags }o--|| vacancy : has
-    vacancy-to-creation-tags }o--|| creation-tags : has
-    vacancy-to-creation-tags{
-        int creation-tag-id FK "NOT NULL"
-        bigint vacancy-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+    vacancy_to_creation_tags }o--|| vacancy : has
+    vacancy_to_creation_tags }o--|| creation_tags : has
+    vacancy_to_creation_tags{
+        int creation_tag_id FK "NOT NULL"
+        bigint vacancy_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    creation-tags{
+    creation_tags{
         int id PK
-        text creation-tag-name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        text creation_tag_name "UNIQUE, NOT NULL, CHECK (length(creation_tag_name)<50)"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
     vacancy {
         bigint id PK
-        bigint employer-id FK "NOT NULL"
+        bigint employer_id FK "NOT NULL"
         int salary "NOT NUL"
-        text position "NOT NUL, CHECK (LENGTH(first-name)<50)"
-        text description "NOT NUL, CHECK (LENGTH(first-name)<1000)"
-        int work-type-id FK "NOT NUL"
-        text path-to-company-avatar "NOT NULL, default static/default-company.png"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        text position "NOT NUL, CHECK (length(position)<50)"
+        text description "NOT NUL, CHECK (length(description)<1000)"
+        int work_type_id FK "NOT NUL"
+        text path_to_company_avatar "NOT NULL, default static/default_company.png"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    vacancy }o--|| work-type : has
-    work-type{
+    vacancy }o--|| work_type : has
+    work_type{
         int id PK
-        text work-type-name "UNIQUE, NOT NUL, CHECK (LENGTH(first-name)<50)"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        text work_type_name "UNIQUE, NOT NUL, CHECK (length(work_type_name)<50)"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
     
-    vacancy-subscriber }o--|| vacancy : has
-    vacancy-subscriber }o--|| applicant : has
-    vacancy-subscriber {
-        bigint vacancy-id FK "NOT NULL"
-        bigint applicant-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+    vacancy_subscriber }o--|| vacancy : has
+    vacancy_subscriber }o--|| applicant : has
+    vacancy_subscriber {
+        bigint vacancy_id FK "NOT NULL"
+        bigint applicant_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
     
-    applicant-creation {
+    applicant_creation {
         bigint id PK
-        text name "NOT NULL, CHECK (LENGTH(first-name)<50)"
+        text name "NOT NULL, CHECK (length(name)<50)"
         text creation  "UNIQUE, NOT NULL"
-        bigint creation-type-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        bigint creation_type_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    applicant-creation }o--|| creation-type : has
-    creation-type{
+    applicant_creation }o--|| creation_type : has
+    creation_type{
         bigint id PK
-        text type-name "UNIQUE, NOT NULL, CHECK (LENGTH(first-name)<50)"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        text type_name "UNIQUE, NOT NULL, CHECK (length(type_name)<50)"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    applicant ||--o{ applicant-session : has
-    applicant-session{
+    applicant ||--o{ applicant_session : has
+    applicant_session{
         bigint id PK
-        bigint applicant-id FK "NOT NULL"
-        text cooky-token "UNIQUE, NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        bigint applicant_id FK "NOT NULL"
+        text session_token "UNIQUE, NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    employer ||--o{  employer-session : has
-    employer-session{
+    employer ||--o{  employer_session : has
+    employer_session{
         bigint id PK
-        bigint employer-id FK "NOT NULL"
-        text cooky-token "UNIQUE, NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        bigint employer_id FK "NOT NULL"
+        text session_token "UNIQUE, NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    applicant-creation |o--o{ applicant-rate-to-applicant-creation : has
-    applicant ||--o{ applicant-rate-to-applicant-creation : has
-    applicant-rate-to-applicant-creation{
+    applicant_creation |o--o{ applicant_rate_to_applicant_creation : has
+    applicant ||--o{ applicant_rate_to_applicant_creation : has
+    applicant_rate_to_applicant_creation{
         int rate "NOT NULL"
-        bigint applicant-id FK "NOT NULL"
-        bigint applicant-creation-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        bigint applicant_id FK "NOT NULL"
+        bigint applicant_creation_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
-    applicant-creation |o--o{ employer-rate-to-applicant-creation : has
-    employer ||--o{ employer-rate-to-applicant-creation : has
-    employer-rate-to-applicant-creation{
+    applicant_creation |o--o{ employer_rate_to_applicant_creation : has
+    employer ||--o{ employer_rate_to_applicant_creation : has
+    employer_rate_to_applicant_creation{
         int rate "NOT NULL"
-        bigint employer-id FK "NOT NULL"
-        bigint applicant-creation-id FK "NOT NULL"
-        timestamptz created-at "NOT NULL"
-        timestamptz updated-at "NOT NULL"
+        bigint employer_id FK "NOT NULL"
+        bigint applicant_creation_id FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
     }
