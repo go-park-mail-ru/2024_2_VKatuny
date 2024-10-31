@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public."portfolio"
 (
-    id serial NOT NULL,
+    id bigserial NOT NULL,
     applicant_id bigint NOT NULL,
     portfolio_name text NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,

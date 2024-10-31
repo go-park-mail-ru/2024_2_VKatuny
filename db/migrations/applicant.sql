@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public."applicant"
 (
-    id serial NOT NULL,
+    id bigserial NOT NULL,
     first_name text NOT NULL,
     last_name text NOT NULL,
     city_id int,

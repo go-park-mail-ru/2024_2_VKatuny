@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public."applicant_creation"
 (
-    id serial NOT NULL,
+    id bigserial NOT NULL,
     applicant_id bigint NOT NULL,
     applicant_creation_name text NOT NULL,
     path_to_creation  text NOT NULL,

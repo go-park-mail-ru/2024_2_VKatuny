@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public."cv"
 (
-    id serial NOT NULL,
+    id bigserial NOT NULL,
     applicant_id bigint NOT NULL,
     position_rus text NOT NULL,
     position_eng text NOT NULL,

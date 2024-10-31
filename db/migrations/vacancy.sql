@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS public."vacancy"
 (
-    id serial NOT NULL,
+    id bigserial NOT NULL,
     employer_id bigint NOT NULL,
     salary int NOT NULL,
     position text NOT NULL,
