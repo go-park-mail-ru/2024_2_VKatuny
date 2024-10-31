@@ -60,7 +60,7 @@ func main() {
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
 	vacanciesRepository := vacancies_repostory.NewRepo()
-	vacanciesListHandler := vacancies_delivery.VacanciesHandler(vacanciesRepository) //(&db.Vacancies)
+	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository) //(&db.Vacancies)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	// Wrapped multiplexer

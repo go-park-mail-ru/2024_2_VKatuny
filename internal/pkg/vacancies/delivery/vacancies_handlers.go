@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// VacanciesHandler returns list of vacancies
+// GetVacanciesHandler returns list of vacancies
 // GetVacancies godoc
 // @Summary     Gets list of vacancies
 // @Description Accepts offset and number of vacancies with id >= offset. Returns vacancies
@@ -26,7 +26,7 @@ import (
 // @Failure     405
 // @Failure     500
 // @Router      /vacancies [get]
-func VacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable *inmemorydb.VacanciesHandler
+func GetVacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable *inmemorydb.VacanciesHandler
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
