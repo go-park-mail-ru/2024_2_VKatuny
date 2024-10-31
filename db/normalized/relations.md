@@ -1,5 +1,214 @@
 # Описание Базы Данных
 
+# Схема
+
+```mermaid
+    erDiagram
+        applicant ||--o{ cv : has
+        applicant {
+            bigint id PK
+            text first_name "NOT NULL, CHECK (length(first_name)<50)"
+            text last_name "NOT NULL, CHECK (length(last_name)<50)"
+            int city_id FK
+            date birth_date "NOT NULL"
+            text path_to_profile_avatar "NOT NULL, default static/default_profile.png"
+            text contacts "CHECK (length(contacts)<150)"
+            text education "CHECK (length(education)<150)"
+            text email "UNIQUE, NOT NULL, CHECK (length(email)<50)"
+            text password_hash "NOT NULL, CHECK (length(password_hash)<250)"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        employer ||--o{ vacancy : has
+        employer {
+            bigint id PK
+            text first_name "NOT NULL, CHECK (length(first_name)<50)"
+            text last_name "NOT NULL, CHECK (length(last_name)<50)"
+            int city_id FK
+            text position "NOT NULL, CHECK (length(position)<50)"
+            int company_name_id FK
+            text company_description "NOT NULL, CHECK (length(company_description)<150)"
+            text website "NOT NULL, CHECK (length(website)<50)"
+            text path_to_profile_avatar "NOT NULL, default static/default_profile.png"
+            text contacts "CHECK (length(contacts)<50)"
+            text email "UNIQUE, NOT NULL, CHECK (length(email)<50)"
+            text password_hash "NOT NULL, CHECK (length(password_hash)<250)"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        employer }o--|| company : has
+        company{
+            int id PK
+            text company_name "UNIQUE, NOT NULL, CHECK (length(company_name)<50)"
+        }
+        applicant }o--|| city : has
+        employer }o--||  city : has
+        city{
+            int id PK
+            text city_name "UNIQUE, NOT NULL, CHECK (length(city_name)<50)"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        applicant ||--o{ portfolio : has
+        portfolio {
+            bigint id PK
+            int applicant_id FK "NOT NULL"
+            sting portfolio_name "NOT NULL, CHECK (length(portfolio_name)<50)"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        portfolio ||--o{ applicant_creation_to_portfolio : has
+        applicant_creation ||--o{ applicant_creation_to_portfolio : has
+        applicant_creation_to_portfolio{
+            bigint portfolio_id FK "NOT NULL"
+            bigint applicant_creation_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        portfolio ||--o{ cv_to_portfolio : has
+        cv ||--o{cv_to_portfolio : has
+        cv_to_portfolio{
+            bigint cv_id FK "NOT NULL"
+            bigint portfolio_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        cv {
+            bigint id PK
+            bigint applicant_id FK "NOT NULL"
+            text position_rus "NOT NULL, CHECK (length(position_rus)<50)"
+            text position_eng "CHECK (length(position_eng)<50)"
+            int job_search_status_id FK "NOT NULL"
+            text working_experience "CHECK (length(working_experience)<1000)"
+            text path_to_cv_avatar  "NOT NULL, default static/default_profile.png"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        cv ||--o{ cv_subscriber : has
+        employer ||--o{ cv_subscriber : has
+        cv_subscriber {
+            bigint cv_id FK "NOT NULL"
+            bigint employer_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        job_search_status ||--o{ cv : has
+        job_search_status{
+            int id PK
+            text job_search_status_name "UNIQUE, NOT NULL, CHECK (length(job_search_status_name)<50)"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        cv_to_creation_tag }o--|| cv : has
+        cv_to_creation_tag }o--|| creation_tag : has
+        cv_to_creation_tag{
+            int creation_tag_id FK "NOT NULL"
+            bigint cv_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        applicant_creation_to_creation_tag }o--|| applicant_creation : has
+        applicant_creation_to_creation_tag }o--|| creation_tag : has
+        applicant_creation_to_creation_tag{
+            int creation_tag_id FK "NOT NULL"
+            bigint applicant_creation_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        vacancy_to_creation_tag }o--|| vacancy : has
+        vacancy_to_creation_tag }o--|| creation_tag : has
+        vacancy_to_creation_tag{
+            int creation_tag_id FK "NOT NULL"
+            bigint vacancy_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        creation_tag{
+            int id PK
+            text creation_tag_name "UNIQUE, NOT NULL, CHECK (length(creation_tag_name)<50)"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        vacancy {
+            bigint id PK
+            bigint employer_id FK "NOT NULL"
+            int salary "NOT NUL"
+            text position "NOT NUL, CHECK (length(position)<50)"
+            text vacancy_description "NOT NUL, CHECK (length(vacancy_description)<1000)"
+            int work_type_id FK "NOT NUL"
+            text path_to_company_avatar "NOT NULL, default static/default_company.png"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        vacancy }o--|| work_type : has
+        work_type{
+            int id PK
+            text work_type_name "UNIQUE, NOT NUL, CHECK (length(work_type_name)<50)"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        
+        vacancy_subscriber }o--|| vacancy : has
+        vacancy_subscriber }o--|| applicant : has
+        vacancy_subscriber {
+            bigint vacancy_id FK "NOT NULL"
+            bigint applicant_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        applicant_creation }o--|| applicant : has
+        applicant_creation {
+            bigint id PK
+            bigint applicant_id FK "NOT NULL"
+            text applicant_creation_name "NOT NULL, CHECK (length(applicant_creation_name)<50)"
+            text path_to_creation  "UNIQUE, NOT NULL"
+            bigint creation_type_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        applicant_creation }o--|| creation_type : has
+        creation_type{
+            bigint id PK
+            text creation_type_name "UNIQUE, NOT NULL, CHECK (length(creation_type_name)<50)"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        applicant ||--o{ applicant_session : has
+        applicant_session{
+            bigint id PK
+            bigint applicant_id FK "NOT NULL"
+            text session_token "UNIQUE, NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        employer ||--o{  employer_session : has
+        employer_session{
+            bigint id PK
+            bigint employer_id FK "NOT NULL"
+            text session_token "UNIQUE, NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        applicant_creation |o--o{ applicant_rate_to_applicant_creation : has
+        applicant ||--o{ applicant_rate_to_applicant_creation : has
+        applicant_rate_to_applicant_creation{
+            int rate "NOT NULL"
+            bigint applicant_id FK "NOT NULL"
+            bigint applicant_creation_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+        applicant_creation |o--o{ employer_rate_to_applicant_creation : has
+        employer ||--o{ employer_rate_to_applicant_creation : has
+        employer_rate_to_applicant_creation{
+            int rate "NOT NULL"
+            bigint employer_id FK "NOT NULL"
+            bigint applicant_creation_id FK "NOT NULL"
+            timestamptz created_at "NOT NULL"
+            timestamptz updated_at "NOT NULL"
+        }
+```
+
 ## Первая нормальная форма
 База данных находится в первой нормальной форме, так как все ее атрибуты являются простыми (строчки не содержат json списиски или любые другие перечисления), не содержит повторяющихся строк, что обеспечивает независимость данных от номера строки.
 
