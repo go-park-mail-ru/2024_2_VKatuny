@@ -29,3 +29,7 @@ type JsonLoginForm struct {
 	Email    string `json:"login"`
 	Password string `json:"password"`
 }
+
+type JsonLogoutForm struct {
+	UserType string `json:"userType"` // use constants UserType
+}

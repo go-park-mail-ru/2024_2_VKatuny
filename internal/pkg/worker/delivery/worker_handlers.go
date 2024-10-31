@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker"
+	workerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/usecase"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,6 +33,7 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
 		if !ok {
 			fmt.Printf("function %s: can't get logger from context\n", funcName)
+			return
 		}
 
 		decoder := json.NewDecoder(r.Body)
@@ -47,15 +48,16 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 			})
 			return
 		}
-		if len(newUserInput.Name) < 3 || len(newUserInput.LastName) < 3 ||
-			strings.Index(newUserInput.Email, "@") < 0 || len(newUserInput.Password) < 4 {
-			logger.Errorf("function %s: User's fields aren't valid %+v", funcName, newUserInput)
+
+		if err := workerUsecase.CreateWorkerInputCheck(newUserInput.Name, newUserInput.LastName, newUserInput.Email, newUserInput.Password); err != nil {
+			logger.Errorf("function %s: %s", funcName, err.Error())
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
 				HttpStatus: http.StatusBadRequest,
 				Error:      "user's fields aren't valid",
 			})
 			return
 		}
+
 		logger.Debugf("function %s: adding applicant to db %v", funcName, newUserInput)
 		userId, err := repo.Add(newUserInput)
 		if err == nil {

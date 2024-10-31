@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
+	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 	"github.com/sirupsen/logrus"
 )
@@ -33,6 +33,7 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
 		if !ok {
 			fmt.Printf("function %s: can't get logger from context\n", funcName)
+			return
 		}
 
 		decoder := json.NewDecoder(r.Body)
@@ -47,13 +48,11 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 			})
 			return
 		}
-		if len(newUserInput.Name) < 3 || len(newUserInput.LastName) < 3 || len(newUserInput.Position) < 3 ||
-			len(newUserInput.CompanyName) < 3 || strings.Index(newUserInput.Email, "@") < 0 ||
-			len(newUserInput.Password) < 4 {
-			logger.Errorf("invalid fields")
+		if err := employerUsecase.CreateEmployerInputCheck(newUserInput.Name, newUserInput.LastName, newUserInput.Position, newUserInput.CompanyName, newUserInput.Email, newUserInput.Password); err != nil {
+			logger.Errorf("employer invalid fields")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
 				HttpStatus: http.StatusBadRequest,
-				Error:      "invalid fields",
+				Error:      err.Error(),
 			})
 			return
 		}

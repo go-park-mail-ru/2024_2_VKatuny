@@ -15,7 +15,7 @@ import (
 
 	// "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session/usecase"
+	sessionUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session/usecase"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,31 +41,18 @@ func AuthorizedHandler(repoApplicant session.Repository, repoEmployer session.Re
 
 		session, err := r.Cookie("session_id1")
 
-		if session == nil {
-			logger.Errorf("client doesn't have a cookie")
+		if err != nil || session == nil {
+			logger.Debugf("function: %s; problems with reading cookie", funcName)
 			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JsonResponse{
 				HttpStatus: http.StatusUnauthorized,
 				Error:      "client doesn't have a cookie",
 			})
-			return
 		}
 
-		var id uint64
-		var userType string
-
-		if sessionId := session.Value; sessionId != "" {
-			logger.WithField("session_id", sessionId).Debug("got session id")
-
-			id, err = repoApplicant.GetUserIdBySession(sessionId)
-			userType = dto.UserTypeApplicant
-
-			if err != nil {
-				id, err = repoEmployer.GetUserIdBySession(sessionId)
-				userType = dto.UserTypeEmployer
-			}
-		}
+		id, userType, sessionId, err := sessionUsecase.SessionCheck(session, repoApplicant, repoEmployer)
 
 		if err == nil {
+			logger.WithField("session_id", sessionId).Debug("got session id")
 			logger.Debugf("Just authorized user! UserType: %s; ID %d", userType, id)
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JsonResponse{
 				HttpStatus: http.StatusOK,
@@ -78,7 +65,7 @@ func AuthorizedHandler(repoApplicant session.Repository, repoEmployer session.Re
 			logger.Errorf("authorization error")
 			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JsonResponse{
 				HttpStatus: http.StatusUnauthorized,
-				Error:      "authorization error",
+				Error:      err.Error(),
 			})
 		}
 	})
@@ -102,7 +89,7 @@ func LoginHandler(
 	repoApplicant worker.Repository,
 	repoEmployer employer.Repository,
 	backendAddress string,
-	) http.Handler { // just do it!
+) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		funcName := "LoginHandler"
@@ -124,24 +111,17 @@ func LoginHandler(
 			return
 		}
 
-		sessionId := usecase.GenerateSessionToken()
-		if newUserInput.UserType == dto.UserTypeApplicant {
-			// need to validate error
-			user, _ := repoApplicant.GetByEmail(newUserInput.Email)
-			
-			err = repoApplicantSession.Add(user.ID, sessionId)
-		} else if newUserInput.UserType == dto.UserTypeEmployer {
-			// same. Error validation
-			user, _ := repoEmployer.GetByEmail(newUserInput.Email)
-			err = repoEmployerSession.Add(user.ID, sessionId)
-		}
-
+		sessionId, err := sessionUsecase.LoginCheck(newUserInput, repoApplicant, repoApplicantSession, repoEmployerSession, repoEmployer)
 		if err != nil {
-			logger.Errorf("err while generating sessionID")
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
-				HttpStatus: http.StatusBadRequest,
-				Error:      "err while generating session ID",
-			})
+			logger.Errorf("function %s: %s", funcName, err.Error())
+			middleware.UniversalMarshal(
+				w,
+				http.StatusBadRequest,
+				dto.JsonResponse{
+					HttpStatus: http.StatusBadRequest,
+					Error:      err.Error(),
+				},
+			)
 			return
 		}
 		logger.Debugf("Cookie received")
@@ -186,16 +166,21 @@ func LogoutHandler(repoApplicant session.Repository, repoEmployer session.Reposi
 			return
 		}
 
-		// session is a type of *http.Cookie
-		// to delete session i should get session id
-		sessionId := session.Value
+		decoder := json.NewDecoder(r.Body)
 
-		err = repoApplicant.Delete(sessionId) // just do it!
-		// this is useless because Delete method doesn't return a error if user doesn't exist
-		// Oleg it's for you))
+		newUserInput := new(dto.JsonLogoutForm) // for any request and response use DTOs but not a model!
+		err = decoder.Decode(newUserInput)
 		if err != nil {
-			err = repoEmployer.Delete(sessionId)
+			logger.Errorf("can't unmarshal JSON")
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
+				HttpStatus: http.StatusBadRequest,
+				Error:      "can't unmarshal JSON",
+			})
+			return
 		}
+
+		sessionId := session.Value
+		err = sessionUsecase.LogoutCheck(newUserInput, sessionId, repoApplicant, repoEmployer)
 
 		if err != nil {
 			logger.Errorf("no user with this session")
@@ -203,7 +188,6 @@ func LogoutHandler(repoApplicant session.Repository, repoEmployer session.Reposi
 				HttpStatus: http.StatusOK,
 				Error:      "no user with this session",
 			})
-			http.Error(w, `no sess`, http.StatusUnauthorized) // hm cheto ne to i vesde tak
 			return
 		}
 
