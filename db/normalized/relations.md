@@ -17,7 +17,7 @@
 - **id** - bigint, PRIMARY KEY
 - **first_name** - text, NOT NULL, CHECK (length(first_name)<50),  имя работника может использоваться отдельно от фамилии
 - **last_name** - text, NOT NULL, CHECK (length(last_name)<50), фамилия работника
-- **city_id** - text, FK NOT NULL, связь с названием города
+- **city_id** - int, FK, связь с названием города
 - **birth_date** - date, NOT NULL, дата рождения работника
 - **path_to_profile_avatar** - text, NOT NULL, default (static/default_profile.png) аватарка для профиля работника
 - **contacts** - text, CHECK (length(contacts)<150), контакты в которых уже сам работник должен указать название соцсети и ник
@@ -36,7 +36,7 @@ Relation **applicant to cv**:\
 - **id** - bigint, PRIMARY KEY
 - **first_name** - text, NOT NULL, CHECK (length(first_name)<50), имя работника может использоваться отдельно от фамилии
 - **last_name** - text, NOT NULL, CHECK (length(last_name)<50), фамилия работника
-- **city_id** - text, FK, NOT NULL, связь с названием города
+- **city_id** - int, FK, связь с названием города
 - **position** - text,  NOT NULL, CHECK (length(position)<50), должность занимаемая работодателем
 - **company_name_id** - int, FK, NOT NULL, id названия компании
 - **company_description** - text, NOT NULL, CHECK (length(company_description)<150), описании комании (той части за которую ответсвенен этот работодатель)
@@ -55,7 +55,7 @@ Relation **employer to vacancy**:\
 ## Таблица company
 
 - **id** - int, PRIMARY KEY
-- **name** - text, NOT NULL, UNIQUE, CHECK (length(name)<50), название комании
+- **company_name** - text, NOT NULL, UNIQUE, CHECK (length(company_name)<50), название комании
 
 Relation **employer to company**:\
 {company_name_id} -> id\
@@ -64,7 +64,7 @@ Relation **employer to company**:\
 ## Таблица city
 
 - **id** - int, PRIMARY KEY
-- **name** - text, UNIQUE, NOT NULL, CHECK (length(name)<50), название города
+- **city_name** - text, UNIQUE, NOT NULL, CHECK (length(city_name)<50), название города
 - **created_at** - timestamptz, NOT NULL, дата появления города в нашей бд
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления названия города
 
@@ -80,7 +80,7 @@ Relation **employer to city**:\
 
 - **id** - bigint, PRIMARY KEY
 - **applicant_id** - bigint, FK, NOT NULL, id работника которому принадлежит это портфолио
-- **name** - text, NOT NULL, CHECK (length(name)<50), название портфолио
+- **portfolio_name** - text, NOT NULL, CHECK (length(portfolio_name)<50), название портфолио
 - **created_at** - timestamptz, NOT NULL, дата появления города в нашей бд
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления названия города
 
@@ -158,7 +158,7 @@ Relation **employer to cv_subscriber**:\
 ## Таблица job_search_status
 
 - **id** - int, PRIMARY KEY
-- **status_name** - text, NOT NULL, UNIQUE, CHECK (length(status_name)<50), название статуса поиска работы
+- **job_search_status_name** - text, NOT NULL, UNIQUE, CHECK (length(job_search_status_name)<50), название статуса поиска работы
 - **created_at** - timestamptz, NOT NULL, дата создания статуса поиска работы
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления статуса поиска работы
 
@@ -166,64 +166,64 @@ Relation **job_search_status to cv**:\
 {id} -> job_search_status_id\
 Связь: Один статус поиска работы может быть указзан во многих резюме\
 
-## Таблица cv_to_creation_tags
+## Таблица cv_to_creation_tag
 
 - **creation_tag_id** - int, FK, NOT NULL, id  тега произведения который указан в этом резюме
 - **cv_id** - bigint, FK, NOT NULL, id резюме в котором будет указан этот тег произведения
 - **created_at** - timestamptz, NOT NULL, дата добавления тега произведения к резюме
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления тега произведения в резюме
 
-Связь: многие теги произведений ко многим резюме реализуемая с помощью промеждуточной таблицы cv_to_creation_tags
+Связь: многие теги произведений ко многим резюме реализуемая с помощью промеждуточной таблицы cv_to_creation_tag
 
-Relation **cv to cv_to_creation_tags**:\
+Relation **cv to cv_to_creation_tag**:\
 {id} -> cv_id\
-Связь: Одино резюме может быть указано во многих строчках cv_to_creation_tags\
+Связь: Одино резюме может быть указано во многих строчках cv_to_creation_tag\
 (Один тег произведения может быть указан во многих резюме)
 
-Relation **creation_tags to cv_to_creation_tags**:\
+Relation **creation_tag to cv_to_creation_tag**:\
 {id} -> creation_tag_id\
-Связь: Одиин тег произведения может быть указан во многих строчках cv_to_creation_tags\
+Связь: Одиин тег произведения может быть указан во многих строчках cv_to_creation_tag\
 (К одному резюме можно добавить несколько тегов произведений)
 
-## Таблица applicant_creation_to_creation_tags
+## Таблица applicant_creation_to_creation_tag
 
 - **creation_tag_id** - int, FK, NOT NULL, id  тега для этого произведения
 - **applicant_creation_id** - bigint, FK, NOT NULL, id произведения к которому будет прикреплен этот тег
 - **created_at** - timestamptz, NOT NULL, дата добавления тега этому произведению
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления тега у этого произведения
 
-Связь: многие теги произведений ко многим произведениям реализуемая с помощью промеждуточной таблицы applicant_creation_to_creation_tags
+Связь: многие теги произведений ко многим произведениям реализуемая с помощью промеждуточной таблицы applicant_creation_to_creation_tag
 
-Relation **applicant_creation to applicant_creation_to_creation_tags**:\
+Relation **applicant_creation to applicant_creation_to_creation_tag**:\
 {id} -> applicant_creation_id\
-Связь: Одино произведение может быть указано во многих строчках applicant_creation_to_creation_tags\
+Связь: Одино произведение может быть указано во многих строчках applicant_creation_to_creation_tag\
 (У одного произведения может быть много тегов)
 
-Relation **creation_tags to applicant_creation_to_creation_tags**:\
+Relation **creation_tag to applicant_creation_to_creation_tag**:\
 {id} -> creation_tag_id\
-Связь: Одиин тег произведения может быть указан во многих строчках applicant_creation_to_creation_tags\
+Связь: Одиин тег произведения может быть указан во многих строчках applicant_creation_to_creation_tag\
 (Один тег может быть отнесен ко многим произвденениям)
 
-## Таблица vacancy_to_creation_tags
+## Таблица vacancy_to_creation_tag
 
 - **creation_tag_id** - int, FK, NOT NULL, id  тега произведения который указан в этой вакансии
 - **vacancy_id** - bigint, FK, NOT NULL, id вакансии к которому будет прикреплено это портфолио
 - **created_at** - timestamptz, NOT NULL, дата добавления тега произведения к вакансим
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления тега произведения в вакансии
 
-Связь: многие теги произведений ко многим вакансиям реализуемая с помощью промеждуточной таблицы vacancy_to_creation_tags
+Связь: многие теги произведений ко многим вакансиям реализуемая с помощью промеждуточной таблицы vacancy_to_creation_tag
 
-Relation **vacancy to vacancy_to_creation_tags**:\
+Relation **vacancy to vacancy_to_creation_tag**:\
 {id} -> vacancy_id\
-Связь: Одина вакансия может быть указана во многих строчках vacancy_to_creation_tags\
+Связь: Одина вакансия может быть указана во многих строчках vacancy_to_creation_tag\
 (Одина вакансия может иметь много тегов желаемых произведений)
 
-Relation **creation_tags to vacancy_to_creation_tags**:\
+Relation **creation_tag to vacancy_to_creation_tag**:\
 {id} -> creation_tag_id\
-Связь: Одиин тег произведения может быть указан во многих строчках vacancy_to_creation_tags\
+Связь: Одиин тег произведения может быть указан во многих строчках vacancy_to_creation_tag\
 (Один тег произведения может быть указан у многих вакансий как желаемый)
 
-## Таблица creation_tags
+## Таблица creation_tag
 
 - **id** - int, PRIMARY KEY
 - **creation_tag_name** - text, NOT NULL, CHECK (length(creation_tag_name)<50), UNIQUE, название тега произведения
@@ -236,7 +236,7 @@ Relation **creation_tags to vacancy_to_creation_tags**:\
 - **employer_id** - bigint, FK, NOT NULL, id работодателя который разместил эту вакансию
 - **salary** - int, NOT NULL зарботная плата предлагаемая сотруднику
 - **position** - text, NOT NULL, CHECK (length(position)<50), должность предлагаемая сотруднику
-- **description** - text, NOT NULL, CHECK (length(description)<100), описание вакансии от работодателя
+- **vacancy_description** - text, NOT NULL, CHECK (length(vacancy_description)<100), описание вакансии от работодателя
 - **work_type_id** - int, FK, NOT NULL, ссылка на тип работы (разовая, постоянная, пол ставки и тд)
 - **path_to_company_avatar** - text, NOT NULL, default (static/default_company.png) логотип компании для вакансии
 - **created_at** - timestamptz, NOT NULL, дата добавления вакансии
@@ -275,16 +275,21 @@ Relation **vacancy to vacancy_subscriber**:\
 ## Таблица applicant_creation
 
 - **id** - bigint, PRIMARY KEY
-- **name** - text, NOT NULL, UNIQUE, CHECK (length(name)<50), название произвдения которое даст рабоник при загрузке произведения на наш сайт
-- **creation** - text, NOT NULL, UNIQUE, адрес у нас а сервере где лежит эта работа
+- **applicant_id** - bigint, FK, NOT NULL, id работика выложившего произведение
+- **applicant_creation_name** - text, NOT NULL, UNIQUE, CHECK (length(applicant_creation_name)<50), название произвдения которое даст рабоник при загрузке произведения на наш сайт
+- **path_to_creation** - text, NOT NULL, UNIQUE, адрес у нас а сервере где лежит эта работа
 - **creation_type_id** - bigint, FK, NOT NULL, id типа произведения
 - **created_at** - timestamptz, NOT NULL, дата выгрузки произведения на наш сайт
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления произведения на нашем сайте
 
+Relation **applicant to applicant_creation**:\
+{id} -> applicant_id\
+Связь: Один работник может быть указан как автор многих applicant_creation\
+
 ## Таблица creation_type
 
 - **id** - bigint, PRIMARY KEY
-- **type_name** - text, NOT NULL, UNIQUE, CHECK (length(type_name)<50), название типа произведения
+- **creation_type_name** - text, NOT NULL, UNIQUE, CHECK (length(creation_type_name)<50), название типа произведения
 - **created_at** - timestamptz, NOT NULL, дата добавления типа произведения на наш сайт
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления типа произведения на наш сайт
 

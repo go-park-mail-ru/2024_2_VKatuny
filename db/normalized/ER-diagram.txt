@@ -4,7 +4,7 @@ erDiagram
         bigint id PK
         text first_name "NOT NULL, CHECK (length(first_name)<50)"
         text last_name "NOT NULL, CHECK (length(last_name)<50)"
-        text city_id FK "NOT NULL"
+        int city_id FK
         date birth_date "NOT NULL"
         text path_to_profile_avatar "NOT NULL, default static/default_profile.png"
         text contacts "CHECK (length(contacts)<150)"
@@ -19,9 +19,9 @@ erDiagram
         bigint id PK
         text first_name "NOT NULL, CHECK (length(first_name)<50)"
         text last_name "NOT NULL, CHECK (length(last_name)<50)"
-        text city_id FK "NOT NULL"
+        int city_id FK
         text position "NOT NULL, CHECK (length(position)<50)"
-        int company_name_id FK "NOT NULL"
+        int company_name_id FK
         text company_description "NOT NULL, CHECK (length(company_description)<150)"
         text website "NOT NULL, CHECK (length(website)<50)"
         text path_to_profile_avatar "NOT NULL, default static/default_profile.png"
@@ -34,13 +34,13 @@ erDiagram
     employer }o--|| company : has
     company{
         int id PK
-        text name "UNIQUE, NOT NULL, CHECK (length(name)<50)"
+        text company_name "UNIQUE, NOT NULL, CHECK (length(company_name)<50)"
     }
     applicant }o--|| city : has
     employer }o--||  city : has
     city{
         int id PK
-        text name "UNIQUE, NOT NULL, CHECK (length(name)<50)"
+        text city_name "UNIQUE, NOT NULL, CHECK (length(city_name)<50)"
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
     }
@@ -48,7 +48,7 @@ erDiagram
     portfolio {
         bigint id PK
         int applicant_id FK "NOT NULL"
-        sting name "NOT NULL, CHECK (length(name)<50)"
+        sting portfolio_name "NOT NULL, CHECK (length(portfolio_name)<50)"
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
     }
@@ -90,35 +90,35 @@ erDiagram
     job_search_status ||--o{ cv : has
     job_search_status{
         int id PK
-        text status_name "UNIQUE, NOT NULL, CHECK (length(status_name)<50)"
+        text job_search_status_name "UNIQUE, NOT NULL, CHECK (length(job_search_status_name)<50)"
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
     }
-    cv_to_creation_tags }o--|| cv : has
-    cv_to_creation_tags }o--|| creation_tags : has
-    cv_to_creation_tags{
+    cv_to_creation_tag }o--|| cv : has
+    cv_to_creation_tag }o--|| creation_tag : has
+    cv_to_creation_tag{
         int creation_tag_id FK "NOT NULL"
         bigint cv_id FK "NOT NULL"
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
     }
-    applicant_creation_to_creation_tags }o--|| applicant_creation : has
-    applicant_creation_to_creation_tags }o--|| creation_tags : has
-    applicant_creation_to_creation_tags{
+    applicant_creation_to_creation_tag }o--|| applicant_creation : has
+    applicant_creation_to_creation_tag }o--|| creation_tag : has
+    applicant_creation_to_creation_tag{
         int creation_tag_id FK "NOT NULL"
         bigint applicant_creation_id FK "NOT NULL"
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
     }
-    vacancy_to_creation_tags }o--|| vacancy : has
-    vacancy_to_creation_tags }o--|| creation_tags : has
-    vacancy_to_creation_tags{
+    vacancy_to_creation_tag }o--|| vacancy : has
+    vacancy_to_creation_tag }o--|| creation_tag : has
+    vacancy_to_creation_tag{
         int creation_tag_id FK "NOT NULL"
         bigint vacancy_id FK "NOT NULL"
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
     }
-    creation_tags{
+    creation_tag{
         int id PK
         text creation_tag_name "UNIQUE, NOT NULL, CHECK (length(creation_tag_name)<50)"
         timestamptz created_at "NOT NULL"
@@ -129,7 +129,7 @@ erDiagram
         bigint employer_id FK "NOT NULL"
         int salary "NOT NUL"
         text position "NOT NUL, CHECK (length(position)<50)"
-        text description "NOT NUL, CHECK (length(description)<1000)"
+        text vacancy_description "NOT NUL, CHECK (length(vacancy_description)<1000)"
         int work_type_id FK "NOT NUL"
         text path_to_company_avatar "NOT NULL, default static/default_company.png"
         timestamptz created_at "NOT NULL"
@@ -151,11 +151,12 @@ erDiagram
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
     }
-    
+    applicant_creation }o--|| applicant : has
     applicant_creation {
         bigint id PK
-        text name "NOT NULL, CHECK (length(name)<50)"
-        text creation  "UNIQUE, NOT NULL"
+        bigint applicant_id FK "NOT NULL"
+        text applicant_creation_name "NOT NULL, CHECK (length(applicant_creation_name)<50)"
+        text path_to_creation  "UNIQUE, NOT NULL"
         bigint creation_type_id FK "NOT NULL"
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
@@ -163,7 +164,7 @@ erDiagram
     applicant_creation }o--|| creation_type : has
     creation_type{
         bigint id PK
-        text type_name "UNIQUE, NOT NULL, CHECK (length(type_name)<50)"
+        text creation_type_name "UNIQUE, NOT NULL, CHECK (length(creation_type_name)<50)"
         timestamptz created_at "NOT NULL"
         timestamptz updated_at "NOT NULL"
     }
