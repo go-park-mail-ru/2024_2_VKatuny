@@ -1,15 +1,15 @@
-package workerDelivery
+package delivery
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker"
+	workerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/usecase"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,6 +33,7 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
 		if !ok {
 			fmt.Printf("function %s: can't get logger from context\n", funcName)
+			return
 		}
 
 		decoder := json.NewDecoder(r.Body)
@@ -41,36 +42,37 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 		err := decoder.Decode(newUserInput)
 		if err != nil {
 			logger.Errorf("function %s: got err %s", funcName, err)
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
-				HttpStatus: http.StatusBadRequest,
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
 				Error:      "can't unmarshal JSON",
 			})
 			return
 		}
-		if len(newUserInput.Name) < 3 || len(newUserInput.LastName) < 3 ||
-			strings.Index(newUserInput.Email, "@") < 0 || len(newUserInput.Password) < 4 {
-			logger.Errorf("function %s: User's fields aren't valid %+v", funcName, newUserInput)
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
-				HttpStatus: http.StatusBadRequest,
+
+		if err := workerUsecase.CreateWorkerInputCheck(newUserInput.Name, newUserInput.LastName, newUserInput.Email, newUserInput.Password); err != nil {
+			logger.Errorf("function %s: %s", funcName, err.Error())
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
 				Error:      "user's fields aren't valid",
 			})
 			return
 		}
+
 		logger.Debugf("function %s: adding applicant to db %v", funcName, newUserInput)
-		userId, err := repo.Add(newUserInput)
+		userID, err := repo.Add(newUserInput)
 		if err == nil {
-			middleware.UniversalMarshal(w, http.StatusOK, dto.JsonResponse{
-				HttpStatus: http.StatusOK,
-				Body: dto.JsonUserBody{
+			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+				HTTPStatus: http.StatusOK,
+				Body: dto.JSONUserBody{
 					UserType: "applicant",
-					ID:       userId,
+					ID:       userID,
 				}, // check in postman
 			})
 		} else {
 			// is there actually should be HTTP 400?
 			logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JsonResponse{
-				HttpStatus: http.StatusBadRequest,
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
 				Error:      "can't add applicant to db",
 			})
 		}

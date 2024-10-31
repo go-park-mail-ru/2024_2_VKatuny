@@ -18,7 +18,8 @@ type workerRepo struct {
 // Returns pointer to it
 func NewRepo() *workerRepo {
 	return &workerRepo{
-		data: make([]*models.Worker, 0, 10),
+		lastID: 1,
+		data:   make([]*models.Worker, 0, 10),
 	}
 }
 
@@ -51,4 +52,3 @@ func (repo *workerRepo) GetByEmail(email string) (*models.Worker, error) {
 	}
 	return nil, worker.ErrNoUserExist
 }
-

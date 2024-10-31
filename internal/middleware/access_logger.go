@@ -1,3 +1,4 @@
+// Package middleware ontains middleware of project
 package middleware
 
 import (

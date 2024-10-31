@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
 )
@@ -19,16 +20,27 @@ type employerRepo struct {
 // Returns pointer to it
 func NewRepo() *employerRepo {
 	return &employerRepo{
-		data: make([]*models.Employer, 0, 10),
+		lastID: 0,
+		data:   make([]*models.Employer, 0, 10),
 	}
 }
 
 // Creates new employer
 // Accepts pointer to employer model
 // Returns ID of created employer and error
-func (repo *employerRepo) Create(employer *models.Employer) (uint64, error) {
+func (repo *employerRepo) Create(employerInput *dto.JSONEmployerRegistrationForm) (uint64, error) {
+	employer := &models.Employer{
+		ID:          repo.lastID,
+		Name:        employerInput.Name,
+		LastName:    employerInput.LastName,
+		Position:    employerInput.Position,
+		CompanyName: employerInput.CompanyName,
+		Description: employerInput.Description,
+		Website:     employerInput.Website,
+		Email:       employerInput.Email,
+		Password:    employerInput.Password,
+	}
 	repo.lastID++
-	employer.ID = repo.lastID
 	repo.data = append(repo.data, employer)
 	return employer.ID, nil
 }

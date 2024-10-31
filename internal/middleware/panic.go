@@ -8,6 +8,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Panic recovers http.handler's panic.
+// Accepts covering http.Handler.
+// Returns http.Handler.
 func Panic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		funcName := "midleware.Panic"

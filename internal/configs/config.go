@@ -1,3 +1,4 @@
+// Package configs contains configs of project
 package configs
 
 import (
@@ -8,18 +9,19 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// Struct of .yaml config
+// Config is a struct of .yaml config file
 type Config struct {
 	Server *ServerConfig `yaml:"server"`
 }
 
+// ServerConfig is a struct of server config block in .yaml
 type ServerConfig struct {
 	Scheme string `yaml:"scheme"`
 	Host   string `yaml:"host"`
 	Port   int    `yaml:"port"`
 }
 
-// Reads file with configuration.
+// ReadConfig reads file with configuration.
 // Accepts path to .yaml config.
 // Returns pointer to Config.
 func ReadConfig(confPath string) (*Config, error) {
@@ -38,11 +40,13 @@ func ReadConfig(confPath string) (*Config, error) {
 	return conf, nil
 }
 
-// Returns address of server
+// GetAddress returns address of server
 func (s *ServerConfig) GetAddress() string {
 	return s.Host + ":" + strconv.Itoa(s.Port)
 }
 
+// GetHostWithScheme returns host with scheme and port
+// e.g. http://127.0.0.1:8080
 func (s *ServerConfig) GetHostWithScheme() string {
 	return s.Scheme + "://" + s.Host
 }

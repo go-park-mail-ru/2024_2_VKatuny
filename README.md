@@ -37,6 +37,10 @@
 ## Полезные команды
 
 ### Линтер
+Установка линтера
+```
+go install github.com/mgechev/revive@latest
+```
 
 ```bash
 make lint

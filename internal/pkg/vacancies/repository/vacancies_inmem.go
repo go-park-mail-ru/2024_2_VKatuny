@@ -17,6 +17,7 @@ type vacanciesRepo struct {
 // Returns pointer to it
 func NewRepo() *vacanciesRepo {
 	return &vacanciesRepo{
+		lastID: 1, // for oleg's db
 		data: make([]*models.Vacancy, 0, 10),
 	}
 }
