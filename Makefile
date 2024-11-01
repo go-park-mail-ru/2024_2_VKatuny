@@ -21,5 +21,9 @@ clean:
 lint:
 	revive -config reviveconfig.toml -formatter friendly ./...
 
+api:
+	swag init --parseInternal --pd --dir cmd/myapp/,delivery/handler/ --output api/
+	node ./api/server.js
+
 run:
 	go run $(SRC_DIR)/main.go

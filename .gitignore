@@ -27,5 +27,10 @@ go.work.sum
 # swagger autodoc
 *docs/
 
+# node
+*package-lock.json
+*package.json
+*/node_modules
+
 # vscode files
 .vscode/
