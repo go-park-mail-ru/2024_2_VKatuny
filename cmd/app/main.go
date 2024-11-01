@@ -4,7 +4,6 @@ package main
 import (
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/inmemorydb"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/configs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
@@ -29,10 +28,7 @@ import (
 func main() {
 	conf, _ := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
-	// fill db with data using vacancies/repostory
-	// inmemorydb.MakeVacancies()
 
-	inmemorydb.MakeUsers()
 	Mux := http.NewServeMux()
 
 	workerRepository := worker_repository.NewRepo()
