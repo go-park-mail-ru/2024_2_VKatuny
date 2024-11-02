@@ -26,6 +26,7 @@ go.work.sum
 
 # swagger autodoc
 *docs/
+*_swagger.json
 
 # node
 *package-lock.json

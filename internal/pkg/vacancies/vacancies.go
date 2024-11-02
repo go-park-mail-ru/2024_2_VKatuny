@@ -1,7 +1,7 @@
 package vacancies
 
 import (
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 )
 
 // Interface for Vacancies.

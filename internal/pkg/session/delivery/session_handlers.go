@@ -8,14 +8,14 @@ import (
 
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker"
 
-	// "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session"
-	sessionUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session/usecase"
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
+	sessionUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
 	"github.com/sirupsen/logrus"
 )
 

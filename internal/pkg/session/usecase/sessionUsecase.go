@@ -6,12 +6,12 @@ import (
 	"math/rand"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/utils"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
 var (

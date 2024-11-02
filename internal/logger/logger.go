@@ -15,7 +15,6 @@ func NewLogrusLogger() *logrus.Logger {
 			DisableLevelTruncation: true,
 			PadLevelText: true,
 			TimestampFormat: "2006.01.02 15:04:05",  // default go time format
-			// SortingFunc: ,
 		},
 		// ReportCaller: true,
 		Level:        logrus.DebugLevel,

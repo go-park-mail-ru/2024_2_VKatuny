@@ -4,8 +4,8 @@ package repository
 import (
 	"time"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 )
 
 // sessionApplicantRepo is a in-memory implementation for applicant session

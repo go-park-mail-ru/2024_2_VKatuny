@@ -4,17 +4,17 @@ package main
 import (
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/configs"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/logger"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
-	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/delivery"
-	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/repository"
-	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session/delivery"
-	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/session/repository"
-	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/delivery"
-	vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/repository"
-	worker_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/delivery"
-	worker_repository "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
+	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
+	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
+	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
+	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
+	vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
+	worker_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/delivery"
+	worker_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/repository"
 )
 
 // @title   uArt's API

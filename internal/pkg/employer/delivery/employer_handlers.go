@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
-	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer/usecase"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/utils"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,9 +21,7 @@ import (
 // @Tags        Registration
 // @Accept      json
 // @Produce     json
-// @Param       email    body string    true         "User's email"
-// @Param       password body string    true         "User's password"
-// @Success     200      {object}       inmemorydb.UserInput
+// @Success     200      {object}       dto.JSONResponse{statusCode=200,body=dto.JSONUserBody, error=""} "OK"
 // @Failure     400      {object}       nil
 // @Router      /registration/employer/ [post]
 func CreateEmployerHandler(repo employer.Repository) http.Handler {
@@ -39,7 +37,6 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 
 		decoder := json.NewDecoder(r.Body)
 
-		// TODO: replace models with DTO
 		newUserInput := new(dto.JSONEmployerRegistrationForm)
 		err := decoder.Decode(newUserInput)
 		if err != nil {
@@ -50,7 +47,7 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 			})
 			return
 		}
-		if err := employerUsecase.CreateEmployerInputCheck(newUserInput.Name, newUserInput.LastName, newUserInput.Position, newUserInput.CompanyName, newUserInput.Email, newUserInput.Password); err != nil {
+		if err := employerUsecase.CreateEmployerInputCheck(newUserInput); err != nil {
 			logger.Errorf("employer invalid fields")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,

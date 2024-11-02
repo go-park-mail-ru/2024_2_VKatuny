@@ -1,4 +1,4 @@
-module github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch
+module github.com/go-park-mail-ru/2024_2_VKatuny
 
 go 1.23.0
 

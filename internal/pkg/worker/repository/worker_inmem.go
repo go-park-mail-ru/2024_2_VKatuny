@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/worker"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker"
 )
 
 // DOES NOT SUPPORT ASYNC

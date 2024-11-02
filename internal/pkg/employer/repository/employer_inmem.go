@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/employer"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 )
 
 // DOES NOT SUPPORT ASYNC

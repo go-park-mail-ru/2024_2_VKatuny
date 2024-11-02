@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 	"github.com/sirupsen/logrus"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 )
 
 // SetContext adds logger to the context

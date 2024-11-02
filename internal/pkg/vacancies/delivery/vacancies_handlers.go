@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 
-	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/clean-arch/internal/pkg/vacancies/usecase"
+	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 
 	"github.com/sirupsen/logrus"
 )
