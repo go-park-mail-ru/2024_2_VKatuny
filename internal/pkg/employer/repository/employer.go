@@ -1,5 +1,5 @@
 // Package employer is a core element of project
-package employer
+package repository
 
 import (
 	"fmt"
@@ -8,10 +8,10 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 )
 
-// Repository is an interface for Employer.
+// EmployerRepository is an interface for Employer.
 // Now implemented as a in memory db.
 // Implementation locates in ./repository
-type Repository interface {
+type EmployerRepository interface {
 	//rename to Add
 	// probably shouldn't commit model to Create method
 	Create(*dto.JSONEmployerRegistrationForm) (uint64, error)

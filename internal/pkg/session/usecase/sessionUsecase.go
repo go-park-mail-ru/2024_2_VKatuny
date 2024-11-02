@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker"
@@ -62,7 +62,7 @@ var (
 )
 
 // LoginCheck ! TODO: rename function to more accurate meaning
-func LoginCheck(newUserInput *dto.JSONLoginForm, repoApplicant worker.Repository, repoEmployer employer.Repository) (uint64, error) {
+func LoginCheck(newUserInput *dto.JSONLoginForm, repoApplicant worker.Repository, repoEmployer repository.EmployerRepository) (uint64, error) {
 	var err error
 	var id uint64
 	if newUserInput.UserType == dto.UserTypeApplicant {

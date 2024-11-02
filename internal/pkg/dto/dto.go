@@ -12,7 +12,7 @@ const (
 	// UserTypeApplicant is a constant for "applicant" user type
 	UserTypeApplicant = "applicant"
 	// UserTypeEmployer is a constant for "employer" user type
-	UserTypeEmployer  = "employer"
+	UserTypeEmployer = "employer"
 )
 
 // JSONResponse is a standart form of response from backend to frontend
@@ -31,7 +31,7 @@ type JSONUserBody struct {
 // JSONLoginForm is a struct that recives login's form data from frontend
 type JSONLoginForm struct {
 	UserType string `json:"userType"` // use constants UserType
-	Email    string `json:"login"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
@@ -40,23 +40,34 @@ type JSONLogoutForm struct {
 	UserType string `json:"userType"` // use constants UserType
 }
 
-// JSONRegistrationForm is a struct that recives employer registration's form data from frontend 
+// JSONRegistrationForm is a struct that recives employer registration's form data from frontend
 type JSONEmployerRegistrationForm struct {
-	Name        string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	Position    string `json:"position"`
-	CompanyName string `json:"companyName"`
-	Description string `json:"companyDescription"`
-	Website     string `json:"website"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
+	FirstName          string `json:"firstName"`
+	LastName           string `json:"lastName"`
+	Position           string `json:"position"`
+	Company            string `json:"Name"`
+	CompanyDescription string `json:"companyDescription"`
+	CompanyWebsite     string `json:"comapnyWebsite"`
+	Email              string `json:"email"`
+	Password           string `json:"password"`
 }
 
 // JSONApplicantRegistrationForm is a struct that recives applicant registration's form data from frontend
 type JSONApplicantRegistrationForm struct {
-	Name      string `json:"firstName"`
+	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	BirthDate string `json:"birthDate"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
+}
+
+// JSONEmployer is a default represenation of employer
+type JSONEmployer struct {
+	FirstName          string `json:"firstName"`
+	LastName           string `json:"lastName"`
+	Position           string `json:"position"`
+	Company            string `json:"company"`
+	CompanyDescription string `json:"companyDescription"`
+	CompanyWebsite     string `json:"companyWebsite"`
+	Email              string `json:"email"`
 }

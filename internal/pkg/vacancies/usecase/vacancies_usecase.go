@@ -14,7 +14,7 @@ var ErrOffsetIsNotANumber = fmt.Errorf("query parameter offset isn't a number")
 var ErrNumIsEmpty = fmt.Errorf("query parameter num is empty")
 var ErrNumIsNotANumber = fmt.Errorf("query parameter num isn't a number")
 
-func GetVacanciesWithOffsetInputCheck(offsetStr, numStr string) (uint64, uint64, error) {
+func ValidateRequestParams(offsetStr, numStr string) (uint64, uint64, error) {
 	if offsetStr == "" {
 		return 0, 0, ErrOffsetIsEmpty
 	}

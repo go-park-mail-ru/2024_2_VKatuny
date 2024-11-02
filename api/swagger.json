@@ -1,0 +1,70 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "uArt's API",
+        "contact": {
+            "name": "Ifelsik",
+            "url": "https://github.com/Ifelsik"
+        },
+        "version": "1.0"
+    },
+    "host": "127.0.0.1:8000",
+    "basePath": "/api/v1",
+    "paths": {
+        "/registration/employer": {
+            "post": {
+                "summary": "Регистрация пользователя",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "Входные данные при регистрации пользователя",
+                        "schema": {
+                            "$ref": "#/definitions/EmployerRegistatrationForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Response": {
+            "statusCode": "integer",
+            "body": "object",
+            "error": "string"
+        },
+        "EmployerRegistatrationForm": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "companyDescription": {
+                    "type": "string"
+                },
+                "companyWebsite": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

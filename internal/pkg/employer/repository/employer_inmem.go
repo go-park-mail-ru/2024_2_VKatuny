@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 )
 
@@ -30,15 +29,15 @@ func NewRepo() *employerRepo {
 // Returns ID of created employer and error
 func (repo *employerRepo) Create(employerInput *dto.JSONEmployerRegistrationForm) (uint64, error) {
 	employer := &models.Employer{
-		ID:          repo.lastID,
-		Name:        employerInput.Name,
-		LastName:    employerInput.LastName,
-		Position:    employerInput.Position,
-		CompanyName: employerInput.CompanyName,
-		Description: employerInput.Description,
-		Website:     employerInput.Website,
-		Email:       employerInput.Email,
-		Password:    employerInput.Password,
+		ID:                 repo.lastID,
+		FirstName:          employerInput.FirstName,
+		LastName:           employerInput.LastName,
+		Position:           employerInput.Position,
+		Company:            employerInput.Company,
+		CompanyDescription: employerInput.CompanyDescription,
+		CompanyWebsite:     employerInput.CompanyWebsite,
+		Email:              employerInput.Email,
+		Password:           employerInput.Password,
 	}
 	repo.lastID++
 	repo.data = append(repo.data, employer)
@@ -62,5 +61,5 @@ func (repo *employerRepo) GetByEmail(email string) (*models.Employer, error) {
 			return employer, nil
 		}
 	}
-	return nil, employer.ErrNoUserExist
+	return nil, ErrNoUserExist
 }

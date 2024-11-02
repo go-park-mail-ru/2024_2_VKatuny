@@ -8,9 +8,9 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,7 +24,7 @@ import (
 // @Success     200      {object}       dto.JSONResponse{statusCode=200,body=dto.JSONUserBody, error=""} "OK"
 // @Failure     400      {object}       nil
 // @Router      /registration/employer/ [post]
-func CreateEmployerHandler(repo employer.Repository) http.Handler {
+func CreateEmployerHandler(repo repository.EmployerRepository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -47,6 +47,7 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 			})
 			return
 		}
+
 		if err := employerUsecase.CreateEmployerInputCheck(newUserInput); err != nil {
 			logger.Errorf("employer invalid fields")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
@@ -55,20 +56,25 @@ func CreateEmployerHandler(repo employer.Repository) http.Handler {
 			})
 			return
 		}
-		// TODO: remake
-		newUserInput.Password = utils.HashPassword(newUserInput.Password)
-		userID, err := repo.Create(newUserInput)
-		logger.Debugf("function %s: employer created", funcName)
-		if err == nil {
-			// TODO: cover error
-			user, _ := repo.GetByID(userID)
-			middleware.UniversalMarshal(w, http.StatusOK, user)
+		logger.Debugf("function %s: employer input check passed", funcName)
+
+		userID, err := employerUsecase.CreateEmployer(repo, newUserInput)
+		if err != nil {
+			logger.Debugf("error while creating user: %s", err)
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      "unable to create user",
+			})
 			return
 		}
-		logger.Debugf("error user with this email already exists: %s", newUserInput.Email)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      "user already exist",
+		logger.Debugf("function %s: employer created", funcName)
+
+		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+			HTTPStatus: http.StatusOK,
+			Body:       dto.JSONUserBody{
+				UserType: dto.UserTypeEmployer,
+				ID:       userID,
+			},
 		})
 	})
 }

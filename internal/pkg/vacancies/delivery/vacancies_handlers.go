@@ -1,4 +1,3 @@
-
 package delivery
 
 import (
@@ -56,7 +55,7 @@ func GetVacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTa
 
 		offsetStr := queryParams.Get("offset")
 		numStr := queryParams.Get("num")
-		offset, num, err := vacanciesUsecase.GetVacanciesWithOffsetInputCheck(offsetStr, numStr)
+		offset, num, err := vacanciesUsecase.ValidateRequestParams(offsetStr, numStr)
 
 		if err != nil {
 			logger.Errorf("function %s: %s", funcName, err.Error())
@@ -72,6 +71,7 @@ func GetVacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTa
 		}
 
 		logger.Debugf("function: %s; going to db for vacancies", funcName)
+		// TODO: use usecase
 		vacancies, err := repo.GetWithOffset(offset, offset+num)
 
 		if err != nil {

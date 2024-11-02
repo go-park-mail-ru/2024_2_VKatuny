@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker"
 
 	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
@@ -87,7 +87,7 @@ func LoginHandler(
 	repoApplicantSession session.Repository,
 	repoEmployerSession session.Repository,
 	repoApplicant worker.Repository,
-	repoEmployer employer.Repository,
+	repoEmployer repository.EmployerRepository,
 	backendAddress string,
 ) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +100,7 @@ func LoginHandler(
 
 		decoder := json.NewDecoder(r.Body)
 
-		newUserInput := new(dto.JSONLoginForm) // for any request and response use DTOs but not a model!
+		newUserInput := new(dto.JSONLoginForm) 
 		err := decoder.Decode(newUserInput)
 		if err != nil {
 			logger.Errorf("can't unmarshal JSON")

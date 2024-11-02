@@ -71,8 +71,8 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 		} else {
 			// is there actually should be HTTP 400?
 			logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusBadRequest,
+			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
 				Error:      "can't add applicant to db",
 			})
 		}
