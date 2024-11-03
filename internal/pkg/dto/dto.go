@@ -1,5 +1,7 @@
 package dto
 
+import "database/sql"
+
 // Package contains Data Transfer Objects (DTO).
 // DTOs used for tasering data from one part of the app to another.
 
@@ -40,6 +42,8 @@ type JSONLogoutForm struct {
 	UserType string `json:"userType"` // use constants UserType
 }
 
+// JSONApplicantRegistrationForm is a struct that recives applicant registration's form data from frontend
+
 // JSONRegistrationForm is a struct that receives employer registration's form data from frontend
 type JSONEmployerRegistrationForm struct {
 	FirstName          string `json:"firstName"`
@@ -53,6 +57,7 @@ type JSONEmployerRegistrationForm struct {
 }
 
 // JSONApplicantRegistrationForm is a struct that recipes applicant registration's form data from frontend
+
 type JSONApplicantRegistrationForm struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
@@ -72,6 +77,96 @@ type JSONEmployer struct {
 	Email              string `json:"email"`
 }
 
+// JSONEmployer is a default represenation of employer
+type ApplicantInput struct {
+	FirstName           string `json:"firstName"`
+	LastName            string `json:"lastName"`
+	CityName            string `json:"cityName"`
+	BirthDate           string `json:"birthDate"`
+	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	Contacts            string `json:"contacts"`
+	Education           string `json:"education"`
+	Email               string `json:"email"`
+	Password            string `json:"password"`
+}
+
+type ApplicantOutput struct {
+	ID                  uint64 `json:"id"`
+	FirstName           string `json:"firstName"`
+	LastName            string `json:"lastName"`
+	CityName            string `json:"cityName"`
+	BirthDate           string `json:"birthDate"`
+	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	Constants           string `json:"constants"`
+	Education           string `json:"education"`
+	Email               string `json:"email"`
+	PasswordHash        string `json:"-"`
+	CreatedAt           string `json:"createdAt"`
+	UpdatedAt           string `json:"updatedAt"`
+}
+
+type ApplicantWithNull struct {
+	ID                  uint64         `json:"id"`
+	FirstName           string         `json:"firstName"`
+	LastName            string         `json:"lastName"`
+	CityName            string         `json:"cityName"`
+	BirthDate           string         `json:"birthDate"`
+	PathToProfileAvatar string         `json:"pathToProfileAvatar"`
+	Contacts            sql.NullString `json:"contacts"`
+	Education           sql.NullString `json:"education"`
+	Email               string         `json:"email"`
+	PasswordHash        string         `json:"passwordHash"`
+	CreatedAt           string         `json:"createdAt"`
+	UpdatedAt           string         `json:"updatedAt"`
+}
+
+type EmployerInput struct {
+	FirstName           string `json:"firstName"`
+	LastName            string `json:"lastName"`
+	CityName            string `json:"cityName"`
+	Position            string `json:"position"`
+	CompanyName         string `json:"companyName"`
+	CompanyDescription  string `json:"companyDescription"`
+	CompanyWebsite      string `json:"companyWebsite"`
+	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	Contacts            string `json:"contacts"`
+	Email               string `json:"email"`
+	Password            string `json:"password"`
+}
+
+type EmployerWithNull struct {
+	ID                  uint64         `json:"id"`
+	FirstName           string         `json:"firstName"`
+	LastName            string         `json:"lastName"`
+	CityName            string         `json:"cityName"`
+	Position            string         `json:"position"`
+	CompanyName         string         `json:"companyName"`
+	CompanyDescription  string         `json:"companyDescription"`
+	CompanyWebsite      string         `json:"companyWebsite"`
+	PathToProfileAvatar string         `json:"pathToProfileAvatar"`
+	Contacts            sql.NullString `json:"contacts"`
+	Email               string         `json:"email"`
+	PasswordHash        string         `json:"passwordHash"`
+	CreatedAt           string         `json:"createdAt"`
+	UpdatedAt           string         `json:"updatedAt"`
+}
+
+type EmployerOutput struct {
+	ID                  uint64 `json:"id"`
+	FirstName           string `json:"firstName"`
+	LastName            string `json:"lastName"`
+	CityName            string `json:"cityName"`
+	Position            string `json:"position"`
+	CompanyName         string `json:"companyName"`
+	CompanyDescription  string `json:"companyDescription"`
+	CompanyWebsite      string `json:"companyWebsite"`
+	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	Contacts            string `json:"contacts"`
+	Email               string `json:"email"`
+	PasswordHash        string `json:"-"`
+	CreatedAt           string `json:"createdAt"`
+	UpdatedAt           string `json:"updatedAt"`
+}
 type UserIDAndType struct {
 	ID       uint64
 	UserType string

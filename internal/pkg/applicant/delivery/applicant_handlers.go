@@ -6,16 +6,15 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
+	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker"
-	workerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/usecase"
 	"github.com/sirupsen/logrus"
 )
 
-// CreateWorkerHandler creates worker in db
+// CreateWorkerHandler creates applicant in db
 // CreateWorker godoc
-// @Summary     Creates a new user as a worker
+// @Summary     Creates a new user as a applicant
 // @Description -
 // @Tags        Registration
 // @Accept      json
@@ -24,12 +23,12 @@ import (
 // @Param       password body string true "User's password"
 // @Success     200 {object} inmemorydb.UserInput
 // @Failure     http.StatusBadRequest {object} nil
-// @Router      /registration/worker/ [post]
-func CreateWorkerHandler(repo worker.Repository) http.Handler {
+// @Router      /registration/applicant/ [post]
+func CreateApplicantHandler(repo repository.ApplicantRepository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		funcName := "CreateWorkerHandler"
+		funcName := "CreateApplicantHandler"
 		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
 		if !ok {
 			fmt.Printf("function %s: can't get logger from context\n", funcName)
@@ -38,7 +37,7 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 
 		decoder := json.NewDecoder(r.Body)
 
-		newUserInput := new(models.Worker)
+		newUserInput := new(dto.ApplicantInput)
 		err := decoder.Decode(newUserInput)
 		if err != nil {
 			logger.Errorf("function %s: got err %s", funcName, err)
@@ -49,7 +48,7 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 			return
 		}
 
-		if err := workerUsecase.CreateWorkerInputCheck(newUserInput.Name, newUserInput.LastName, newUserInput.Email, newUserInput.Password); err != nil {
+		if err := applicantUsecase.CreateApplicantInputCheck(newUserInput.FirstName, newUserInput.LastName, newUserInput.Email, newUserInput.Password); err != nil {
 			logger.Errorf("function %s: %s", funcName, err.Error())
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -59,21 +58,32 @@ func CreateWorkerHandler(repo worker.Repository) http.Handler {
 		}
 
 		logger.Debugf("function %s: adding applicant to db %v", funcName, newUserInput)
-		userID, err := repo.Add(newUserInput)
+
+		user, err := applicantUsecase.CreateApplicant(repo, newUserInput)
+
 		if err == nil {
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 				HTTPStatus: http.StatusOK,
-				Body: dto.JSONUserBody{
-					UserType: "applicant",
-					ID:       userID,
-				}, // check in postman
+				Body: dto.ApplicantOutput{
+					ID:                  user.ID,
+					FirstName:           user.FirstName,
+					LastName:            user.LastName,
+					CityName:            user.CityName,
+					BirthDate:           user.BirthDate,
+					PathToProfileAvatar: user.LastName,
+					Constants:           user.Contacts,
+					Education:           user.Education,
+					Email:               user.Email,
+					CreatedAt:           user.CreatedAt,
+					UpdatedAt:           user.UpdatedAt,
+				},
 			})
 		} else {
 			// is there actually should be HTTP 400?
 			logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 				HTTPStatus: http.StatusInternalServerError,
-				Error:      "can't add applicant to db",
+				Error:      err.Error(),
 			})
 		}
 

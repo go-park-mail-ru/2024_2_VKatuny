@@ -27,21 +27,22 @@ func NewRepo() *employerRepo {
 // Creates new employer
 // Accepts pointer to employer model
 // Returns ID of created employer and error
-func (repo *employerRepo) Create(employerInput *dto.JSONEmployerRegistrationForm) (uint64, error) {
+func (repo *employerRepo) Create(employerInput *dto.EmployerInput) (*models.Employer, error) {
 	employer := &models.Employer{
 		ID:                 repo.lastID,
 		FirstName:          employerInput.FirstName,
 		LastName:           employerInput.LastName,
 		Position:           employerInput.Position,
-		Company:            employerInput.Company,
+		CompanyName:        employerInput.CompanyName,
 		CompanyDescription: employerInput.CompanyDescription,
 		CompanyWebsite:     employerInput.CompanyWebsite,
 		Email:              employerInput.Email,
-		Password:           employerInput.Password,
+		PasswordHash:       employerInput.Password,
 	}
 	repo.lastID++
 	repo.data = append(repo.data, employer)
-	return employer.ID, nil
+
+	return employer, nil
 }
 
 // GetByID gets employer by ID

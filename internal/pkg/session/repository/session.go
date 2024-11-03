@@ -1,11 +1,11 @@
-package session
+package repository
 
 import (
 	"fmt"
 )
 
-type Repository interface {
-	Add(uint64, string) error
+type SessionRepository interface {
+	Create(uint64, string) error
 	GetUserIdBySession(string) (uint64, error)
 	Delete(string) error
 }
