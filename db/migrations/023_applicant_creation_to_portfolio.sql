@@ -4,9 +4,7 @@ CREATE TABLE IF NOT EXISTS public."applicant_creation_to_portfolio"
     applicant_creation_id bigint NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-
     CONSTRAINT applicant_creation_to_portfolio_primary_key PRIMARY KEY (portfolio_id, applicant_creation_id),
-
     CONSTRAINT applicant_creation_to_portfolio_portfolio_id FOREIGN KEY (portfolio_id)
         REFERENCES public.portfolio (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -16,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public."applicant_creation_to_portfolio"
         REFERENCES public.applicant_creation (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE CASCADE
-        NOT VALID,
+        NOT VALID
 )
 
 ---- create above / drop below ----

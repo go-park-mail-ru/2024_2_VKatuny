@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public."employer"
     last_name text NOT NULL,
     city_id int,
     position text NOT NULL,
+    company_name_id int,
     company_description text NOT NULL,
     website text NOT NULL,
     path_to_profile_avatar text NOT NULL DEFAULT 'static/default_profile.png',
@@ -13,7 +14,6 @@ CREATE TABLE IF NOT EXISTS public."employer"
     password_hash text NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-
     CONSTRAINT employer_primary_key PRIMARY KEY (id),
     CONSTRAINT employer_first_name_length_check CHECK (length(first_name) <= 50) NOT VALID,
     CONSTRAINT employer_last_name_length_check CHECK (length(last_name) <= 50) NOT VALID,
@@ -24,18 +24,16 @@ CREATE TABLE IF NOT EXISTS public."employer"
     CONSTRAINT employer_email_unique UNIQUE (email),
     CONSTRAINT employer_email_length_check CHECK (length(email) <= 50) NOT VALID,
     CONSTRAINT employer_password_hash_length_check CHECK (length(password_hash) <= 250) NOT VALID,
-
     CONSTRAINT employer_city_id FOREIGN KEY (city_id)
         REFERENCES public.city (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE SET NULL
         NOT VALID,
-    
     CONSTRAINT employer_company_name_id FOREIGN KEY (company_name_id)
         REFERENCES public.company (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE SET NULL
-        NOT VALID,
+        NOT VALID
 )
 
 ---- create above / drop below ----
