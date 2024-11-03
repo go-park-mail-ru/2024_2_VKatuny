@@ -107,3 +107,11 @@ func AddSession(repoApplicant, repoEmployer sessionRepo.SessionRepository, user 
 	}
 	return sessionID, nil
 }
+
+func GetApplicantByEmail(repoApplicant applicantRepo.ApplicantRepository, email string) (*models.Applicant, error) {
+	return repoApplicant.GetByEmail(email)
+}
+
+func GetEmployerByEmail(repoEmployer employerRepo.EmployerRepository, email string) (*models.Employer, error) {
+	return repoEmployer.GetByEmail(email)
+}

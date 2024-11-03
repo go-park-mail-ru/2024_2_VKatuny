@@ -62,6 +62,7 @@ func AuthorizedHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer
 
 		logger.WithField("session_id", user.SessionID).Debug("got session id")
 		logger.Debugf("Just authorized user! UserType: %s; ID %d", user.UserType, user.ID)
+
 		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 			HTTPStatus: http.StatusOK,
 			Body: dto.JSONUserBody{
@@ -155,6 +156,48 @@ func LoginHandler(
 			Domain:   backendAddress,
 		}
 		http.SetCookie(w, cookie)
+
+		if newUserInput.UserType == dto.UserTypeApplicant {
+			userout, _ := sessionUsecase.GetApplicantByEmail(repoApplicant, newUserInput.Email)
+			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+				HTTPStatus: http.StatusOK,
+				Body: dto.ApplicantOutput{
+					ID:                  userout.ID,
+					FirstName:           userout.FirstName,
+					LastName:            userout.LastName,
+					CityName:            userout.CityName,
+					BirthDate:           userout.BirthDate,
+					PathToProfileAvatar: userout.LastName,
+					Constants:           userout.Contacts,
+					Education:           userout.Education,
+					Email:               userout.Email,
+					CreatedAt:           userout.CreatedAt,
+					UpdatedAt:           userout.UpdatedAt,
+				},
+			})
+		} else {
+			userout, _ := sessionUsecase.GetEmployerByEmail(repoEmployer, newUserInput.Email)
+			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+				HTTPStatus: http.StatusOK,
+				Body: dto.EmployerOutput{
+					ID:                  userout.ID,
+					FirstName:           userout.FirstName,
+					LastName:            userout.LastName,
+					CityName:            userout.CityName,
+					Position:            userout.Position,
+					CompanyName:         userout.CompanyName,
+					CompanyDescription:  userout.CompanyDescription,
+					CompanyWebsite:      userout.CompanyWebsite,
+					PathToProfileAvatar: userout.PathToProfileAvatar,
+					Contacts:            userout.Contacts,
+					Email:               userout.Email,
+					PasswordHash:        userout.PasswordHash,
+					CreatedAt:           userout.CreatedAt,
+					UpdatedAt:           userout.UpdatedAt,
+				},
+			})
+		}
+
 	})
 }
 
@@ -168,7 +211,7 @@ func LoginHandler(
 // @Failure     400
 // @Failure     401
 // @Router      /logout/ [post]
-func LogoutHandler(repoApplicant *sessionRepo.SessionApplicantRepo, repoEmployer *sessionRepo.SessionEmployerRepo) http.Handler { // just do it!
+func LogoutHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer sessionRepo.SessionRepository) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		funcName := "LogoutHandler"
@@ -213,5 +256,6 @@ func LogoutHandler(repoApplicant *sessionRepo.SessionApplicantRepo, repoEmployer
 
 		session.Expires = time.Now().AddDate(0, 0, -1)
 		http.SetCookie(w, session)
+
 	})
 }
