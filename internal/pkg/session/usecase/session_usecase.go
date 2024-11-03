@@ -6,11 +6,11 @@ import (
 	"math/rand"
 	"net/http"
 
+	applicantRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
+	employerRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker"
+	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
@@ -36,7 +36,7 @@ func GenerateSessionTokenWithLength(n int) string {
 
 var ErrEmptyCookie = fmt.Errorf("client have an empty cookie")
 
-func SessionCheck(session *http.Cookie, repoApplicant, repoEmployer session.Repository) (uint64, string, string, error) {
+func SessionCheck(session *http.Cookie, repoApplicant, repoEmployer sessionRepo.SessionRepository) (uint64, string, string, error) {
 	if sessionID := session.Value; sessionID != "" {
 
 		id, err := repoApplicant.GetUserIdBySession(sessionID)
@@ -51,7 +51,6 @@ func SessionCheck(session *http.Cookie, repoApplicant, repoEmployer session.Repo
 	return 0, "", "", ErrEmptyCookie
 }
 
-
 var (
 	// ErrWrongPassword means that password is wrong
 	ErrWrongPassword = fmt.Errorf("wrong password")
@@ -62,16 +61,16 @@ var (
 )
 
 // LoginCheck ! TODO: rename function to more accurate meaning
-func LoginCheck(newUserInput *dto.JSONLoginForm, repoApplicant worker.Repository, repoEmployer repository.EmployerRepository) (uint64, error) {
+func LoginCheck(newUserInput *dto.JSONLoginForm, repoApplicant applicantRepo.ApplicantRepository, repoEmployer employerRepo.EmployerRepository) (uint64, error) {
 	var err error
 	var id uint64
 	if newUserInput.UserType == dto.UserTypeApplicant {
-		var user *models.Worker
+		var user *models.Applicant
 		user, err = repoApplicant.GetByEmail(newUserInput.Email)
 		if err != nil {
 			return 0, ErrNoApplicantWithSuchEmail
 		}
-		if !utils.EqualHashedPasswords(user.Password, newUserInput.Password) {
+		if !utils.EqualHashedPasswords(user.PasswordHash, newUserInput.Password) {
 			return 0, ErrWrongPassword
 		}
 		id = user.ID
@@ -81,7 +80,7 @@ func LoginCheck(newUserInput *dto.JSONLoginForm, repoApplicant worker.Repository
 		if err != nil {
 			return 0, ErrNoEmployerWithSuchEmail
 		}
-		if !utils.EqualHashedPasswords(user.Password, newUserInput.Password) {
+		if !utils.EqualHashedPasswords(user.PasswordHash, newUserInput.Password) {
 			return 0, ErrWrongPassword
 		}
 		id = user.ID
@@ -91,7 +90,7 @@ func LoginCheck(newUserInput *dto.JSONLoginForm, repoApplicant worker.Repository
 
 // LogoutCheck tries to remove session from db
 // TODO: rename function to more accurate meaning
-func LogoutCheck(newUserInput *dto.JSONLogoutForm, sessionID string, repoApplicant, repoEmployer session.Repository) error {
+func LogoutCheck(newUserInput *dto.JSONLogoutForm, sessionID string, repoApplicant, repoEmployer sessionRepo.SessionRepository) error {
 	var err error
 	if newUserInput.UserType == dto.UserTypeApplicant {
 		err = repoApplicant.Delete(sessionID)

@@ -14,7 +14,7 @@ import (
 type EmployerRepository interface {
 	//rename to Add
 	// probably shouldn't commit model to Create method
-	Create(*dto.JSONEmployerRegistrationForm) (uint64, error)
+	Create(*dto.EmployerInput) (*models.Employer, error)
 	GetByID(id uint64) (*models.Employer, error)
 	GetByEmail(email string) (*models.Employer, error)
 }

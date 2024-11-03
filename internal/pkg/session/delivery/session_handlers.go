@@ -9,12 +9,11 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	applicantRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker"
+	employerRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 
-	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
+	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	sessionUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
 	"github.com/sirupsen/logrus"
 )
@@ -28,7 +27,7 @@ import (
 // @Success     200
 // @Failure     401
 // @Router      /authorized [post]
-func AuthorizedHandler(repoApplicant session.Repository, repoEmployer session.Repository) http.Handler { // just do it!
+func AuthorizedHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer sessionRepo.SessionRepository) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -84,10 +83,10 @@ func AuthorizedHandler(repoApplicant session.Repository, repoEmployer session.Re
 // @Failure     401 {object} map[string]interface{}
 // @Router      /login/ [post]
 func LoginHandler(
-	repoApplicantSession session.Repository,
-	repoEmployerSession session.Repository,
-	repoApplicant worker.Repository,
-	repoEmployer repository.EmployerRepository,
+	repoApplicantSession sessionRepo.SessionRepository,
+	repoEmployerSession sessionRepo.SessionRepository,
+	repoApplicant applicantRepo.ApplicantRepository,
+	repoEmployer employerRepo.EmployerRepository,
 	backendAddress string,
 ) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +99,7 @@ func LoginHandler(
 
 		decoder := json.NewDecoder(r.Body)
 
-		newUserInput := new(dto.JSONLoginForm) 
+		newUserInput := new(dto.JSONLoginForm)
 		err := decoder.Decode(newUserInput)
 		if err != nil {
 			logger.Errorf("can't unmarshal JSON")
@@ -127,9 +126,9 @@ func LoginHandler(
 
 		sessionID := sessionUsecase.GenerateSessionToken()
 		if newUserInput.UserType == dto.UserTypeApplicant {
-			err = repoApplicantSession.Add(userID, sessionID)
+			err = repoApplicantSession.Create(userID, sessionID)
 		} else if newUserInput.UserType == dto.UserTypeEmployer {
-			err = repoEmployerSession.Add(userID, sessionID)
+			err = repoEmployerSession.Create(userID, sessionID)
 		}
 
 		// TODO: remake error comparison
@@ -170,7 +169,7 @@ func LoginHandler(
 // @Failure     400
 // @Failure     401
 // @Router      /logout/ [post]
-func LogoutHandler(repoApplicant session.Repository, repoEmployer session.Repository) http.Handler { // just do it!
+func LogoutHandler(repoApplicant *sessionRepo.SessionApplicantRepo, repoEmployer *sessionRepo.SessionEmployerRepo) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		funcName := "LogoutHandler"

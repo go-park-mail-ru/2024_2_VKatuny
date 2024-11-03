@@ -9,7 +9,7 @@ import (
 func SetSecurityAndOptionsHeaders(next http.Handler, hostWithSchema string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set up CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", hostWithSchema)
+		w.Header().Set("Access-Control-Allow-Origin", "http://192.168.77.130:8000")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept")

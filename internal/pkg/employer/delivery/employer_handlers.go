@@ -37,7 +37,7 @@ func CreateEmployerHandler(repo repository.EmployerRepository) http.Handler {
 
 		decoder := json.NewDecoder(r.Body)
 
-		newUserInput := new(dto.JSONEmployerRegistrationForm)
+		newUserInput := new(dto.EmployerInput)
 		err := decoder.Decode(newUserInput)
 		if err != nil {
 			logger.Errorf("error while unmarshalling employer  JSON: %s", err)
@@ -58,7 +58,7 @@ func CreateEmployerHandler(repo repository.EmployerRepository) http.Handler {
 		}
 		logger.Debugf("function %s: employer input check passed", funcName)
 
-		userID, err := employerUsecase.CreateEmployer(repo, newUserInput)
+		user, err := employerUsecase.CreateEmployer(repo, newUserInput)
 		if err != nil {
 			logger.Debugf("error while creating user: %s", err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
@@ -71,9 +71,21 @@ func CreateEmployerHandler(repo repository.EmployerRepository) http.Handler {
 
 		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 			HTTPStatus: http.StatusOK,
-			Body:       dto.JSONUserBody{
-				UserType: dto.UserTypeEmployer,
-				ID:       userID,
+			Body: dto.EmployerOutput{
+				ID:                  user.ID,
+				FirstName:           user.FirstName,
+				LastName:            user.LastName,
+				CityName:            user.CityName,
+				Position:            user.Position,
+				CompanyName:         user.CompanyName,
+				CompanyDescription:  user.CompanyDescription,
+				CompanyWebsite:      user.CompanyWebsite,
+				PathToProfileAvatar: user.PathToProfileAvatar,
+				Contacts:            user.Contacts,
+				Email:               user.Email,
+				PasswordHash:        user.PasswordHash,
+				CreatedAt:           user.CreatedAt,
+				UpdatedAt:           user.UpdatedAt,
 			},
 		})
 	})
