@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func RequireAuthorization(next http.Handler, logger *logrus.Logger, sessionApplicant, sessionEmployer repository.SessionRepository) http.Handler {
+func RequireAuthorization(next http.Handler, logger *logrus.Logger, sessionApplicant repository.SessionRepository, sessionEmployer repository.SessionRepository) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fn := "middleware.RequireAuthorization"
 

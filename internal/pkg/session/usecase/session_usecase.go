@@ -31,7 +31,7 @@ func GenerateSessionToken(n int) string {
 
 var ErrEmptyCookie = fmt.Errorf("client have an empty cookie")
 
-func CheckAuthorization(session *http.Cookie, repoApplicant sessionRepo.SessionApplicantRepo, repoEmployer sessionRepo.SessionApplicantRepo) (*dto.UserWithSession, error) {
+func CheckAuthorization(session *http.Cookie, repoApplicant sessionRepo.SessionRepository, repoEmployer sessionRepo.SessionRepository) (*dto.UserWithSession, error) {
 	if session == nil || session.Value == "" {
 		return nil, ErrEmptyCookie
 	}
