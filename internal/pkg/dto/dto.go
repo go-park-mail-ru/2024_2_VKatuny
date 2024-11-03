@@ -45,7 +45,7 @@ type JSONEmployerRegistrationForm struct {
 	FirstName          string `json:"firstName"`
 	LastName           string `json:"lastName"`
 	Position           string `json:"position"`
-	Company            string `json:"Name"`
+	Company            string `json:"companyName"`
 	CompanyDescription string `json:"companyDescription"`
 	CompanyWebsite     string `json:"companyWebsite"`
 	Email              string `json:"email"`
@@ -60,7 +60,6 @@ type JSONApplicantRegistrationForm struct {
 	Email     string `json:"email"`
 	Password  string `json:"password"`
 }
-
 
 // JSONEmployer is a default representation of employer
 type JSONEmployer struct {
@@ -79,7 +78,72 @@ type UserIDAndType struct {
 }
 
 type UserWithSession struct {
-	ID       uint64
-	UserType string
+	ID        uint64
+	UserType  string
 	SessionID string
 }
+
+type JSONGetEmployerProfile struct {
+	FirstName          string `json:"firstName"`
+	LastName           string `json:"lastName"`
+	City               string `json:"city"`
+	Position           string `json:"position"`
+	Company            string `json:"companyName"`
+	CompanyDescription string `json:"companyDescription"`
+	CompanyWebsite     string `json:"companyWebsite"`
+	Contacts           string `json:"contacts"`
+	Avatar             string `json:"avatar"`
+}
+
+type JSONGetApplicantProfile struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	City      string `json:"city"`
+	BirthDate string `json:"birthDate"`
+	Avatar    string `json:"avatar"`
+	Contacts  string `json:"contacts"`
+	Education string `json:"education"`
+}
+
+type JSONUpdateEmployerProfile struct {
+	FirstName          string `json:"firstName"`
+	LastName           string `json:"lastName"`
+	City               string `json:"city"`
+	Contacts           string `json:"contacts"`
+	Avatar             string `json:"avatar"`
+}
+
+type JSONUpdateApplicantProfile struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	City      string `json:"city"`
+	BirthDate string `json:"birthDate"`
+	Avatar    string `json:"avatar"`
+	Contacts  string `json:"contacts"`
+	Education string `json:"education"`
+}
+
+type JSONGetEmployerVacancy struct {
+	ID          uint64 `json:"id"`
+	EmployerID  uint64 `json:"employer"`
+	Salary      string `json:"salary"`
+	Position    string `json:"position"`
+	Location    string `json:"location"`
+	Description string `json:"description"`
+	WorkType    string `json:"workType"`
+	Avatar      string `json:"avatar"`
+	CreatedAt   string `json:"createdAt"`
+}
+
+// type JSONGetApplicantPortfolio struct {
+// 	ID          uint64 `json:"id"`
+// 	ApplicantID uint64 `json:"applicant"`
+// 	Title       string `json:"title"`
+// 	Description string `json:"description"`
+
+// }
+
+// type JSONGetApplicantCV struct {
+// 	ID          uint64 `json:"id"`
+// }
+
