@@ -188,7 +188,7 @@ URL: `/api/v1/logout`
 <summary>Вакансии</summary>
 
 URL: `/api/v1/vacancies`  
-Метод: `GET`
+Метод: `GET`  
 Query-параметры: `offset` и `num` - натуральные числа - обязательны  
 Получает: `num` вакансий с отступом `offset`  
 Возвращает:  

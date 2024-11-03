@@ -20,13 +20,8 @@ var (
 
 const tokenLength = 32
 
-// GenerateSessionToken generate random string for session id with default length
-func GenerateSessionToken() string {
-	return GenerateSessionTokenWithLength(tokenLength)
-}
-
 // GenerateSessionTokenWithLength generate random string with given length for session id
-func GenerateSessionTokenWithLength(n int) string {
+func GenerateSessionToken(n int) string {
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
@@ -36,7 +31,7 @@ func GenerateSessionTokenWithLength(n int) string {
 
 var ErrEmptyCookie = fmt.Errorf("client have an empty cookie")
 
-func SessionCheck(session *http.Cookie, repoApplicant, repoEmployer session.Repository) (uint64, string, string, error) {
+func CheckAuthorization(session *http.Cookie, repoApplicant, repoEmployer session.Repository) (*dto.UserWithSession, error) {
 	if sessionID := session.Value; sessionID != "" {
 
 		id, err := repoApplicant.GetUserIdBySession(sessionID)
@@ -46,11 +41,10 @@ func SessionCheck(session *http.Cookie, repoApplicant, repoEmployer session.Repo
 			id, err = repoEmployer.GetUserIdBySession(sessionID)
 			userType = dto.UserTypeEmployer
 		}
-		return id, userType, sessionID, err
+		return &dto.UserWithSession{ID: id, UserType: userType, SessionID: sessionID}, err
 	}
-	return 0, "", "", ErrEmptyCookie
+	return nil, ErrEmptyCookie
 }
-
 
 var (
 	// ErrWrongPassword means that password is wrong
@@ -61,37 +55,35 @@ var (
 	ErrNoEmployerWithSuchEmail = fmt.Errorf("there is no employer with such email")
 )
 
-// LoginCheck ! TODO: rename function to more accurate meaning
-func LoginCheck(newUserInput *dto.JSONLoginForm, repoApplicant worker.Repository, repoEmployer repository.EmployerRepository) (uint64, error) {
-	var err error
-	var id uint64
+// LoginValidate ! TODO: rename function to more accurate meaning
+func LoginValidate(newUserInput *dto.JSONLoginForm, repoApplicant worker.Repository, repoEmployer repository.EmployerRepository) (user *dto.UserIDAndType, err error) {
 	if newUserInput.UserType == dto.UserTypeApplicant {
-		var user *models.Worker
-		user, err = repoApplicant.GetByEmail(newUserInput.Email)
+		var worker *models.Worker
+		worker, err = repoApplicant.GetByEmail(newUserInput.Email)
 		if err != nil {
-			return 0, ErrNoApplicantWithSuchEmail
+			return nil, ErrNoApplicantWithSuchEmail
 		}
-		if !utils.EqualHashedPasswords(user.Password, newUserInput.Password) {
-			return 0, ErrWrongPassword
+		if !utils.EqualHashedPasswords(worker.Password, newUserInput.Password) {
+			return nil, ErrWrongPassword
 		}
-		id = user.ID
+		user = &dto.UserIDAndType{ID: worker.ID, UserType: dto.UserTypeApplicant}
 	} else if newUserInput.UserType == dto.UserTypeEmployer {
-		var user *models.Employer
-		user, err = repoEmployer.GetByEmail(newUserInput.Email)
+		var employer *models.Employer
+		employer, err = repoEmployer.GetByEmail(newUserInput.Email)
 		if err != nil {
-			return 0, ErrNoEmployerWithSuchEmail
+			return nil, ErrNoEmployerWithSuchEmail
 		}
-		if !utils.EqualHashedPasswords(user.Password, newUserInput.Password) {
-			return 0, ErrWrongPassword
+		if !utils.EqualHashedPasswords(employer.Password, newUserInput.Password) {
+			return nil, ErrWrongPassword
 		}
-		id = user.ID
+		user = &dto.UserIDAndType{ID: employer.ID, UserType: dto.UserTypeEmployer}
 	}
-	return id, err
+	return user, err
 }
 
-// LogoutCheck tries to remove session from db
+// LogoutValidate tries to remove session from db
 // TODO: rename function to more accurate meaning
-func LogoutCheck(newUserInput *dto.JSONLogoutForm, sessionID string, repoApplicant, repoEmployer session.Repository) error {
+func LogoutValidate(newUserInput *dto.JSONLogoutForm, sessionID string, repoApplicant, repoEmployer session.Repository) error {
 	var err error
 	if newUserInput.UserType == dto.UserTypeApplicant {
 		err = repoApplicant.Delete(sessionID)
@@ -99,4 +91,14 @@ func LogoutCheck(newUserInput *dto.JSONLogoutForm, sessionID string, repoApplica
 		err = repoEmployer.Delete(sessionID)
 	}
 	return err
+}
+
+func AddSession(repoApplicant, repoEmployer session.Repository, user *dto.UserIDAndType) (string, error) {
+	sessionID := GenerateSessionToken(tokenLength)
+	if user.UserType == dto.UserTypeApplicant {
+		return sessionID, repoApplicant.Add(user.ID, sessionID)
+	} else if user.UserType == dto.UserTypeEmployer {
+		return sessionID, repoEmployer.Add(user.ID, sessionID)
+	}
+	return sessionID, nil
 }

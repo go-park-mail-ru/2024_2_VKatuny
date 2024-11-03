@@ -19,6 +19,7 @@ type ServerConfig struct {
 	Scheme string `yaml:"scheme"`
 	Host   string `yaml:"host"`
 	Port   int    `yaml:"port"`
+	Front  string `yaml:"frontURI"`
 }
 
 // ReadConfig reads file with configuration.
@@ -49,4 +50,9 @@ func (s *ServerConfig) GetAddress() string {
 // e.g. http://127.0.0.1:8080
 func (s *ServerConfig) GetHostWithScheme() string {
 	return s.Scheme + "://" + s.Host
+}
+
+// GetFrontURI returns front uri. E.g http://127.0.0.1:3000
+func (s *ServerConfig) GetFrontURI() string {
+	return s.Front
 }
