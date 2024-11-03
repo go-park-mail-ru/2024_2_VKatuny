@@ -10,7 +10,7 @@ import (
 )
 
 // AllowMethods checks if request method is allowed.
-// Accepts http.Handler and array of allowed methods.
+// Accepts http.Handler and allowed methods.
 func AllowMethods(next http.Handler, allowedMethods ...string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fn := "middleware.AllowMethods"

@@ -13,6 +13,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	defaultVacanciesOffset = 0
+	defaultVacanciesNum    = 10
+)
+
 // GetVacanciesHandler returns list of vacancies
 // GetVacancies godoc
 // @Summary     Gets list of vacancies
@@ -30,7 +35,7 @@ func GetVacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTa
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		funcName := "VacanciesHandler"
+		funcName := "vacancies.GetVacanciesHandler"
 		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
 		if !ok {
 			fmt.Printf("%s: can't get logger from context\n", funcName)
@@ -57,17 +62,12 @@ func GetVacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTa
 		numStr := queryParams.Get("num")
 		offset, num, err := vacanciesUsecase.ValidateRequestParams(offsetStr, numStr)
 
+		// at lest one param is incorrect or not presented
+		// using default values
 		if err != nil {
-			logger.Errorf("function %s: %s", funcName, err.Error())
-			middleware.UniversalMarshal(
-				w,
-				http.StatusBadRequest,
-				dto.JSONResponse{
-					HTTPStatus: http.StatusBadRequest,
-					Error:      err.Error(),
-				},
-			)
-			return
+			logger.Debugf("function: %s; got err: %s - processing with default values", funcName, err)
+			offset = defaultVacanciesOffset
+			num = defaultVacanciesNum
 		}
 
 		logger.Debugf("function: %s; going to db for vacancies", funcName)

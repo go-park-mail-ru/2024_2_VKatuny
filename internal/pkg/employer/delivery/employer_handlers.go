@@ -78,3 +78,6 @@ func CreateEmployerHandler(repo repository.EmployerRepository) http.Handler {
 		})
 	})
 }
+
+
+

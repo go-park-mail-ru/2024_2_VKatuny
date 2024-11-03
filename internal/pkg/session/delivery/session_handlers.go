@@ -41,33 +41,35 @@ func AuthorizedHandler(repoApplicant session.Repository, repoEmployer session.Re
 
 		session, err := r.Cookie("session_id1")
 
-		if err != nil || session == nil {
+		if err != nil {
 			logger.Debugf("function: %s; problems with reading cookie", funcName)
 			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 				HTTPStatus: http.StatusUnauthorized,
 				Error:      "client doesn't have a cookie",
 			})
+			return
 		}
 
 		user, err := sessionUsecase.CheckAuthorization(session, repoApplicant, repoEmployer)
 
-		if err == nil {
-			logger.WithField("session_id", user.SessionID).Debug("got session id")
-			logger.Debugf("Just authorized user! UserType: %s; ID %d", user.UserType, user.ID)
-			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-				HTTPStatus: http.StatusOK,
-				Body: dto.JSONUserBody{
-					UserType: user.UserType,
-					ID:       user.ID,
-				},
-			})
-		} else {
+		if err != nil {
 			logger.Errorf("authorization error")
 			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 				HTTPStatus: http.StatusUnauthorized,
 				Error:      err.Error(),
 			})
+			return
 		}
+
+		logger.WithField("session_id", user.SessionID).Debug("got session id")
+		logger.Debugf("Just authorized user! UserType: %s; ID %d", user.UserType, user.ID)
+		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+			HTTPStatus: http.StatusOK,
+			Body: dto.JSONUserBody{
+				UserType: user.UserType,
+				ID:       user.ID,
+			},
+		})
 	})
 }
 

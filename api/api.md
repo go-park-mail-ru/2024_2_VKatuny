@@ -44,9 +44,9 @@ URL: `/api/v1/registration/applicant`
 <details>
 <summary>Соискателя</summary>
 
-URL: `/api/v1/registartion/applicant`  
+URL: `/api/v1/registration/applicant`  
 Метод: `POST`  
-На вход принмает JSON  
+На вход принимает JSON  
 ```json
 {
     "firstName": "ivan",
@@ -189,7 +189,7 @@ URL: `/api/v1/logout`
 
 URL: `/api/v1/vacancies`  
 Метод: `GET`  
-Query-параметры: `offset` и `num` - натуральные числа - обязательны  
+Query-параметры: `offset` и `num` - натуральные числа (по дефолту 0 и 10 соответственно)  
 Получает: `num` вакансий с отступом `offset`  
 Возвращает:  
 1. `200 OK` - возвращает вакансии

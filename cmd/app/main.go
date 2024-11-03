@@ -29,6 +29,7 @@ func main() {
 	conf, _ := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
 
+	// Try gorilla?
 	Mux := http.NewServeMux()
 
 	workerRepository := worker_repository.NewRepo()

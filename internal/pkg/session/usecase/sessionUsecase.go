@@ -32,18 +32,23 @@ func GenerateSessionToken(n int) string {
 var ErrEmptyCookie = fmt.Errorf("client have an empty cookie")
 
 func CheckAuthorization(session *http.Cookie, repoApplicant, repoEmployer session.Repository) (*dto.UserWithSession, error) {
-	if sessionID := session.Value; sessionID != "" {
-
-		id, err := repoApplicant.GetUserIdBySession(sessionID)
-		userType := dto.UserTypeApplicant
-
-		if err != nil {
-			id, err = repoEmployer.GetUserIdBySession(sessionID)
-			userType = dto.UserTypeEmployer
-		}
-		return &dto.UserWithSession{ID: id, UserType: userType, SessionID: sessionID}, err
+	if session == nil || session.Value == "" {
+		return nil, ErrEmptyCookie
 	}
-	return nil, ErrEmptyCookie
+
+	sessionID := session.Value
+	id, err := repoApplicant.GetUserIdBySession(sessionID)
+	userType := dto.UserTypeApplicant
+
+	if err != nil {
+		id, err = repoEmployer.GetUserIdBySession(sessionID)
+		userType = dto.UserTypeEmployer
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return &dto.UserWithSession{ID: id, UserType: userType, SessionID: sessionID}, err
 }
 
 var (
