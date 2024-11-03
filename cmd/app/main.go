@@ -15,9 +15,14 @@ import (
 	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
-	vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
+
+	//vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+
+	vacancies_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
+	//worker_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/delivery"
+	//worker_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/repository"
 )
 
 func GetDBConnection() (*sql.DB, error) { //conf DatabaseConfig) (*sql.DB, error) {
@@ -95,13 +100,13 @@ func main() {
 	authorizedHandler := session_delivery.AuthorizedHandler(sessionApplicantRepository, sessionEmployerRepository)
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
-	vacanciesRepository := vacancies_repostory.NewRepo()
+	vacanciesRepository := vacancies_repository.NewRepo()
 	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository) //(&db.Vacancies)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
-	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.GetHostWithScheme())
+	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.GetFrontURI())
 	handlers = middleware.Panic(handlers)
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetContext(handlers, logger)

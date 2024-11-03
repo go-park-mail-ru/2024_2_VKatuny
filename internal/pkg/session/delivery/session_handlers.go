@@ -48,16 +48,16 @@ func AuthorizedHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer
 			})
 		}
 
-		id, userType, sessionID, err := sessionUsecase.SessionCheck(session, repoApplicant, repoEmployer)
+		user, err := sessionUsecase.CheckAuthorization(session, repoApplicant, repoEmployer)
 
 		if err == nil {
-			logger.WithField("session_id", sessionID).Debug("got session id")
-			logger.Debugf("Just authorized user! UserType: %s; ID %d", userType, id)
+			logger.WithField("session_id", user.SessionID).Debug("got session id")
+			logger.Debugf("Just authorized user! UserType: %s; ID %d", user.UserType, user.ID)
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 				HTTPStatus: http.StatusOK,
 				Body: dto.JSONUserBody{
-					UserType: userType,
-					ID:       id,
+					UserType: user.UserType,
+					ID:       user.ID,
 				},
 			})
 		} else {
@@ -110,9 +110,9 @@ func LoginHandler(
 			return
 		}
 
-		userID, err := sessionUsecase.LoginCheck(newUserInput, repoApplicant, repoEmployer)
+		user, err := sessionUsecase.LoginValidate(newUserInput, repoApplicant, repoEmployer)
 		if err != nil {
-			logger.Errorf("function %s: %s", funcName, err.Error())
+			logger.Errorf("function %s: login validation got %s", funcName, err.Error())
 			middleware.UniversalMarshal(
 				w,
 				http.StatusBadRequest,
@@ -123,17 +123,13 @@ func LoginHandler(
 			)
 			return
 		}
+		logger.Debugf("function %s: got user with id %d", funcName, user.ID)
 
-		sessionID := sessionUsecase.GenerateSessionToken()
-		if newUserInput.UserType == dto.UserTypeApplicant {
-			err = repoApplicantSession.Create(userID, sessionID)
-		} else if newUserInput.UserType == dto.UserTypeEmployer {
-			err = repoEmployerSession.Create(userID, sessionID)
-		}
+		sessionID, err := sessionUsecase.AddSession(repoApplicantSession, repoEmployerSession, user)
 
 		// TODO: remake error comparison
 		if err != nil {
-			logger.Errorf("function %s: %s", funcName, err.Error())
+			logger.Debugf("function %s: session adding got %s", funcName, err.Error())
 			middleware.UniversalMarshal(
 				w,
 				http.StatusBadRequest,
@@ -144,8 +140,9 @@ func LoginHandler(
 			)
 			return
 		}
+		logger.Debugf("function %s: session added successfully", funcName)
 
-		logger.Debugf("Cookie received")
+		logger.Debug("Cookie send")
 		cookie := &http.Cookie{
 			Name:     "session_id1", // why id1?
 			Value:    sessionID,
@@ -201,7 +198,7 @@ func LogoutHandler(repoApplicant *sessionRepo.SessionApplicantRepo, repoEmployer
 		}
 
 		sessionID := session.Value
-		err = sessionUsecase.LogoutCheck(newUserInput, sessionID, repoApplicant, repoEmployer)
+		err = sessionUsecase.LogoutValidate(newUserInput, sessionID, repoApplicant, repoEmployer)
 
 		if err != nil {
 			logger.Errorf("no user with this session")

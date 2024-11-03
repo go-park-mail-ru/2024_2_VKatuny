@@ -3,7 +3,7 @@ package dto
 import "database/sql"
 
 // Package contains Data Transfer Objects (DTO).
-// DTOs used for trnsfering data from one part of the app to another.
+// DTOs used for tasering data from one part of the app to another.
 
 type loggerKey int
 
@@ -17,7 +17,7 @@ const (
 	UserTypeEmployer = "employer"
 )
 
-// JSONResponse is a standart form of response from backend to frontend
+// JSONResponse is a standard form of response from backend to frontend
 type JSONResponse struct {
 	HTTPStatus int         `json:"statusCode"`
 	Body       interface{} `json:"body"`
@@ -30,19 +30,34 @@ type JSONUserBody struct {
 	ID       uint64 `json:"id"`
 }
 
-// JSONLoginForm is a struct that recives login's form data from frontend
+// JSONLoginForm is a struct that receives login's form data from frontend
 type JSONLoginForm struct {
 	UserType string `json:"userType"` // use constants UserType
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-// JSONLoutForm accepts user type when somene log outs
+// JSONLoutForm accepts user type when someone log outs
 type JSONLogoutForm struct {
 	UserType string `json:"userType"` // use constants UserType
 }
 
 // JSONApplicantRegistrationForm is a struct that recives applicant registration's form data from frontend
+
+// JSONRegistrationForm is a struct that receives employer registration's form data from frontend
+type JSONEmployerRegistrationForm struct {
+	FirstName          string `json:"firstName"`
+	LastName           string `json:"lastName"`
+	Position           string `json:"position"`
+	Company            string `json:"Name"`
+	CompanyDescription string `json:"companyDescription"`
+	CompanyWebsite     string `json:"companyWebsite"`
+	Email              string `json:"email"`
+	Password           string `json:"password"`
+}
+
+// JSONApplicantRegistrationForm is a struct that recipes applicant registration's form data from frontend
+
 type JSONApplicantRegistrationForm struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
@@ -51,7 +66,7 @@ type JSONApplicantRegistrationForm struct {
 	Password  string `json:"password"`
 }
 
-// JSONEmployer is a default represenation of employer
+// JSONEmployer is a default representation of employer
 type JSONEmployer struct {
 	FirstName          string `json:"firstName"`
 	LastName           string `json:"lastName"`
@@ -151,4 +166,14 @@ type EmployerOutput struct {
 	PasswordHash        string `json:"-"`
 	CreatedAt           string `json:"createdAt"`
 	UpdatedAt           string `json:"updatedAt"`
+}
+type UserIDAndType struct {
+	ID       uint64
+	UserType string
+}
+
+type UserWithSession struct {
+	ID        uint64
+	UserType  string
+	SessionID string
 }
