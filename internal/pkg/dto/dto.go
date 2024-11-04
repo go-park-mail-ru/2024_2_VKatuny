@@ -201,11 +201,11 @@ type JSONGetApplicantProfile struct {
 }
 
 type JSONUpdateEmployerProfile struct {
-	FirstName          string `json:"firstName"`
-	LastName           string `json:"lastName"`
-	City               string `json:"city"`
-	Contacts           string `json:"contacts"`
-	Avatar             string `json:"avatar"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	City      string `json:"city"`
+	Contacts  string `json:"contacts"`
+	Avatar    string `json:"avatar"`
 }
 
 type JSONUpdateApplicantProfile struct {
@@ -233,7 +233,7 @@ type JSONGetEmployerVacancy struct {
 type JSONGetApplicantPortfolio struct {
 	ID          uint64 `json:"id"`
 	ApplicantID uint64 `json:"applicant"`
-	Title       string `json:"title"`
+	Name        string `json:"name"`
 	Description string `json:"description,omitempty"`
 	CreatedAt   string `json:"createdAt"`
 }
@@ -246,5 +246,5 @@ type JSONGetApplicantCV struct {
 	Description       string `json:"description,omitempty"`
 	JobSearchStatusID int    `json:"jobSearchStatusID"`
 	WorkingExperience string `json:"workingExperience"`
-	CreatedAt         string `json:"createdAt"` 
+	CreatedAt         string `json:"createdAt"`
 }

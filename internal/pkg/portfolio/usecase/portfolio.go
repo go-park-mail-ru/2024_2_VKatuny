@@ -11,7 +11,7 @@ type IPortfolioUsecase interface {
 }
 
 type PortfolioUsecase struct {
-	logger *logrus.Logger
+	logger        *logrus.Logger
 	portfolioRepo repository.IPortfolioRepository
 }
 
@@ -26,13 +26,13 @@ func (pu *PortfolioUsecase) GetApplicantPortfolios(applicantID uint64) ([]*dto.J
 	}
 
 	pu.logger.Debugf("function: %s; successfully got applicant portfolios: %d", fn, len(portfoliosModel))
-	portfolio := make([]*dto.JSONGetApplicantPortfolio,  0,len(portfoliosModel))
+	portfolio := make([]*dto.JSONGetApplicantPortfolio, 0, len(portfoliosModel))
 	for _, portfolioModel := range portfoliosModel {
 		portfolio = append(portfolio, &dto.JSONGetApplicantPortfolio{
-			ID: portfolioModel.ID,
+			ID:          portfolioModel.ID,
 			ApplicantID: portfolioModel.ApplicantID,
-			Title: portfolioModel.Name,
-			CreatedAt: portfolioModel.CreatedAt.Format("2006.01.02 15:04:05"),
+			Name:        portfolioModel.Name,
+			CreatedAt:   portfolioModel.CreatedAt.Format("2006.01.02 15:04:05"),
 		})
 	}
 
