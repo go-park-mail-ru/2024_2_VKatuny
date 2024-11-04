@@ -73,19 +73,20 @@ func main() {
 
 	Mux := http.NewServeMux()
 
-	applicantRepository := applicant_repository.NewRepo()
-	applicantRepository1 := applicant_repository.NewApplicantStorage(dbConnection)
+	//applicantRepository := applicant_repository.NewRepo()
+	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)
 
-	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository1)
+	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository)
 	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
 
-	employerRepository := employer_repository.NewRepo()
-	employerRepository1 := employer_repository.NewEmployerStorage(dbConnection)
+	//employerRepository := employer_repository.NewRepo()
+	employerRepository := employer_repository.NewEmployerStorage(dbConnection)
 
-	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository1)
+	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository)
 	Mux.Handle("/api/v1/registration/employer", employerHandler)
 
-	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewRepo() // just do it!
+	//sessionApplicantRepository, sessionEmployerRepository := session_repository.NewRepo() // just do it!
+	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection) // just do it!
 	loginHandler := session_delivery.LoginHandler(
 		sessionApplicantRepository,
 		sessionEmployerRepository,
@@ -95,10 +96,16 @@ func main() {
 	)
 	Mux.Handle("/api/v1/login", loginHandler)
 
-	logoutHandler := session_delivery.LogoutHandler(sessionApplicantRepository, sessionEmployerRepository)
+	logoutHandler := session_delivery.LogoutHandler(sessionApplicantRepository,
+		sessionEmployerRepository,
+		applicantRepository,
+		employerRepository)
 	Mux.Handle("/api/v1/logout", logoutHandler)
 
-	authorizedHandler := session_delivery.AuthorizedHandler(sessionApplicantRepository, sessionEmployerRepository)
+	authorizedHandler := session_delivery.AuthorizedHandler(sessionApplicantRepository,
+		sessionEmployerRepository,
+		applicantRepository,
+		employerRepository)
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
 	vacanciesRepository := vacancies_repository.NewRepo()

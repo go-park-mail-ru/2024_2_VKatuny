@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func RequireAuthorization(next http.Handler, logger *logrus.Logger, sessionApplicant repository.SessionRepository, sessionEmployer repository.SessionRepository) http.Handler {
+func RequireAuthorization(next http.Handler, logger *logrus.Logger, sessionApplicant repository.SessionRepository, sessionEmployer repository.SessionRepository, newUserInput *dto.JSONLogoutForm) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		fn := "middleware.RequireAuthorization"
 
@@ -23,7 +23,7 @@ func RequireAuthorization(next http.Handler, logger *logrus.Logger, sessionAppli
 			return
 		}
 
-		if _, err := usecase.CheckAuthorization(cookie, sessionApplicant, sessionEmployer); err != nil {
+		if _, err := usecase.CheckAuthorization(newUserInput, cookie, sessionApplicant, sessionEmployer); err != nil {
 			logger.Errorf("function %s: got %s", fn, err)
 			UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 				HTTPStatus: http.StatusUnauthorized,
