@@ -20,7 +20,7 @@ func CreateApplicantInputCheck(Name, LastName, Email, Password string) error {
 }
 
 // CreateApplicant accepts employer repository and validated form and creates new employer
-func CreateApplicant(repo repository.ApplicantRepository, form *dto.ApplicantInput) (*models.Applicant, error) {
+func CreateApplicant(repo repository.IApplicantRepository, form *dto.ApplicantInput) (*models.Applicant, error) {
 	form.Password = utils.HashPassword(form.Password)
 	user, err := repo.Create(form)
 	return user, err

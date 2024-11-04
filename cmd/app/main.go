@@ -9,12 +9,19 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	applicant_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/delivery"
+	// applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
 	applicant_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
+	// portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
+	// portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
+	// cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
+	// cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
+
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 
 	//vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
 
@@ -76,6 +83,8 @@ func main() {
 	//applicantRepository := applicant_repository.NewRepo()
 	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)
 
+	// Now your applicantRepository doesn't implement the IApplicantRepository interface
+	// Oleg you should implement method Update for applicant_repository.PostgreSQLApplicantStorage
 	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository)
 	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
 
@@ -111,6 +120,20 @@ func main() {
 	vacanciesRepository := vacancies_repository.NewRepo()
 	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository) //(&db.Vacancies)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
+
+	// repositories := &internal.Repositories{
+	// 	ApplicantRepository: applicant_repository.NewApplicantStorage(dbConnection),  // implement IApplicantRepository. Add method `Update`
+	// 	PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection),   // implement IPortfolioRepository
+	// 	CVRepository:        cvRepository.NewCVsStorage(dbConnection),				  // also need this method
+	// }
+	// usecases := &internal.Usecases{
+	// 	ApplicantUsecase: applicantUsecase.NewApplicantUsecase(repositories),
+	// 	PortfolioUsecase: portfolioUsecase.NewPortfolioUsecase(repositories),
+	// 	CVUsecase:        cvUsecase.NewCVsUsecase(repositories),
+	// }
+	
+	// applicantProfileHandlers := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)
+	// Mux.HandleFunc("/api/v1/applicant/profile/", applicantProfileHandlers.ApplicantProfileHandler)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap

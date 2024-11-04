@@ -12,14 +12,14 @@ type IPortfolioUsecase interface {
 
 type PortfolioUsecase struct {
 	logger *logrus.Logger
-	portfolioRepository repository.IPortfolioRepository
+	portfolioRepo repository.IPortfolioRepository
 }
 
 func (pu *PortfolioUsecase) GetApplicantPortfolios(applicantID uint64) ([]*dto.JSONGetApplicantPortfolio, error) {
 	fn := "PortfolioUsecase.GetApplicantPortfolio"
 
 	pu.logger.Debugf("function: %s; applicant id: %d. Trying to get applicant portfolio", fn, applicantID)
-	portfoliosModel, err := pu.portfolioRepository.GetPortfoliosByApplicantID(applicantID)
+	portfoliosModel, err := pu.portfolioRepo.GetPortfoliosByApplicantID(applicantID)
 	if err != nil {
 		pu.logger.Errorf("function: %s; got err: %s", fn, err)
 		return nil, err

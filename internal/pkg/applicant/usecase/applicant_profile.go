@@ -13,7 +13,14 @@ type IApplicantUsecase interface {
 
 type ApplicantUsecase struct {
 	logger        *logrus.Logger
-	applicantRepo applicantRepository.ApplicantRepository  // TODO: add prefix I to interface
+	applicantRepo applicantRepository.IApplicantRepository // TODO: add prefix I to interface
+}
+
+func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories) *ApplicantUsecase{
+	return &ApplicantUsecase{
+		logger:        logger,
+		applicantRepo: repositories.ApplicantRepository,
+	}
 }
 
 // GetApplicantProfile accepts the profile of an applicant using the given userID.

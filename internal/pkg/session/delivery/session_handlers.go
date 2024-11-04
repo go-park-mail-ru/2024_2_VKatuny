@@ -29,7 +29,7 @@ import (
 // @Router      /authorized [post]
 func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
 	repoEmployerSession sessionRepo.SessionRepository,
-	repoApplicant applicantRepo.ApplicantRepository,
+	repoApplicant applicantRepo.IApplicantRepository,
 	repoEmployer employerRepo.EmployerRepository) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
@@ -124,7 +124,7 @@ func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
 func LoginHandler(
 	repoApplicantSession sessionRepo.SessionRepository,
 	repoEmployerSession sessionRepo.SessionRepository,
-	repoApplicant applicantRepo.ApplicantRepository,
+	repoApplicant applicantRepo.IApplicantRepository,
 	repoEmployer employerRepo.EmployerRepository,
 	backendAddress string,
 ) http.Handler { // just do it!
@@ -237,7 +237,7 @@ func LoginHandler(
 // @Router      /logout/ [post]
 func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
 	repoEmployerSession sessionRepo.SessionRepository,
-	repoApplicant applicantRepo.ApplicantRepository,
+	repoApplicant applicantRepo.IApplicantRepository,
 	repoEmployer employerRepo.EmployerRepository) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
