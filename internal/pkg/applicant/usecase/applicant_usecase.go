@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
+	repoApplicant "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	repoSession "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
@@ -20,8 +20,25 @@ func CreateApplicantInputCheck(Name, LastName, Email, Password string) error {
 }
 
 // CreateApplicant accepts employer repository and validated form and creates new employer
-func CreateApplicant(repo repository.IApplicantRepository, form *dto.ApplicantInput) (*models.Applicant, error) {
+func CreateApplicant(repo repoApplicant.ApplicantRepository, sessionRepoApplicant repoSession.SessionRepository, form *dto.ApplicantInput) (*dto.ApplicantOutput, string, error) {
 	form.Password = utils.HashPassword(form.Password)
 	user, err := repo.Create(form)
-	return user, err
+	if err != nil {
+		return nil, "", err
+	}
+	sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeApplicant)
+	sessionRepoApplicant.Create(user.ID, sessionID)
+	return &dto.ApplicantOutput{
+		ID:                  user.ID,
+		FirstName:           user.FirstName,
+		LastName:            user.LastName,
+		CityName:            user.CityName,
+		BirthDate:           user.BirthDate,
+		PathToProfileAvatar: user.LastName,
+		Constants:           user.Contacts,
+		Education:           user.Education,
+		Email:               user.Email,
+		CreatedAt:           user.CreatedAt,
+		UpdatedAt:           user.UpdatedAt,
+	}, sessionID, err
 }

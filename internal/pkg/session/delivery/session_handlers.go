@@ -12,6 +12,7 @@ import (
 	applicantRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	employerRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 
 	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	sessionUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
@@ -52,17 +53,16 @@ func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
 			return
 		}
 
-		decoder := json.NewDecoder(r.Body)
-		newUserInput := new(dto.JSONLogoutForm) // for any request and response use DTOs but not a model!
-		err = decoder.Decode(newUserInput)
+		userType, err := utils.CheckToken(session.Value)
 		if err != nil {
-			logger.Errorf("can't unmarshal JSON")
+			logger.Errorf("wrong cookie")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      "can't unmarshal JSON",
+				Error:      "wrong cookie",
 			})
 			return
 		}
+		newUserInput := &dto.JSONLogoutForm{UserType: userType}
 
 		id, err := sessionUsecase.CheckAuthorization(newUserInput, session, repoApplicantSession, repoEmployerSession)
 
@@ -182,15 +182,7 @@ func LoginHandler(
 		logger.Debugf("function %s: session added successfully", funcName)
 
 		logger.Debug("Cookie send")
-		cookie := &http.Cookie{
-			Name:     "session_id1", // why id1?
-			Value:    sessionID,
-			Expires:  time.Now().Add(10 * time.Hour),
-			HttpOnly: true,
-			//Secure:   true, // Enable when using HTTPS
-			SameSite: http.SameSiteStrictMode,
-			Domain:   backendAddress,
-		}
+		cookie := utils.MakeAuthCookie(sessionID, backendAddress)
 		http.SetCookie(w, cookie)
 
 		if newUserInput.UserType == dto.UserTypeApplicant {

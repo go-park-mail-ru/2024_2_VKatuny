@@ -9,6 +9,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,7 +26,7 @@ import (
 // @Success     200 {object} inmemorydb.UserInput
 // @Failure     http.StatusBadRequest {object} nil
 // @Router      /registration/applicant/ [post]
-func CreateApplicantHandler(repo repository.IApplicantRepository) http.Handler {
+func CreateApplicantHandler(repo repository.ApplicantRepository, repoApplicantSession sessionRepo.SessionRepository, backendAddress string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -59,24 +61,22 @@ func CreateApplicantHandler(repo repository.IApplicantRepository) http.Handler {
 
 		logger.Debugf("function %s: adding applicant to db %v", funcName, newUserInput)
 
-		user, err := applicantUsecase.CreateApplicant(repo, newUserInput)
-
+		user, sessionID, err := applicantUsecase.CreateApplicant(repo, repoApplicantSession, newUserInput)
+		if err != nil {
+			logger.Errorf("applicant invalid fields")
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      err.Error(),
+			})
+			return
+		}
+		logger.Debug("Cookie send")
+		cookie := utils.MakeAuthCookie(sessionID, backendAddress)
+		http.SetCookie(w, cookie)
 		if err == nil {
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 				HTTPStatus: http.StatusOK,
-				Body: dto.ApplicantOutput{
-					ID:                  user.ID,
-					FirstName:           user.FirstName,
-					LastName:            user.LastName,
-					CityName:            user.CityName,
-					BirthDate:           user.BirthDate,
-					PathToProfileAvatar: user.LastName,
-					Constants:           user.Contacts,
-					Education:           user.Education,
-					Email:               user.Email,
-					CreatedAt:           user.CreatedAt,
-					UpdatedAt:           user.UpdatedAt,
-				},
+				Body:       user,
 			})
 		} else {
 			// is there actually should be HTTP 400?
