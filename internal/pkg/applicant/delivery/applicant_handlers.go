@@ -26,7 +26,7 @@ import (
 // @Success     200 {object} inmemorydb.UserInput
 // @Failure     http.StatusBadRequest {object} nil
 // @Router      /registration/applicant/ [post]
-func CreateApplicantHandler(repo repository.ApplicantRepository, repoApplicantSession sessionRepo.SessionRepository, backendAddress string) http.Handler {
+func CreateApplicantHandler(repo repository.IApplicantRepository, repoApplicantSession sessionRepo.SessionRepository, backendAddress string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 

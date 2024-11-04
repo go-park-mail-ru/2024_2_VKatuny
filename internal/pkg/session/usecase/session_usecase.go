@@ -40,7 +40,7 @@ var (
 )
 
 // LoginValidate ! TODO: rename function to more accurate meaning
-func LoginValidate(newUserInput *dto.JSONLoginForm, repoApplicant applicantRepo.ApplicantRepository, repoEmployer employerRepo.EmployerRepository) (user *dto.UserIDAndType, err error) {
+func LoginValidate(newUserInput *dto.JSONLoginForm, repoApplicant applicantRepo.IApplicantRepository, repoEmployer employerRepo.EmployerRepository) (user *dto.UserIDAndType, err error) {
 	if newUserInput.UserType == dto.UserTypeApplicant {
 		var worker *models.Applicant
 		worker, err = repoApplicant.GetByEmail(newUserInput.Email)
@@ -103,7 +103,7 @@ func AddSession(sessionRepoApplicant, sessionRepoEmployer sessionRepo.SessionRep
 	return sessionID, nil
 }
 
-func GetApplicantByEmail(repoApplicant applicantRepo.ApplicantRepository, email string) (*dto.ApplicantOutput, error) {
+func GetApplicantByEmail(repoApplicant applicantRepo.IApplicantRepository, email string) (*dto.ApplicantOutput, error) {
 	user, err := repoApplicant.GetByEmail(email)
 	return &dto.ApplicantOutput{
 		ID:                  user.ID,
@@ -140,7 +140,7 @@ func GetEmployerByEmail(repoEmployer employerRepo.EmployerRepository, email stri
 	}, err
 }
 
-func GetApplicantByID(repoApplicant applicantRepo.ApplicantRepository, id uint64) (*dto.ApplicantOutput, error) {
+func GetApplicantByID(repoApplicant applicantRepo.IApplicantRepository, id uint64) (*dto.ApplicantOutput, error) {
 	user, err := repoApplicant.GetByID(id)
 	return &dto.ApplicantOutput{
 		ID:                  user.ID,
