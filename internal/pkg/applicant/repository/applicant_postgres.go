@@ -57,7 +57,7 @@ func (s *PostgreSQLApplicantStorage) GetByID(id uint64) (*models.Applicant, erro
 		ID:                  applicantWithNull.ID,
 		FirstName:           applicantWithNull.FirstName,
 		LastName:            applicantWithNull.LastName,
-		CityName:            applicantWithNull.CityName,
+		CityName:            applicantWithNull.CityName.String,
 		BirthDate:           applicantWithNull.BirthDate,
 		PathToProfileAvatar: applicantWithNull.PathToProfileAvatar,
 		Contacts:            applicantWithNull.Contacts.String,
@@ -104,7 +104,7 @@ func (s *PostgreSQLApplicantStorage) GetByEmail(email string) (*models.Applicant
 		ID:                  applicantWithNull.ID,
 		FirstName:           applicantWithNull.FirstName,
 		LastName:            applicantWithNull.LastName,
-		CityName:            applicantWithNull.CityName,
+		CityName:            applicantWithNull.CityName.String,
 		BirthDate:           applicantWithNull.BirthDate,
 		PathToProfileAvatar: applicantWithNull.PathToProfileAvatar,
 		Contacts:            applicantWithNull.Contacts.String,
@@ -125,15 +125,8 @@ func (s *PostgreSQLApplicantStorage) GetByEmail(email string) (*models.Applicant
 
 func (s *PostgreSQLApplicantStorage) Create(applicantInput *dto.ApplicantInput) (*models.Applicant, error) {
 
-	ApplicantCityId := 1 // do it and profileavatar
-	if applicantInput.PathToProfileAvatar == "" {
-		applicantInput.PathToProfileAvatar = "static/default_profile.png"
-	}
-	if applicantInput.Contacts == "" {
-		applicantInput.Contacts = "no contacts yet"
-	}
-	_, err := s.db.Exec("insert into applicant (first_name, last_name, city_id, birth_date, path_to_profile_avatar, contacts, education, email, password_hash) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-		applicantInput.FirstName, applicantInput.LastName, ApplicantCityId, applicantInput.BirthDate, applicantInput.PathToProfileAvatar, applicantInput.Contacts, applicantInput.Education, applicantInput.Email, applicantInput.Password)
+	_, err := s.db.Exec("insert into applicant (first_name, last_name, birth_date, education, email, password_hash) VALUES ($1, $2, $3, $4, $5, $6)",
+		applicantInput.FirstName, applicantInput.LastName, applicantInput.BirthDate, applicantInput.Education, applicantInput.Email, applicantInput.Password)
 
 	if err != nil {
 		return nil, err

@@ -97,7 +97,7 @@ type ApplicantOutput struct {
 	CityName            string `json:"cityName"`
 	BirthDate           string `json:"birthDate"`
 	PathToProfileAvatar string `json:"pathToProfileAvatar"`
-	Constants           string `json:"constants"`
+	Contacts            string `json:"contacts"`
 	Education           string `json:"education"`
 	Email               string `json:"email"`
 	PasswordHash        string `json:"-"`
@@ -109,7 +109,7 @@ type ApplicantWithNull struct {
 	ID                  uint64         `json:"id"`
 	FirstName           string         `json:"firstName"`
 	LastName            string         `json:"lastName"`
-	CityName            string         `json:"cityName"`
+	CityName            sql.NullString `json:"cityName"`
 	BirthDate           string         `json:"birthDate"`
 	PathToProfileAvatar string         `json:"pathToProfileAvatar"`
 	Contacts            sql.NullString `json:"contacts"`
@@ -138,7 +138,7 @@ type EmployerWithNull struct {
 	ID                  uint64         `json:"id"`
 	FirstName           string         `json:"firstName"`
 	LastName            string         `json:"lastName"`
-	CityName            string         `json:"cityName"`
+	CityName            sql.NullString `json:"cityName"`
 	Position            string         `json:"position"`
 	CompanyName         string         `json:"companyName"`
 	CompanyDescription  string         `json:"companyDescription"`

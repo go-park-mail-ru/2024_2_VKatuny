@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
@@ -62,10 +63,10 @@ func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSessi
 
 		user, sessionID, err := employerUsecase.CreateEmployer(repo, repoEmployerSession, newUserInput)
 		if err != nil {
-			logger.Errorf("employer invalid fields")
+			logger.Errorf("function %s: err - ", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusBadRequest,
-				Error:      err.Error(),
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      commonerrors.DBerr.Error(),
 			})
 			return
 		}
