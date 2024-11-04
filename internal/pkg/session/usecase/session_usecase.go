@@ -3,7 +3,6 @@ package usecase
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 
 	applicantRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
@@ -13,21 +12,6 @@ import (
 	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
-
-var (
-	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-)
-
-const tokenLength = 32
-
-// GenerateSessionTokenWithLength generate random string with given length for session id
-func GenerateSessionToken(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
-}
 
 var ErrEmptyCookie = fmt.Errorf("client have an empty cookie")
 
@@ -107,10 +91,13 @@ func LogoutValidate(newUserInput *dto.JSONLogoutForm, session string, sessionRep
 }
 
 func AddSession(sessionRepoApplicant, sessionRepoEmployer sessionRepo.SessionRepository, user *dto.UserIDAndType) (string, error) {
-	sessionID := GenerateSessionToken(tokenLength)
-	if user.UserType == dto.UserTypeApplicant {
+	var sessionID string
+	switch user.UserType {
+	case dto.UserTypeApplicant:
+		sessionID = utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeApplicant)
 		return sessionID, sessionRepoApplicant.Create(user.ID, sessionID)
-	} else if user.UserType == dto.UserTypeEmployer {
+	case dto.UserTypeEmployer:
+		sessionID = utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeEmployer)
 		return sessionID, sessionRepoEmployer.Create(user.ID, sessionID)
 	}
 	return sessionID, nil
