@@ -139,3 +139,26 @@ func (s *PostgreSQLApplicantStorage) Create(applicantInput *dto.ApplicantInput) 
 
 	return applicant, nil
 }
+
+func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) error {
+
+	var CityId int
+	row := s.db.QueryRow(`select id from city where city_name=$1`, newApplicantData.City)
+	if err := row.Scan(&CityId); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			row = s.db.QueryRow(`insert into city (city_name) VALUES ($1) returning id`, newApplicantData.City)
+			err = row.Scan(&CityId)
+			if err != nil {
+				return err
+			}
+		default:
+			return err
+		}
+	}
+	_, err := s.db.Exec(`update applicant
+		set first_name = $1, last_name = $2, city_id = $3, birth_date=$4,
+		contacts = $5, education = $6 where id=$7`,
+		newApplicantData.FirstName, newApplicantData.LastName, CityId, newApplicantData.BirthDate, newApplicantData.Contacts, newApplicantData.Education, ID)
+	return err
+}
