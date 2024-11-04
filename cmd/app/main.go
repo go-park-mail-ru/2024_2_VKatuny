@@ -96,10 +96,16 @@ func main() {
 	)
 	Mux.Handle("/api/v1/login", loginHandler)
 
-	logoutHandler := session_delivery.LogoutHandler(sessionApplicantRepository, sessionEmployerRepository)
+	logoutHandler := session_delivery.LogoutHandler(sessionApplicantRepository,
+		sessionEmployerRepository,
+		applicantRepository,
+		employerRepository)
 	Mux.Handle("/api/v1/logout", logoutHandler)
 
-	authorizedHandler := session_delivery.AuthorizedHandler(sessionApplicantRepository, sessionEmployerRepository)
+	authorizedHandler := session_delivery.AuthorizedHandler(sessionApplicantRepository,
+		sessionEmployerRepository,
+		applicantRepository,
+		employerRepository)
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
 	vacanciesRepository := vacancies_repository.NewRepo()

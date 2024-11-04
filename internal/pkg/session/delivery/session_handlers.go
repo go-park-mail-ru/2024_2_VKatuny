@@ -27,7 +27,10 @@ import (
 // @Success     200
 // @Failure     401
 // @Router      /authorized [post]
-func AuthorizedHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer sessionRepo.SessionRepository) http.Handler { // just do it!
+func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
+	repoEmployerSession sessionRepo.SessionRepository,
+	repoApplicant applicantRepo.ApplicantRepository,
+	repoEmployer employerRepo.EmployerRepository) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -49,7 +52,19 @@ func AuthorizedHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer
 			return
 		}
 
-		user, err := sessionUsecase.CheckAuthorization(session, repoApplicant, repoEmployer)
+		decoder := json.NewDecoder(r.Body)
+		newUserInput := new(dto.JSONLogoutForm) // for any request and response use DTOs but not a model!
+		err = decoder.Decode(newUserInput)
+		if err != nil {
+			logger.Errorf("can't unmarshal JSON")
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      "can't unmarshal JSON",
+			})
+			return
+		}
+
+		id, err := sessionUsecase.CheckAuthorization(newUserInput, session, repoApplicantSession, repoEmployerSession)
 
 		if err != nil {
 			logger.Errorf("authorization error")
@@ -60,16 +75,37 @@ func AuthorizedHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer
 			return
 		}
 
-		logger.WithField("session_id", user.SessionID).Debug("got session id")
-		logger.Debugf("Just authorized user! UserType: %s; ID %d", user.UserType, user.ID)
+		logger.WithField("session_id", session.Value).Debug("got session id")
+		logger.Debugf("Just authorized user! UserType: %s; ID %d", newUserInput.UserType, id)
 
-		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-			HTTPStatus: http.StatusOK,
-			Body: dto.JSONUserBody{
-				UserType: user.UserType,
-				ID:       user.ID,
+		if newUserInput.UserType == dto.UserTypeApplicant {
+			userout, err := sessionUsecase.GetApplicantByID(repoApplicant, id)
+			if err == nil {
+				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+					HTTPStatus: http.StatusOK,
+					Body:       userout,
+				})
+				return
+			}
+		} else if newUserInput.UserType == dto.UserTypeEmployer {
+			userout, err := sessionUsecase.GetEmployerByID(repoEmployer, id)
+			if err == nil {
+				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+					HTTPStatus: http.StatusOK,
+					Body:       userout,
+				})
+				return
+			}
+		}
+		logger.Errorf("function %s: login got strange type - %s", funcName, newUserInput.UserType)
+		middleware.UniversalMarshal(
+			w,
+			http.StatusBadRequest,
+			dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      "function " + funcName + ": login got strange type - " + newUserInput.UserType,
 			},
-		})
+		)
 	})
 }
 
@@ -158,45 +194,33 @@ func LoginHandler(
 		http.SetCookie(w, cookie)
 
 		if newUserInput.UserType == dto.UserTypeApplicant {
-			userout, _ := sessionUsecase.GetApplicantByEmail(repoApplicant, newUserInput.Email)
-			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-				HTTPStatus: http.StatusOK,
-				Body: dto.ApplicantOutput{
-					ID:                  userout.ID,
-					FirstName:           userout.FirstName,
-					LastName:            userout.LastName,
-					CityName:            userout.CityName,
-					BirthDate:           userout.BirthDate,
-					PathToProfileAvatar: userout.LastName,
-					Constants:           userout.Contacts,
-					Education:           userout.Education,
-					Email:               userout.Email,
-					CreatedAt:           userout.CreatedAt,
-					UpdatedAt:           userout.UpdatedAt,
-				},
-			})
-		} else {
-			userout, _ := sessionUsecase.GetEmployerByEmail(repoEmployer, newUserInput.Email)
-			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-				HTTPStatus: http.StatusOK,
-				Body: dto.EmployerOutput{
-					ID:                  userout.ID,
-					FirstName:           userout.FirstName,
-					LastName:            userout.LastName,
-					CityName:            userout.CityName,
-					Position:            userout.Position,
-					CompanyName:         userout.CompanyName,
-					CompanyDescription:  userout.CompanyDescription,
-					CompanyWebsite:      userout.CompanyWebsite,
-					PathToProfileAvatar: userout.PathToProfileAvatar,
-					Contacts:            userout.Contacts,
-					Email:               userout.Email,
-					PasswordHash:        userout.PasswordHash,
-					CreatedAt:           userout.CreatedAt,
-					UpdatedAt:           userout.UpdatedAt,
-				},
-			})
+			userout, err := sessionUsecase.GetApplicantByEmail(repoApplicant, newUserInput.Email)
+			if err == nil {
+				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+					HTTPStatus: http.StatusOK,
+					Body:       userout,
+				})
+				return
+			}
+		} else if newUserInput.UserType == dto.UserTypeEmployer {
+			userout, err := sessionUsecase.GetEmployerByEmail(repoEmployer, newUserInput.Email)
+			if err == nil {
+				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+					HTTPStatus: http.StatusOK,
+					Body:       userout,
+				})
+				return
+			}
 		}
+		logger.Errorf("function %s: login got strange type - %s", funcName, newUserInput.UserType)
+		middleware.UniversalMarshal(
+			w,
+			http.StatusBadRequest,
+			dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      "function " + funcName + ": login got strange type - " + newUserInput.UserType,
+			},
+		)
 
 	})
 }
@@ -211,7 +235,10 @@ func LoginHandler(
 // @Failure     400
 // @Failure     401
 // @Router      /logout/ [post]
-func LogoutHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer sessionRepo.SessionRepository) http.Handler { // just do it!
+func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
+	repoEmployerSession sessionRepo.SessionRepository,
+	repoApplicant applicantRepo.ApplicantRepository,
+	repoEmployer employerRepo.EmployerRepository) http.Handler { // just do it!
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		funcName := "LogoutHandler"
@@ -243,7 +270,7 @@ func LogoutHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer ses
 		}
 
 		sessionID := session.Value
-		err = sessionUsecase.LogoutValidate(newUserInput, sessionID, repoApplicant, repoEmployer)
+		id, err := sessionUsecase.LogoutValidate(newUserInput, sessionID, repoApplicantSession, repoEmployerSession)
 
 		if err != nil {
 			logger.Errorf("no user with this session")
@@ -257,5 +284,33 @@ func LogoutHandler(repoApplicant sessionRepo.SessionRepository, repoEmployer ses
 		session.Expires = time.Now().AddDate(0, 0, -1)
 		http.SetCookie(w, session)
 
+		if newUserInput.UserType == dto.UserTypeApplicant {
+			userout, err := sessionUsecase.GetApplicantByID(repoApplicant, id)
+			if err == nil {
+				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+					HTTPStatus: http.StatusOK,
+					Body:       userout,
+				})
+				return
+			}
+		} else if newUserInput.UserType == dto.UserTypeEmployer {
+			userout, err := sessionUsecase.GetEmployerByID(repoEmployer, id)
+			if err == nil {
+				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+					HTTPStatus: http.StatusOK,
+					Body:       userout,
+				})
+				return
+			}
+		}
+		logger.Errorf("function %s: login got strange type - %s", funcName, newUserInput.UserType)
+		middleware.UniversalMarshal(
+			w,
+			http.StatusBadRequest,
+			dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      "function " + funcName + ": login got strange type - " + newUserInput.UserType,
+			},
+		)
 	})
 }
