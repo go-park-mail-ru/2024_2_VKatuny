@@ -78,7 +78,7 @@
             bigint applicant_id FK "NOT NULL"
             text position_rus "NOT NULL, CHECK (length(position_rus)<50)"
             text position_eng "CHECK (length(position_eng)<50)"
-            int job_search_status_id FK "NOT NULL"
+            int job_search_status_id FK "NOT NULL DEFAULT 1"
             text working_experience "CHECK (length(working_experience)<1000)"
             text path_to_cv_avatar  "NOT NULL, default static/default_profile.png"
             timestamptz created_at "NOT NULL"
@@ -135,7 +135,7 @@
             int salary "NOT NUL"
             text position "NOT NUL, CHECK (length(position)<50)"
             text vacancy_description "NOT NUL, CHECK (length(vacancy_description)<1000)"
-            int work_type_id FK "NOT NUL"
+            int work_type_id FK "NOT NULL DEFAULT 1"
             text path_to_company_avatar "NOT NULL, default static/default_company.png"
             timestamptz created_at "NOT NULL"
             timestamptz updated_at "NOT NULL"
@@ -143,7 +143,7 @@
         vacancy }o--|| work_type : has
         work_type{
             int id PK
-            text work_type_name "UNIQUE, NOT NUL, CHECK (length(work_type_name)<50)"
+            text work_type_name "UNIQUE, NOT NULL, CHECK (length(work_type_name)<50)"
             timestamptz created_at "NOT NULL"
             timestamptz updated_at "NOT NULL"
         }
@@ -162,7 +162,7 @@
             bigint applicant_id FK "NOT NULL"
             text applicant_creation_name "NOT NULL, CHECK (length(applicant_creation_name)<50)"
             text path_to_creation  "UNIQUE, NOT NULL"
-            bigint creation_type_id FK "NOT NULL"
+            bigint creation_type_id FK "NOT NULL DEFAULT 1"
             timestamptz created_at "NOT NULL"
             timestamptz updated_at "NOT NULL"
         }
@@ -316,7 +316,7 @@ Relation **applicant_creation to applicant_creation_to_portfolio**:\
 Связь: Одино произведение работника может быть указано во многих строчках applicant_creation_to_portfolio\
 (одна работа может отосится ко многим портфолио)
 
-## Таблица cv_to_portfoli
+## Таблица cv_to_portfolio
 
 - **cv_id** - bigint, FK, NOT NULL, id резюме к которому будет прикреплено это портфолио
 - **portfolio_id** - bigint, FK, NOT NULL, id портфолио которое будет прикреплено к этому резюме
@@ -341,7 +341,7 @@ Relation **cv to cv_to_portfoli**:\
 - **applicant_id** - bigint, FK, NOT NULL, id работника которому принадлежит это резюме
 - **position_rus** - text, NOT NULL, CHECK (length(position_rus)<50), название желаемой должности на русском
 - **position_eng** - text, CHECK (length(position_eng)<50), название желаемой должности на английском
-- **job_search_status_id** - int, FK, NOT NULL, айди статуса поиска работы по этому резюме
+- **job_search_status_id** - int, FK, NOT NULL, DEFAULT 1, айди статуса поиска работы по этому резюме
 - **working_experience** - text, CHECK (length(working_experience)<1000), описание опыта работы сотрудника
 - **path_to_cv_avatar** - text, NOT NULL, default (static/default_profile.png) аватарка для резюме работника
 - **created_at** - timestamptz, NOT NULL, дата создания резюме
@@ -386,12 +386,12 @@ Relation **job_search_status to cv**:\
 
 Relation **cv to cv_to_creation_tag**:\
 {id} -> cv_id\
-Связь: Одино резюме может быть указано во многих строчках cv_to_creation_tag\
+Связь: Одно резюме может быть указано во многих строчках cv_to_creation_tag\
 (Один тег произведения может быть указан во многих резюме)
 
 Relation **creation_tag to cv_to_creation_tag**:\
 {id} -> creation_tag_id\
-Связь: Одиин тег произведения может быть указан во многих строчках cv_to_creation_tag\
+Связь: Один тег произведения может быть указан во многих строчках cv_to_creation_tag\
 (К одному резюме можно добавить несколько тегов произведений)
 
 ## Таблица applicant_creation_to_creation_tag
@@ -401,16 +401,16 @@ Relation **creation_tag to cv_to_creation_tag**:\
 - **created_at** - timestamptz, NOT NULL, дата добавления тега этому произведению
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления тега у этого произведения
 
-Связь: многие теги произведений ко многим произведениям реализуемая с помощью промеждуточной таблицы applicant_creation_to_creation_tag
+Связь: многие теги произведений ко многим произведениям реализуемая с помощью промежуточной таблицы applicant_creation_to_creation_tag
 
 Relation **applicant_creation to applicant_creation_to_creation_tag**:\
 {id} -> applicant_creation_id\
-Связь: Одино произведение может быть указано во многих строчках applicant_creation_to_creation_tag\
+Связь: Одно произведение может быть указано во многих строчках applicant_creation_to_creation_tag\
 (У одного произведения может быть много тегов)
 
 Relation **creation_tag to applicant_creation_to_creation_tag**:\
 {id} -> creation_tag_id\
-Связь: Одиин тег произведения может быть указан во многих строчках applicant_creation_to_creation_tag\
+Связь: Один тег произведения может быть указан во многих строчках applicant_creation_to_creation_tag\
 (Один тег может быть отнесен ко многим произвденениям)
 
 ## Таблица vacancy_to_creation_tag
@@ -446,7 +446,7 @@ Relation **creation_tag to vacancy_to_creation_tag**:\
 - **salary** - int, NOT NULL зарботная плата предлагаемая сотруднику
 - **position** - text, NOT NULL, CHECK (length(position)<50), должность предлагаемая сотруднику
 - **vacancy_description** - text, NOT NULL, CHECK (length(vacancy_description)<100), описание вакансии от работодателя
-- **work_type_id** - int, FK, NOT NULL, ссылка на тип работы (разовая, постоянная, пол ставки и тд)
+- **work_type_id** - int, FK, NOT NULL, DEFAULT 1 ссылка на тип работы (разовая, постоянная, пол ставки и тд)
 - **path_to_company_avatar** - text, NOT NULL, default (static/default_company.png) логотип компании для вакансии
 - **created_at** - timestamptz, NOT NULL, дата добавления вакансии
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления вакансии
@@ -487,7 +487,7 @@ Relation **vacancy to vacancy_subscriber**:\
 - **applicant_id** - bigint, FK, NOT NULL, id работика выложившего произведение
 - **applicant_creation_name** - text, NOT NULL, UNIQUE, CHECK (length(applicant_creation_name)<50), название произвдения которое даст рабоник при загрузке произведения на наш сайт
 - **path_to_creation** - text, NOT NULL, UNIQUE, адрес у нас а сервере где лежит эта работа
-- **creation_type_id** - bigint, FK, NOT NULL, id типа произведения
+- **creation_type_id** - bigint, FK, NOT NULL, DEFAULT 1 id типа произведения
 - **created_at** - timestamptz, NOT NULL, дата выгрузки произведения на наш сайт
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления произведения на нашем сайте
 
