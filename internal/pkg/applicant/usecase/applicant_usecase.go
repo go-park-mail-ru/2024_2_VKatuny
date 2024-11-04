@@ -35,7 +35,7 @@ func CreateApplicant(repo repoApplicant.ApplicantRepository, sessionRepoApplican
 		CityName:            user.CityName,
 		BirthDate:           user.BirthDate,
 		PathToProfileAvatar: user.LastName,
-		Constants:           user.Contacts,
+		Contacts:            user.Contacts,
 		Education:           user.Education,
 		Email:               user.Email,
 		CreatedAt:           user.CreatedAt,

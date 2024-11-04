@@ -65,8 +65,8 @@ func CreateApplicantHandler(repo repository.ApplicantRepository, repoApplicantSe
 		if err != nil {
 			logger.Errorf("applicant invalid fields")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusBadRequest,
-				Error:      err.Error(),
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      "db err",
 			})
 			return
 		}

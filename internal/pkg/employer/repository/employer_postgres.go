@@ -59,7 +59,7 @@ func (s *PostgreSQLEmployerStorage) GetByID(id uint64) (*models.Employer, error)
 		ID:                  employerWithNull.ID,
 		FirstName:           employerWithNull.FirstName,
 		LastName:            employerWithNull.LastName,
-		CityName:            employerWithNull.CityName,
+		CityName:            employerWithNull.CityName.String,
 		Position:            employerWithNull.Position,
 		CompanyName:         employerWithNull.CompanyName,
 		CompanyDescription:  employerWithNull.CompanyDescription,
@@ -110,7 +110,7 @@ func (s *PostgreSQLEmployerStorage) GetByEmail(email string) (*models.Employer, 
 		ID:                  employerWithNull.ID,
 		FirstName:           employerWithNull.FirstName,
 		LastName:            employerWithNull.LastName,
-		CityName:            employerWithNull.CityName,
+		CityName:            employerWithNull.CityName.String,
 		Position:            employerWithNull.Position,
 		CompanyName:         employerWithNull.CompanyName,
 		CompanyDescription:  employerWithNull.CompanyDescription,
@@ -133,21 +133,25 @@ func (s *PostgreSQLEmployerStorage) GetByEmail(email string) (*models.Employer, 
 
 func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*models.Employer, error) {
 
-	employerCityId := 1
 	var CompanyNameId int
 	row := s.db.QueryRow(`select id from company where company_name = $1`, employerInput.CompanyName)
-	err := row.Scan(CompanyNameId)
-
-	fmt.Println("!", CompanyNameId, "!", employerInput.CompanyName)
-	CompanyNameId = 1
-	if employerInput.PathToProfileAvatar == "" {
-		employerInput.PathToProfileAvatar = "static/default_profile.png"
+	if err := row.Scan(&CompanyNameId); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			row = s.db.QueryRow(`insert into company (company_name) VALUES ($1) returning id`, employerInput.CompanyName)
+			err = row.Scan(&CompanyNameId)
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, err
+		}
 	}
-	_, err = s.db.Exec(`insert into employer (first_name, last_name, city_id, position, company_name_id, company_description, company_website, path_to_profile_avatar, contacts, email, password_hash)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-		employerInput.FirstName, employerInput.LastName, employerCityId, employerInput.Position, CompanyNameId, employerInput.CompanyDescription,
-		employerInput.CompanyWebsite, employerInput.PathToProfileAvatar, employerInput.Contacts, employerInput.Email, employerInput.Password)
 
+	_, err := s.db.Exec(`insert into employer (first_name, last_name, position, company_name_id, company_description, company_website, email, password_hash)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+		employerInput.FirstName, employerInput.LastName, employerInput.Position, CompanyNameId, employerInput.CompanyDescription,
+		employerInput.CompanyWebsite, employerInput.Email, employerInput.Password)
 	if err != nil {
 		return nil, err
 	}
