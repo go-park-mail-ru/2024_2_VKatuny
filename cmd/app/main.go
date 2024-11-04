@@ -75,18 +75,19 @@ func main() {
 
 	//applicantRepository := applicant_repository.NewRepo()
 	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)
+	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection) // just do it!
 
-	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository)
+	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository, sessionApplicantRepository, conf.Server.GetAddress())
 	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
 
 	//employerRepository := employer_repository.NewRepo()
 	employerRepository := employer_repository.NewEmployerStorage(dbConnection)
 
-	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository)
+	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository, sessionEmployerRepository, conf.Server.GetAddress())
 	Mux.Handle("/api/v1/registration/employer", employerHandler)
 
 	//sessionApplicantRepository, sessionEmployerRepository := session_repository.NewRepo() // just do it!
-	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection) // just do it!
+
 	loginHandler := session_delivery.LoginHandler(
 		sessionApplicantRepository,
 		sessionEmployerRepository,

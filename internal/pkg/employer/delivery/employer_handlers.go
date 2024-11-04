@@ -10,6 +10,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
+	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 
 	"github.com/sirupsen/logrus"
 )
@@ -24,7 +26,7 @@ import (
 // @Success     200      {object}       dto.JSONResponse{statusCode=200,body=dto.JSONUserBody, error=""} "OK"
 // @Failure     400      {object}       nil
 // @Router      /registration/employer/ [post]
-func CreateEmployerHandler(repo repository.EmployerRepository) http.Handler {
+func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSession sessionRepo.SessionRepository, backendAddress string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -58,38 +60,30 @@ func CreateEmployerHandler(repo repository.EmployerRepository) http.Handler {
 		}
 		logger.Debugf("function %s: employer input check passed", funcName)
 
-		user, err := employerUsecase.CreateEmployer(repo, newUserInput)
+		user, sessionID, err := employerUsecase.CreateEmployer(repo, repoEmployerSession, newUserInput)
 		if err != nil {
-			logger.Debugf("error while creating user: %s", err)
+			logger.Errorf("employer invalid fields")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      "unable to create user",
+				Error:      err.Error(),
 			})
 			return
 		}
-		logger.Debugf("function %s: employer created", funcName)
-
-		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-			HTTPStatus: http.StatusOK,
-			Body: dto.EmployerOutput{
-				ID:                  user.ID,
-				FirstName:           user.FirstName,
-				LastName:            user.LastName,
-				CityName:            user.CityName,
-				Position:            user.Position,
-				CompanyName:         user.CompanyName,
-				CompanyDescription:  user.CompanyDescription,
-				CompanyWebsite:      user.CompanyWebsite,
-				PathToProfileAvatar: user.PathToProfileAvatar,
-				Contacts:            user.Contacts,
-				Email:               user.Email,
-				PasswordHash:        user.PasswordHash,
-				CreatedAt:           user.CreatedAt,
-				UpdatedAt:           user.UpdatedAt,
-			},
-		})
+		logger.Debug("Cookie send")
+		cookie := utils.MakeAuthCookie(sessionID, backendAddress)
+		http.SetCookie(w, cookie)
+		if err == nil {
+			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+				HTTPStatus: http.StatusOK,
+				Body:       user,
+			})
+		} else {
+			// is there actually should be HTTP 400?
+			logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
+			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      err.Error(),
+			})
+		}
 	})
 }
-
-
-
