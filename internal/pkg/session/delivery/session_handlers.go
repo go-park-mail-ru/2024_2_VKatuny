@@ -55,10 +55,10 @@ func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
 
 		userType, err := utils.CheckToken(session.Value)
 		if err != nil {
-			logger.Errorf("wrong cooky")
+			logger.Errorf("wrong cookie")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      "wrong cooky",
+				Error:      "wrong cookie",
 			})
 			return
 		}
