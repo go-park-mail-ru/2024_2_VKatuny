@@ -28,7 +28,7 @@
             text position "NOT NULL, CHECK (length(position)<50)"
             int company_name_id FK
             text company_description "NOT NULL, CHECK (length(company_description)<150)"
-            text website "NOT NULL, CHECK (length(website)<50)"
+            text company_website "NOT NULL, CHECK (length(company_website)<50)"
             text path_to_profile_avatar "NOT NULL, default static/default_profile.png"
             text contacts "CHECK (length(contacts)<50)"
             text email "UNIQUE, NOT NULL, CHECK (length(email)<50)"
@@ -249,7 +249,7 @@ Relation **applicant to cv**:\
 - **position** - text,  NOT NULL, CHECK (length(position)<50), должность занимаемая работодателем
 - **company_name_id** - int, FK, NOT NULL, id названия компании
 - **company_description** - text, NOT NULL, CHECK (length(company_description)<150), описании комании (той части за которую ответсвенен этот работодатель)
-- **website** - text, NOT NULL, CHECK (length(website)<50), ссылка на сайт филиала компании за которую ответсвенен этот работодатель
+- **company_website** - text, NOT NULL, CHECK (length(company_website)<50), ссылка на сайт филиала компании за которую ответсвенен этот работодатель
 - **path_to_profile_avatar** - text, NOT NULL, default (static/default_profile.png) аватарка для профиля работодателя
 - **contacts** - text, CHECK (length(contacts)<50), контакты в которых уже сам работодатель должен указать название соцсети и ник
 - **email** - text, UNIQUE, NOT NULL, CHECK (length(email)<50), почта работника UNIQUE
