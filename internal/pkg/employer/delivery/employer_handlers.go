@@ -63,7 +63,7 @@ func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSessi
 
 		user, sessionID, err := employerUsecase.CreateEmployer(repo, repoEmployerSession, newUserInput)
 		if err != nil {
-			logger.Errorf("employer invalid fields")
+			logger.Errorf("function %s: err - ", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusInternalServerError,
 				Error:      commonerrors.DBerr.Error(),
