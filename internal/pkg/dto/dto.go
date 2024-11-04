@@ -42,7 +42,7 @@ type JSONLogoutForm struct {
 	UserType string `json:"userType"` // use constants UserType
 }
 
-// JSONApplicantRegistrationForm is a struct that recives applicant registration's form data from frontend
+// JSONApplicantRegistrationForm is a struct that receives applicant registration's form data from frontend
 
 // JSONRegistrationForm is a struct that receives employer registration's form data from frontend
 type JSONEmployerRegistrationForm struct {
@@ -230,15 +230,21 @@ type JSONGetEmployerVacancy struct {
 	CreatedAt   string `json:"createdAt"`
 }
 
-// type JSONGetApplicantPortfolio struct {
-// 	ID          uint64 `json:"id"`
-// 	ApplicantID uint64 `json:"applicant"`
-// 	Title       string `json:"title"`
-// 	Description string `json:"description"`
+type JSONGetApplicantPortfolio struct {
+	ID          uint64 `json:"id"`
+	ApplicantID uint64 `json:"applicant"`
+	Title       string `json:"title"`
+	Description string `json:"description,omitempty"`
+	CreatedAt   string `json:"createdAt"`
+}
 
-// }
-
-// type JSONGetApplicantCV struct {
-// 	ID          uint64 `json:"id"`
-// }
-
+type JSONGetApplicantCV struct {
+	ID                uint64 `json:"id"`
+	ApplicantID       uint64 `json:"applicant"`
+	PositionRu        string `json:"positionRu"`
+	PositionEn        string `json:"positionEn"`
+	Description       string `json:"description,omitempty"`
+	JobSearchStatusID int    `json:"jobSearchStatusID"`
+	WorkingExperience string `json:"workingExperience"`
+	CreatedAt         string `json:"createdAt"` 
+}

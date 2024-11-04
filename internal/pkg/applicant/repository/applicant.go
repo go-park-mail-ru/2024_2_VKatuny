@@ -9,9 +9,11 @@ import (
 
 // Interface for Worker.
 // Now implemented as a in memory db.
-// Implementation locates in ./repository
-type ApplicantRepository interface {
-	Create(worker *dto.ApplicantInput) (*models.Applicant, error)
+// Implementation locates in ./repository 
+type ApplicantRepository interface {  // TODO: rename to IApplicantRepository
+	// Can we send dto to Repository?
+	Create(applicant *dto.ApplicantInput) (*models.Applicant, error)
+	Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) error  
 	GetByID(ID uint64) (*models.Applicant, error)
 	GetByEmail(email string) (*models.Applicant, error)
 }
