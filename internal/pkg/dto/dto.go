@@ -97,7 +97,7 @@ type ApplicantOutput struct {
 	CityName            string `json:"cityName"`
 	BirthDate           string `json:"birthDate"`
 	PathToProfileAvatar string `json:"pathToProfileAvatar"`
-	Constants           string `json:"constants"`
+	Contacts            string `json:"contacts"`
 	Education           string `json:"education"`
 	Email               string `json:"email"`
 	PasswordHash        string `json:"-"`
@@ -201,11 +201,11 @@ type JSONGetApplicantProfile struct {
 }
 
 type JSONUpdateEmployerProfile struct {
-	FirstName          string `json:"firstName"`
-	LastName           string `json:"lastName"`
-	City               string `json:"city"`
-	Contacts           string `json:"contacts"`
-	Avatar             string `json:"avatar"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	City      string `json:"city"`
+	Contacts  string `json:"contacts"`
+	Avatar    string `json:"avatar"`
 }
 
 type JSONUpdateApplicantProfile struct {
@@ -241,4 +241,3 @@ type JSONGetEmployerVacancy struct {
 // type JSONGetApplicantCV struct {
 // 	ID          uint64 `json:"id"`
 // }
-
