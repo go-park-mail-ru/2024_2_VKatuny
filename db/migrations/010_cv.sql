@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public."cv"
     applicant_id bigint NOT NULL,
     position_rus text NOT NULL,
     position_eng text NOT NULL,
-    job_search_status_id int NOT NULL,
+    job_search_status_id int NOT NULL DEFAULT 1,
     working_experience text NOT NULL,
     path_to_profile_avatar text NOT NULL DEFAULT 'static/default_profile.png',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public."cv"
     CONSTRAINT cv_job_search_status_id FOREIGN KEY (job_search_status_id)
         REFERENCES public.job_search_status (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE SET 1
+        ON DELETE SET DEFAULT
         NOT VALID
 )
 

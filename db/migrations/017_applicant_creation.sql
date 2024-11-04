@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public."applicant_creation"
     applicant_id bigint NOT NULL,
     applicant_creation_name text NOT NULL,
     path_to_creation  text NOT NULL,
-    creation_type_id int NOT NULL,
+    creation_type_id int NOT NULL DEFAULT 1,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT applicant_creation_primary_key PRIMARY KEY (id),
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public."applicant_creation"
     CONSTRAINT applicant_creation_creation_type_id FOREIGN KEY (creation_type_id)
         REFERENCES public.creation_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE SET 1
+        ON DELETE SET DEFAULT
         NOT VALID
 )
 

@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public."vacancy"
     salary int NOT NULL,
     position text NOT NULL,
     vacancy_description text NOT NULL,
-    work_type_id int NOT NULL,
+    work_type_id int NOT NULL DEFAULT 1,
     path_to_company_avatar text NOT NULL DEFAULT 'static/default_company.png',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public."vacancy"
     CONSTRAINT vacancy_work_type_id FOREIGN KEY (work_type_id)
         REFERENCES public.work_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE SET 1
+        ON DELETE SET DEFAULT
         NOT VALID
 )
 
