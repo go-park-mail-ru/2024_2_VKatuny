@@ -163,3 +163,26 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 
 	return employer, nil
 }
+
+func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) error {
+
+	var CityId int
+	row := s.db.QueryRow(`select id from city where city_name=$1`, newEmployerData.City)
+	if err := row.Scan(&CityId); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			row = s.db.QueryRow(`insert into city (city_name) VALUES ($1) returning id`, newEmployerData.City)
+			err = row.Scan(&CityId)
+			if err != nil {
+				return err
+			}
+		default:
+			return err
+		}
+	}
+	_, err := s.db.Exec(`update employer
+		set first_name = $1, last_name = $2, city_id = $3,
+		contacts = $4, where id=$5`,
+		newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, ID)
+	return err
+}
