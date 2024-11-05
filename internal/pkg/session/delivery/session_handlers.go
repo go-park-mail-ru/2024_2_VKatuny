@@ -189,6 +189,7 @@ func LoginHandler(
 
 		if newUserInput.UserType == dto.UserTypeApplicant {
 			userout, err := sessionUsecase.GetApplicantByEmail(repoApplicant, newUserInput.Email)
+			userout.UserType = dto.UserTypeApplicant
 			if err == nil {
 				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 					HTTPStatus: http.StatusOK,
@@ -198,6 +199,7 @@ func LoginHandler(
 			}
 		} else if newUserInput.UserType == dto.UserTypeEmployer {
 			userout, err := sessionUsecase.GetEmployerByEmail(repoEmployer, newUserInput.Email)
+			userout.UserType = dto.UserTypeEmployer
 			if err == nil {
 				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 					HTTPStatus: http.StatusOK,
@@ -280,6 +282,7 @@ func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
 
 		if newUserInput.UserType == dto.UserTypeApplicant {
 			userout, err := sessionUsecase.GetApplicantByID(repoApplicant, id)
+			userout.UserType = dto.UserTypeApplicant
 			if err == nil {
 				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 					HTTPStatus: http.StatusOK,
@@ -289,6 +292,7 @@ func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
 			}
 		} else if newUserInput.UserType == dto.UserTypeEmployer {
 			userout, err := sessionUsecase.GetEmployerByID(repoEmployer, id)
+			userout.UserType = dto.UserTypeApplicant
 			if err == nil {
 				middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 					HTTPStatus: http.StatusOK,
