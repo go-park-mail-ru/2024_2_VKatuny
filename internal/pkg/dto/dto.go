@@ -17,6 +17,8 @@ const (
 	UserTypeEmployer = "employer"
 )
 
+const SessionIDName = "session_id1"
+
 // JSONResponse is a standard form of response from backend to frontend
 type JSONResponse struct {
 	HTTPStatus int         `json:"statusCode"`
@@ -77,7 +79,7 @@ type JSONEmployer struct {
 	Email              string `json:"email"`
 }
 
-// JSONEmployer is a default represenation of employer
+// JSONEmployer is a default representation of employer
 type ApplicantInput struct {
 	FirstName           string `json:"firstName"`
 	LastName            string `json:"lastName"`

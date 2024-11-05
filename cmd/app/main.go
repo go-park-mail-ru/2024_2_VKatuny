@@ -12,8 +12,11 @@ import (
 	applicant_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/delivery"
 	applicant_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
 	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
+	cvDelivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/delivery"
+
 	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
@@ -155,6 +158,9 @@ func main() {
 	}
 	Mux.HandleFunc("/api/v1/employer/profile/", employerProfileHandlers.EmployerProfileHandler)
 	Mux.HandleFunc("/api/v1/employer/vacancies/", employerProfileHandlers.GetEmployerVacanciesHandler)
+
+	cvsHandlers := cvDelivery.NewCVsHandler(logger, usecases)
+	Mux.HandleFunc("/api/v1/cv/", cvsHandlers.CVsRESTHandler)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap

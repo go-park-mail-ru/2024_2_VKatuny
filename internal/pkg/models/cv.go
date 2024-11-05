@@ -7,6 +7,7 @@ type CV struct {
 	ApplicantID         uint64
 	PositionRus         string
 	PositionEng         string
+	Description         string
 	JobSearchStatus     string
 	WorkingExperience   string
 	PathToProfileAvatar string

@@ -9,13 +9,13 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	employerRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
-	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
 var ErrEmptyCookie = fmt.Errorf("client have an empty cookie")
 
-func CheckAuthorization(newUserInput *dto.JSONLogoutForm, session *http.Cookie, sessionRepoApplicant sessionRepo.SessionRepository, sessionRepoEmployer sessionRepo.SessionRepository) (uint64, error) {
+func CheckAuthorization(newUserInput *dto.JSONLogoutForm, session *http.Cookie, sessionRepoApplicant session.ISessionRepository, sessionRepoEmployer session.ISessionRepository) (uint64, error) {
 	if session == nil || session.Value == "" {
 		return 0, ErrEmptyCookie
 	}
@@ -67,7 +67,7 @@ func LoginValidate(newUserInput *dto.JSONLoginForm, repoApplicant applicantRepo.
 
 // LogoutValidate tries to remove session from db
 // TODO: rename function to more accurate meaning
-func LogoutValidate(newUserInput *dto.JSONLogoutForm, session string, sessionRepoApplicant, sessionRepoEmployer sessionRepo.SessionRepository) (uint64, error) {
+func LogoutValidate(newUserInput *dto.JSONLogoutForm, session string, sessionRepoApplicant, sessionRepoEmployer session.ISessionRepository) (uint64, error) {
 	if newUserInput.UserType == dto.UserTypeApplicant {
 		id, err := sessionRepoApplicant.GetUserIdBySession(session)
 		if err != nil {
@@ -90,7 +90,7 @@ func LogoutValidate(newUserInput *dto.JSONLogoutForm, session string, sessionRep
 	return 0, fmt.Errorf("err type user")
 }
 
-func AddSession(sessionRepoApplicant, sessionRepoEmployer sessionRepo.SessionRepository, user *dto.UserIDAndType) (string, error) {
+func AddSession(sessionRepoApplicant, sessionRepoEmployer session.ISessionRepository, user *dto.UserIDAndType) (string, error) {
 	var sessionID string
 	switch user.UserType {
 	case dto.UserTypeApplicant:
