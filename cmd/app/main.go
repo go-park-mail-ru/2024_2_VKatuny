@@ -121,7 +121,7 @@ func main() {
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
 	// TODO: should be from db
-	vacanciesRepository := vacancies_repository.NewRepo()
+	vacanciesRepository := vacancies_repository.NewVacanciesStorage(dbConnection)
 	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository) //(&db.Vacancies)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
@@ -129,7 +129,7 @@ func main() {
 		ApplicantRepository: applicant_repository.NewApplicantStorage(dbConnection), // implement IApplicantRepository. Add method `Update`
 		PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection),  // implement IPortfolioRepository
 		CVRepository:        cvRepository.NewCVStorage(dbConnection),                // also need this method
-		VacanciesRepository: vacancies_repository.NewVacanciesStorage(dbConnection), // also need this method
+		VacanciesRepository: vacanciesRepository, 
 	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories),
