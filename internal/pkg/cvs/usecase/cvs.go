@@ -1,8 +1,9 @@
 package usecase
 
 import (
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -13,6 +14,17 @@ type ICVsUsecase interface {
 type CVsUsecase struct {
 	logger *logrus.Logger
 	cvsRepo portfolioRepository.ICVsRepository
+}
+
+func NewCVsUsecase(logger *logrus.Logger, repositories *internal.Repositories) *CVsUsecase {
+	CVsRepository, ok := repositories.CVRepository.(portfolioRepository.ICVsRepository)
+	if !ok {
+		return nil
+	}
+	return &CVsUsecase{
+		logger: logger,
+		cvsRepo: CVsRepository,
+	}
 }
 
 func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplicantCV, error) {

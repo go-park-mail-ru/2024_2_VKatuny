@@ -5,21 +5,22 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	applicant_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/delivery"
-	// applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
 	applicant_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
+	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
+	cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
+	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
 	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
+	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
+	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
 	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
-	// portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
-	// portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
-	// cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
-	// cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
 
 	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 
@@ -122,19 +123,22 @@ func main() {
 	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository) //(&db.Vacancies)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
-	// repositories := &internal.Repositories{
-	// 	ApplicantRepository: applicant_repository.NewApplicantStorage(dbConnection),  // implement IApplicantRepository. Add method `Update`
-	// 	PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection),   // implement IPortfolioRepository
-	// 	CVRepository:        cvRepository.NewCVsStorage(dbConnection),				  // also need this method
-	// }
-	// usecases := &internal.Usecases{
-	// 	ApplicantUsecase: applicantUsecase.NewApplicantUsecase(repositories),
-	// 	PortfolioUsecase: portfolioUsecase.NewPortfolioUsecase(repositories),
-	// 	CVUsecase:        cvUsecase.NewCVsUsecase(repositories),
-	// }
+	repositories := &internal.Repositories{
+		ApplicantRepository: applicant_repository.NewApplicantStorage(dbConnection),  // implement IApplicantRepository. Add method `Update`
+		PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection),   // implement IPortfolioRepository
+		CVRepository:        cvRepository.NewCVStorage(dbConnection),				  // also need this method
+	}
+	usecases := &internal.Usecases{
+		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories),
+		PortfolioUsecase: portfolioUsecase.NewPortfolioUsecase(logger, repositories),
+		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
+	}
 	
-	// applicantProfileHandlers := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)
-	// Mux.HandleFunc("/api/v1/applicant/profile/", applicantProfileHandlers.ApplicantProfileHandler)
+	applicantProfileHandlers, err := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	Mux.HandleFunc("/api/v1/applicant/profile/", applicantProfileHandlers.ApplicantProfileHandler)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
