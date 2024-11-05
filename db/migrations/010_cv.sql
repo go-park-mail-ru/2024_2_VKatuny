@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public."cv"
     position_rus text NOT NULL,
     position_eng text NOT NULL,
     job_search_status_id int NOT NULL DEFAULT 1,
+    cv_description text NOT NULL,
     working_experience text NOT NULL,
     path_to_profile_avatar text NOT NULL DEFAULT 'static/default_profile.png',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -13,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public."cv"
     CONSTRAINT cv_position_rus_length_check CHECK (length(position_rus) <= 50) NOT VALID,
     CONSTRAINT cv_position_eng_length_check CHECK (length(position_eng) <= 50) NOT VALID,
     CONSTRAINT cv_working_experience_length_check CHECK (length(working_experience) <= 1000) NOT VALID,
+    CONSTRAINT cv_cv_description_length_check CHECK (length(cv_description) <= 200) NOT VALID,
     CONSTRAINT cv_applicant_id FOREIGN KEY (applicant_id)
         REFERENCES public.applicant (id) MATCH SIMPLE
         ON UPDATE NO ACTION

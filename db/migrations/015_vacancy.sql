@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS public."vacancy"
 (
     id bigserial NOT NULL,
     employer_id bigint NOT NULL,
+    city_id int,
     salary int NOT NULL,
     position text NOT NULL,
     vacancy_description text NOT NULL,
@@ -21,6 +22,11 @@ CREATE TABLE IF NOT EXISTS public."vacancy"
         REFERENCES public.work_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE SET DEFAULT
+        NOT VALID,
+    CONSTRAINT vacancy_city_id FOREIGN KEY (city_id)
+        REFERENCES public.city (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE SET NULL
         NOT VALID
 )
 

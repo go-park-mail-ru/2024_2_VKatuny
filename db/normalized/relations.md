@@ -79,7 +79,8 @@
             text position_rus "NOT NULL, CHECK (length(position_rus)<50)"
             text position_eng "CHECK (length(position_eng)<50)"
             int job_search_status_id FK "NOT NULL DEFAULT 1"
-            text working_experience "CHECK (length(working_experience)<1000)"
+            cv_description "NOT NULL CHECK (length(working_experience)<1000)"
+            text working_experience "NOT NULL CHECK (length(working_experience)<1000)"
             text path_to_cv_avatar  "NOT NULL, default static/default_profile.png"
             timestamptz created_at "NOT NULL"
             timestamptz updated_at "NOT NULL"
@@ -132,6 +133,7 @@
         vacancy {
             bigint id PK
             bigint employer_id FK "NOT NULL"
+            city_id FK
             int salary "NOT NUL"
             text position "NOT NUL, CHECK (length(position)<50)"
             text vacancy_description "NOT NUL, CHECK (length(vacancy_description)<1000)"
@@ -342,7 +344,8 @@ Relation **cv to cv_to_portfoli**:\
 - **position_rus** - text, NOT NULL, CHECK (length(position_rus)<50), название желаемой должности на русском
 - **position_eng** - text, CHECK (length(position_eng)<50), название желаемой должности на английском
 - **job_search_status_id** - int, FK, NOT NULL, DEFAULT 1, айди статуса поиска работы по этому резюме
-- **working_experience** - text, CHECK (length(working_experience)<1000), описание опыта работы сотрудника
+- **cv_description** - text, NOT NULL, CHECK (length(working_experience)<200), краткое описание сотрудника
+- **working_experience** - text, NOT NULL, CHECK (length(working_experience)<1000), описание опыта работы сотрудника
 - **path_to_cv_avatar** - text, NOT NULL, default (static/default_profile.png) аватарка для резюме работника
 - **created_at** - timestamptz, NOT NULL, дата создания резюме
 - **updated_at** - timestamptz, NOT NULL, дата последнего обновления резюме
