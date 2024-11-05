@@ -59,7 +59,7 @@ func (h *ApplicantProfileHandlers) GetApplicantProfileHandler(w http.ResponseWri
 
 	fn := "ApplicantProfileHandlers.GetApplicantProfileHandler"
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/profile/applicant")
+	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 	}
@@ -88,7 +88,7 @@ func (h *ApplicantProfileHandlers) UpdateApplicantProfileHandler(w http.Response
 
 	fn := "ApplicantProfileHandlers.UpdateApplicantProfileHandler"
 
-	url := r.URL.Path[len("/api/v1/profile/applicant"):]
+	url := r.URL.Path[len("/api/v1/applicant/profile/"):]
 	slugID := strings.Split(url, "/")[0]
 	ID, err := strconv.Atoi(slugID)
 	if len(url) > 1 || err != nil {
@@ -135,7 +135,7 @@ func (h *ApplicantProfileHandlers) GetApplicantPortfoliosHandler(w http.Response
 
 	fn := "ApplicantProfileHandlers.GetApplicantPortfoliosHandler"
 
-	url := r.URL.Path[len("/api/v1/portfolio/applicant/"):]
+	url := r.URL.Path[len("/api/v1/applicant/portfolio/"):]
 	slugID := strings.Split(url, "/")[0]
 	ID, err := strconv.Atoi(slugID)
 	if len(url) > 1 || err != nil {
@@ -170,7 +170,7 @@ func (h *ApplicantProfileHandlers) GetApplicantCVsHandler(w http.ResponseWriter,
 
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"
 
-	url := r.URL.Path[len("/api/v1/cv/applicant/"):]
+	url := r.URL.Path[len("/api/v1/applicant/cv/"):]
 	slugID := strings.Split(url, "/")[0]
 	ID, err := strconv.Atoi(slugID)
 	if len(url) > 1 || err != nil {

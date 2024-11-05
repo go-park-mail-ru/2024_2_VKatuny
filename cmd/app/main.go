@@ -21,6 +21,7 @@ import (
 	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
+	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 
 	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 
@@ -119,26 +120,38 @@ func main() {
 		employerRepository)
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
+	// TODO: should be from db
 	vacanciesRepository := vacancies_repository.NewRepo()
 	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository) //(&db.Vacancies)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	repositories := &internal.Repositories{
-		ApplicantRepository: applicant_repository.NewApplicantStorage(dbConnection),  // implement IApplicantRepository. Add method `Update`
-		PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection),   // implement IPortfolioRepository
-		CVRepository:        cvRepository.NewCVStorage(dbConnection),				  // also need this method
+		ApplicantRepository: applicant_repository.NewApplicantStorage(dbConnection), // implement IApplicantRepository. Add method `Update`
+		PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection),  // implement IPortfolioRepository
+		CVRepository:        cvRepository.NewCVStorage(dbConnection),                // also need this method
+		VacanciesRepository: vacancies_repository.NewVacanciesStorage(dbConnection), // also need this method
 	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories),
 		PortfolioUsecase: portfolioUsecase.NewPortfolioUsecase(logger, repositories),
 		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
+		VacanciesUsecase: vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
 	}
-	
+
 	applicantProfileHandlers, err := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)
 	if err != nil {
 		logger.Fatal(err)
 	}
 	Mux.HandleFunc("/api/v1/applicant/profile/", applicantProfileHandlers.ApplicantProfileHandler)
+	Mux.HandleFunc("/api/v1/applicant/portfolio/", applicantProfileHandlers.GetApplicantPortfoliosHandler)
+	Mux.HandleFunc("/api/v1/applicant/cv/", applicantProfileHandlers.GetApplicantCVsHandler)
+
+	employerProfileHandlers, err := employer_delivery.NewEmployerProfileHandlers(logger, usecases)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	Mux.HandleFunc("/api/v1/employer/profile/", employerProfileHandlers.EmployerProfileHandler)
+	Mux.HandleFunc("/api/v1/employer/portfolio/", employerProfileHandlers.GetEmployerVacanciesHandler)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
