@@ -35,9 +35,6 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*models
 		}
 		fmt.Println(CV)
 	}
-	if !rows.NextResultSet() {
-		return nil, fmt.Errorf("err with rows count")
-	}
 
 	return CVs, nil
 }

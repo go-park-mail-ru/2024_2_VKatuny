@@ -35,9 +35,6 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 		}
 		fmt.Println(Vacancy)
 	}
-	if !rows.NextResultSet() {
-		return nil, fmt.Errorf("err with rows count")
-	}
 
 	return Vacancies, nil
 }
@@ -59,9 +56,6 @@ func (s *PostgreSQLVacanciesStorage) GetWithOffset(offset uint64, num uint64) ([
 			return nil, err
 		}
 		fmt.Println(Vacancy)
-	}
-	if !rows.NextResultSet() {
-		return nil, fmt.Errorf("err with rows count")
 	}
 
 	return Vacancies, nil

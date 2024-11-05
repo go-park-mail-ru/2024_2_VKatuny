@@ -3,8 +3,6 @@ package delivery
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
@@ -20,10 +18,10 @@ type ApplicantProfileHandlers struct {
 	logger           *logrus.Logger
 	applicantUsecase applicantUsecase.IApplicantUsecase
 	portfolioUsecase portfolioUsecase.IPortfolioUsecase
-	cvUsecase        cvUsecase.ICVsUsecase 
+	cvUsecase        cvUsecase.ICVsUsecase
 }
 
-func NewApplicantProfileHandlers(logger *logrus.Logger, usecases *internal.Usecases) (*ApplicantProfileHandlers, error){
+func NewApplicantProfileHandlers(logger *logrus.Logger, usecases *internal.Usecases) (*ApplicantProfileHandlers, error) {
 	ApplicantUsecase, ok1 := usecases.ApplicantUsecase.(*applicantUsecase.ApplicantUsecase)
 	PortfolioUsecase, ok2 := usecases.PortfolioUsecase.(*portfolioUsecase.PortfolioUsecase)
 	CVUsecase, ok3 := usecases.CVUsecase.(*cvUsecase.CVsUsecase)
@@ -31,26 +29,25 @@ func NewApplicantProfileHandlers(logger *logrus.Logger, usecases *internal.Useca
 		return nil, commonerrors.ErrUnableToCast
 	}
 	return &ApplicantProfileHandlers{
-		logger: logger,
+		logger:           logger,
 		applicantUsecase: ApplicantUsecase,
 		portfolioUsecase: PortfolioUsecase,
-		cvUsecase: CVUsecase,	
+		cvUsecase:        CVUsecase,
 	}, nil
 }
 
 func (h *ApplicantProfileHandlers) ApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/api/v1/applicant/profile/" {
-		switch r.Method {
-		case http.MethodGet:
-			h.GetApplicantProfileHandler(w, r)
-		case http.MethodPut:
-			h.UpdateApplicantProfileHandler(w, r)
-		default:
-			middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
-				HTTPStatus: http.StatusMethodNotAllowed,
-				Error:      http.StatusText(http.StatusMethodNotAllowed),
-			})
-		}
+	//h.logger.Debug("1---------------------------------", r.URL.Path)
+	switch r.Method {
+	case http.MethodGet:
+		h.GetApplicantProfileHandler(w, r)
+	case http.MethodPut:
+		h.UpdateApplicantProfileHandler(w, r)
+	default:
+		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
+			HTTPStatus: http.StatusMethodNotAllowed,
+			Error:      http.StatusText(http.StatusMethodNotAllowed),
+		})
 	}
 }
 
@@ -62,8 +59,9 @@ func (h *ApplicantProfileHandlers) GetApplicantProfileHandler(w http.ResponseWri
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		return
 	}
-	
+
 	applicantID := uint64(ID)
 	// dto - JSONGetApplicantProfile
 	applicantProfile, err := h.applicantUsecase.GetApplicantProfile(applicantID)
@@ -88,18 +86,24 @@ func (h *ApplicantProfileHandlers) UpdateApplicantProfileHandler(w http.Response
 
 	fn := "ApplicantProfileHandlers.UpdateApplicantProfileHandler"
 
-	url := r.URL.Path[len("/api/v1/applicant/profile/"):]
-	slugID := strings.Split(url, "/")[0]
-	ID, err := strconv.Atoi(slugID)
-	if len(url) > 1 || err != nil {
-		h.logger.Errorf("function %s: something bad with slug", fn)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      "something bad with slug",
-		})
+	// url := r.URL.Path[len("/api/v1/applicant/profile/"):]
+	// slugID := strings.Split(url, "/")[0]
+	// ID, err := strconv.Atoi(slugID)
+	// if len(url) < 1 || err != nil {
+	// 	h.logger.Errorf("function %s: something bad with slug", fn)
+	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+	// 		HTTPStatus: http.StatusBadRequest,
+	// 		Error:      "something bad with slug",
+	// 	})
+	// 	return
+	// }
+
+	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
 		return
 	}
-	
+
 	applicantID := uint64(ID)
 
 	decoder := json.NewDecoder(r.Body)
@@ -135,18 +139,23 @@ func (h *ApplicantProfileHandlers) GetApplicantPortfoliosHandler(w http.Response
 
 	fn := "ApplicantProfileHandlers.GetApplicantPortfoliosHandler"
 
-	url := r.URL.Path[len("/api/v1/applicant/portfolio/"):]
-	slugID := strings.Split(url, "/")[0]
-	ID, err := strconv.Atoi(slugID)
-	if len(url) > 1 || err != nil {
-		h.logger.Errorf("function %s: something bad with slug", fn)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      "something bad with slug",
-		})
+	// url := r.URL.Path[len("/api/v1/applicant/portfolio/"):]
+	// slugID := strings.Split(url, "/")[0]
+	// ID, err := strconv.Atoi(slugID)
+	// if len(url) < 1 || err != nil {
+	// 	h.logger.Errorf("function %s: something bad with slug", fn)
+	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+	// 		HTTPStatus: http.StatusBadRequest,
+	// 		Error:      "something bad with slug",
+	// 	})
+	// 	return
+	// }
+	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/portfolio/")
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
 		return
 	}
-	
+
 	applicantID := uint64(ID)
 	portfolios, err := h.portfolioUsecase.GetApplicantPortfolios(applicantID)
 	if err != nil {
@@ -170,18 +179,23 @@ func (h *ApplicantProfileHandlers) GetApplicantCVsHandler(w http.ResponseWriter,
 
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"
 
-	url := r.URL.Path[len("/api/v1/applicant/cv/"):]
-	slugID := strings.Split(url, "/")[0]
-	ID, err := strconv.Atoi(slugID)
-	if len(url) > 1 || err != nil {
-		h.logger.Errorf("function %s: something bad with slug", fn)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      "something bad with slug",
-		})
+	// url := r.URL.Path[len("/api/v1/applicant/cv/"):]
+	// slugID := strings.Split(url, "/")[0]
+	// ID, err := strconv.Atoi(slugID)
+	// if len(url) < 1 || err != nil {
+	// 	h.logger.Errorf("function %s: something bad with slug", fn)
+	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+	// 		HTTPStatus: http.StatusBadRequest,
+	// 		Error:      "something bad with slug",
+	// 	})
+	// 	return
+	// }
+	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/cv/")
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
 		return
 	}
-	
+
 	applicantID := uint64(ID)
 	// *dto.JSONGetApplicantCV
 	CVs, err := h.cvUsecase.GetApplicantCVs(applicantID)

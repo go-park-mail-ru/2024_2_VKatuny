@@ -9,7 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
-	vacanciesUsecase"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
+	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,7 +21,9 @@ type EmployerProfileHandlers struct {
 
 func NewEmployerProfileHandlers(logger *logrus.Logger, usecases *internal.Usecases) (*EmployerProfileHandlers, error) {
 	employerUsecase, ok1 := usecases.EmployerUsecase.(*employerUsecase.EmployerUsecase)
+	//logger.Debug("err with employerUsecase ", ok1)
 	vacanciesUsecase, ok2 := usecases.VacanciesUsecase.(*vacanciesUsecase.VacanciesUsecase)
+	//logger.Debug("err with vacanciesUsecase ", ok2)
 	if !(ok1 && ok2) {
 		return nil, commonerrors.ErrUnableToCast
 	}

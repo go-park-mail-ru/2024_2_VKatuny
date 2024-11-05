@@ -17,7 +17,7 @@ type ApplicantUsecase struct {
 	applicantRepo applicantRepository.IApplicantRepository // TODO: add prefix I to interface
 }
 
-func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories) *ApplicantUsecase{
+func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories) *ApplicantUsecase {
 	ApplicantRepository, ok := repositories.ApplicantRepository.(applicantRepository.IApplicantRepository)
 	if !ok {
 		return nil
@@ -47,7 +47,6 @@ func (au *ApplicantUsecase) GetApplicantProfile(userID uint64) (*dto.JSONGetAppl
 		LastName:  applicantModel.LastName,
 		City:      applicantModel.CityName,
 		BirthDate: applicantModel.BirthDate,
-		Avatar:    applicantModel.PathToProfileAvatar,
 		Contacts:  applicantModel.Contacts,
 		Education: applicantModel.Education,
 	}, nil

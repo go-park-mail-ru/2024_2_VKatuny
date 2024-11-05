@@ -35,9 +35,6 @@ func (s *PostgreSQLPortfolioStorage) GetPortfoliosByApplicantID(applicantID uint
 		}
 		fmt.Println(portfolio)
 	}
-	if !rows.NextResultSet() {
-		return nil, fmt.Errorf("err with rows count")
-	}
 
 	return portfolios, nil
 }

@@ -16,6 +16,7 @@ import (
 	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
 	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
+	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
 	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
 	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
@@ -126,16 +127,18 @@ func main() {
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	repositories := &internal.Repositories{
-		ApplicantRepository: applicant_repository.NewApplicantStorage(dbConnection), // implement IApplicantRepository. Add method `Update`
-		PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection),  // implement IPortfolioRepository
-		CVRepository:        cvRepository.NewCVStorage(dbConnection),                // also need this method
-		VacanciesRepository: vacanciesRepository, 
+		ApplicantRepository: applicantRepository,                                   // implement IApplicantRepository. Add method `Update`
+		PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection), // implement IPortfolioRepository
+		CVRepository:        cvRepository.NewCVStorage(dbConnection),               // also need this method
+		VacanciesRepository: vacanciesRepository,
+		EmployerRepository:  employerRepository,
 	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories),
 		PortfolioUsecase: portfolioUsecase.NewPortfolioUsecase(logger, repositories),
 		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
 		VacanciesUsecase: vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
+		EmployerUsecase:  employerUsecase.NewEmployerUsecase(logger, repositories),
 	}
 
 	applicantProfileHandlers, err := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)

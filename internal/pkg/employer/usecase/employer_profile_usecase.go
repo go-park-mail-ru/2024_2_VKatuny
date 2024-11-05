@@ -44,7 +44,6 @@ func (eu *EmployerUsecase) GetEmployerProfile(employerID uint64) (*dto.JSONGetEm
 		Company:            employerModel.CompanyName,
 		CompanyDescription: employerModel.CompanyDescription,
 		CompanyWebsite:     employerModel.CompanyWebsite,
-		Avatar:             employerModel.PathToProfileAvatar,
 		Contacts:           employerModel.Contacts,
 	}, nil
 }
