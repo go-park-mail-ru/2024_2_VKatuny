@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 
@@ -124,11 +123,7 @@ func (s *PostgreSQLEmployerStorage) GetByEmail(email string) (*models.Employer, 
 	}
 	//log.Println(user)
 	//log.Println(err)
-	if err != nil {
-		fmt.Println("Error", err.Error())
-		return nil, err
-	}
-	return &employer, nil
+	return &employer, err
 }
 
 func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*models.Employer, error) {
@@ -157,11 +152,8 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 	}
 
 	employer, err := s.GetByEmail(employerInput.Email)
-	if err != nil {
-		return nil, err
-	}
 
-	return employer, nil
+	return employer, err
 }
 
 func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) error {
@@ -182,7 +174,7 @@ func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONU
 	}
 	_, err := s.db.Exec(`update employer
 		set first_name = $1, last_name = $2, city_id = $3,
-		contacts = $4, where id=$5`,
+		contacts = $4 where id=$5`,
 		newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, ID)
 	return err
 }

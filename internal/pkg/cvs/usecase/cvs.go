@@ -38,11 +38,11 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 		CVs = append(CVs, &dto.JSONGetApplicantCV{
 			ID:                CVModel.ID,
 			ApplicantID:       CVModel.ApplicantID,
-			PositionRu:        CVModel.PositionRus,
-			PositionEn:        CVModel.PositionEng,
-			JobSearchStatus:   CVModel.JobSearchStatus,
+			PositionRu:        CVModel.PositionRu,
+			PositionEn:        CVModel.PositionEn,
+			JobSearchStatus:   CVModel.JobSearchStatusName,
 			WorkingExperience: CVModel.WorkingExperience,
-			CreatedAt:         CVModel.CreatedAt.Format("2006.01.02 15:02:39"),
+			CreatedAt:         CVModel.CreatedAt,
 		})
 	}
 
