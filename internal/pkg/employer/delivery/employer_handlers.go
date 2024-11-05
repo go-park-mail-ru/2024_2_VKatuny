@@ -74,6 +74,7 @@ func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSessi
 		cookie := utils.MakeAuthCookie(sessionID, backendAddress)
 		http.SetCookie(w, cookie)
 		if err == nil {
+			user.UserType = dto.UserTypeApplicant
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 				HTTPStatus: http.StatusOK,
 				Body:       user,

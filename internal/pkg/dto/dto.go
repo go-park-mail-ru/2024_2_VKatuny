@@ -91,6 +91,7 @@ type ApplicantInput struct {
 }
 
 type ApplicantOutput struct {
+	UserType            string `json:"userType"`
 	ID                  uint64 `json:"id"`
 	FirstName           string `json:"firstName"`
 	LastName            string `json:"lastName"`
@@ -152,6 +153,7 @@ type EmployerWithNull struct {
 }
 
 type EmployerOutput struct {
+	UserType            string `json:"userType"`
 	ID                  uint64 `json:"id"`
 	FirstName           string `json:"firstName"`
 	LastName            string `json:"lastName"`
