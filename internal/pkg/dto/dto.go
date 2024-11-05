@@ -248,3 +248,7 @@ type JSONGetApplicantCV struct {
 	WorkingExperience string `json:"workingExperience"`
 	CreatedAt         string `json:"createdAt"`
 }
+
+type JSONCv struct{}
+
+type JSONVacancy struct{}

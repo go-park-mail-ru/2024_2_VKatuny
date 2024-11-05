@@ -129,7 +129,7 @@ func main() {
 	repositories := &internal.Repositories{
 		ApplicantRepository: applicantRepository,                                   // implement IApplicantRepository. Add method `Update`
 		PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection), // implement IPortfolioRepository
-		CVRepository:        cvRepository.NewCVStorage(dbConnection),               // also need this method
+		CVRepository:        cvRepository.NewCVStorage(dbConnection),               // implement necessary methods
 		VacanciesRepository: vacanciesRepository,
 		EmployerRepository:  employerRepository,
 	}
