@@ -23,8 +23,10 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 	Vacancies := make([]*dto.JSONVacancy, 0)
 
 	rows, err := s.db.Query(`select vacancy.id, city.city_name, position, vacancy_description, salary, employer_id, work_type.work_type_name,
-		path_to_company_avatar, vacancy.created_at, vacancy.updated_at from vacancy 
-		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id where vacancy.employer_id = $1`, employerID)
+		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy 
+		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.company_name
+		where vacancy.employer_id = $1`, employerID)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +35,7 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 	for rows.Next() {
 		var Vacancy dto.JSONVacancy
 		if err := rows.Scan(&Vacancy.ID, &Vacancy.Location, &Vacancy.Position, &Vacancy.Description, &Vacancy.Salary,
-			&Vacancy.EmployerID, &Vacancy.WorkType, &Vacancy.Avatar, &Vacancy.CreatedAt, &Vacancy.UpdatedAt); err != nil {
+			&Vacancy.EmployerID, &Vacancy.WorkType, &Vacancy.Avatar, &Vacancy.CreatedAt, &Vacancy.UpdatedAt, &Vacancy.CompanyName); err != nil {
 			return nil, err
 		}
 		Vacancies = append(Vacancies, &Vacancy)
@@ -47,8 +49,10 @@ func (s *PostgreSQLVacanciesStorage) GetWithOffset(offset uint64, num uint64) ([
 	Vacancies := make([]*dto.JSONVacancy, 0)
 
 	rows, err := s.db.Query(`select vacancy.id, city.city_name, position, vacancy_description, salary, employer_id, work_type.work_type_name,
-		path_to_company_avatar, vacancy.created_at, vacancy.updated_at from vacancy left join work_type on vacancy.work_type_id=work_type.id
-		left join city on vacancy.city_id=city.id ORDER BY created_at desc limit $1 offset $2`, num, offset)
+		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy
+		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.company_name
+		ORDER BY created_at desc limit $1 offset $2`, num, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +61,7 @@ func (s *PostgreSQLVacanciesStorage) GetWithOffset(offset uint64, num uint64) ([
 	for rows.Next() {
 		var Vacancy dto.JSONVacancy
 		if err := rows.Scan(&Vacancy.ID, &Vacancy.Location, &Vacancy.Position, &Vacancy.Description, &Vacancy.Salary, &Vacancy.EmployerID,
-			&Vacancy.WorkType, &Vacancy.Avatar, &Vacancy.CreatedAt, &Vacancy.UpdatedAt); err != nil {
+			&Vacancy.WorkType, &Vacancy.Avatar, &Vacancy.CreatedAt, &Vacancy.UpdatedAt, &Vacancy.CompanyName); err != nil {
 			return nil, err
 		}
 		Vacancies = append(Vacancies, &Vacancy)
@@ -109,8 +113,10 @@ func (s *PostgreSQLVacanciesStorage) Create(vacancy *dto.JSONVacancy) (uint64, e
 func (s *PostgreSQLVacanciesStorage) GetByID(ID uint64) (*dto.JSONVacancy, error) {
 
 	row := s.db.QueryRow(`select vacancy.id, city.city_name, position, vacancy_description, salary, employer_id, work_type.work_type_name,
-		path_to_company_avatar, vacancy.created_at, vacancy.updated_at from vacancy 
-		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id where vacancy.id = $1`, ID)
+		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy 
+		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.company_name
+		where vacancy.id = $1`, ID)
 	var oneVacancy dto.JSONVacancy
 
 	err := row.Scan(
@@ -123,6 +129,7 @@ func (s *PostgreSQLVacanciesStorage) GetByID(ID uint64) (*dto.JSONVacancy, error
 		&oneVacancy.Avatar,
 		&oneVacancy.CreatedAt,
 		&oneVacancy.UpdatedAt,
+		&oneVacancy.CompanyName,
 	)
 	if err != nil {
 		return nil, err
@@ -163,12 +170,12 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 	row = s.db.QueryRow(`update applicant
 		set employer_id = $1, salary = $2, position = $3, city_id = $4, vacancy_description = $4,
 		work_type_id = $5, path_to_company_avatar = $5 where id=$7 returning id, position, vacancy_description, 
-		salary, employer_id, created_at, path_to_company_avatar, created_at, updated_at`,
+		salary, employer_id, created_at, path_to_company_avatar, created_at, updated_at, employer_id`,
 		updatedVacancy.ID, updatedVacancy.EmployerID, updatedVacancy.Salary, updatedVacancy.Position,
 		CityId, updatedVacancy.Description, WorkTypeID, updatedVacancy.Avatar, ID)
 
 	var oneVacancy dto.JSONVacancy
-
+	var EmployerId int
 	err := row.Scan(
 		&oneVacancy.ID,
 		&oneVacancy.Position,
@@ -179,7 +186,14 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 		&oneVacancy.Avatar,
 		&oneVacancy.CreatedAt,
 		&oneVacancy.UpdatedAt,
+		&EmployerId,
 	)
+	if err != nil {
+		return nil, err
+	}
+	row = s.db.QueryRow(`select company.company_name employer left join company on company.id = employer.company_name_id where employer.id=$1`, EmployerId)
+	err = row.Scan(
+		&oneVacancy.CompanyName)
 	oneVacancy.WorkType = updatedVacancy.WorkType
 	oneVacancy.Location = updatedVacancy.Location
 	if err != nil {

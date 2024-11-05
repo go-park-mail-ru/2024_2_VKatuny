@@ -278,6 +278,7 @@ type JSONVacancy struct {
 	Description string `json:"description"`
 	WorkType    string `json:"workType"`
 	Avatar      string `json:"avatar"`
+	CompanyName string `json:"companyName"`
 	CreatedAt   string `json:"createdAt"`
 	UpdatedAt   string `json:"updatedAt"`
 }
