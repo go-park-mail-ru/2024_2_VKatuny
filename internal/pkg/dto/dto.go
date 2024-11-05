@@ -1,6 +1,9 @@
 package dto
 
-import "database/sql"
+import (
+	"database/sql"
+	"net/http"
+)
 
 // Package contains Data Transfer Objects (DTO).
 // DTOs used for tasering data from one part of the app to another.
@@ -18,6 +21,8 @@ const (
 )
 
 const SessionIDName = "session_id1"
+
+type HandlerFunc func(w http.ResponseWriter, r *http.Request)
 
 // JSONResponse is a standard form of response from backend to frontend
 type JSONResponse struct {

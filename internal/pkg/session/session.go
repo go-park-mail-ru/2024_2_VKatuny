@@ -7,5 +7,5 @@ type ISessionRepository interface {
 }
 
 type ISessionUsecase interface {
-	
+	// GetUserFromSession(session string) (uint64, error)
 }

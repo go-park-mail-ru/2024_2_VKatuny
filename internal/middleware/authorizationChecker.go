@@ -3,9 +3,11 @@ package middleware
 import (
 	"net/http"
 
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
+	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,3 +37,26 @@ func RequireAuthorization(next http.Handler, logger *logrus.Logger, sessionAppli
 		next.ServeHTTP(w, r)
 	})
 }
+
+// func RequireAuthorization(next dto.HandlerFunc, logger *logrus.Logger, repositories *internal.Repositories, userType string) dto.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		session, err := r.Cookie(dto.SessionIDName)
+// 		if err == http.ErrNoCookie || session.Value == "" {
+// 			logger.Errorf("checking session: got err %s", err)
+// 			UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+// 				HTTPStatus: http.StatusUnauthorized,
+// 				Error:      err.Error(),
+// 			})
+// 		}
+// 		userType, err := utils.CheckToken(session.Value)
+// 		if err != nil {
+// 			logger.Errorf("got err %s", err)
+// 			UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+// 				HTTPStatus: http.StatusUnauthorized,
+// 				Error:      err.Error(),
+// 			})
+// 		}
+
+// 		next(w, r)
+// 	}
+// }
