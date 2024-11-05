@@ -252,18 +252,16 @@ func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
 			return
 		}
 
-		decoder := json.NewDecoder(r.Body)
-
-		newUserInput := new(dto.JSONLogoutForm) // for any request and response use DTOs but not a model!
-		err = decoder.Decode(newUserInput)
+		userType, err := utils.CheckToken(session.Value)
 		if err != nil {
-			logger.Errorf("can't unmarshal JSON")
+			logger.Errorf("wrong cookie")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      "can't unmarshal JSON",
+				Error:      "wrong cookie",
 			})
 			return
 		}
+		newUserInput := &dto.JSONLogoutForm{UserType: userType}
 
 		sessionID := session.Value
 		id, err := sessionUsecase.LogoutValidate(newUserInput, sessionID, repoApplicantSession, repoEmployerSession)

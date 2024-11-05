@@ -1,8 +1,9 @@
 package usecase
 
 import (
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/sirupsen/logrus"
 )
 
@@ -11,8 +12,19 @@ type ICVsUsecase interface {
 }
 
 type CVsUsecase struct {
-	logger *logrus.Logger
+	logger  *logrus.Logger
 	cvsRepo portfolioRepository.ICVsRepository
+}
+
+func NewCVsUsecase(logger *logrus.Logger, repositories *internal.Repositories) *CVsUsecase {
+	CVsRepository, ok := repositories.CVRepository.(portfolioRepository.ICVsRepository)
+	if !ok {
+		return nil
+	}
+	return &CVsUsecase{
+		logger:  logger,
+		cvsRepo: CVsRepository,
+	}
 }
 
 func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplicantCV, error) {
@@ -24,17 +36,17 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 		return nil, err
 	}
 	cu.logger.Debugf("function %s: success, got CVs from repository: %d", fn, len(CVsModel))
-	
+
 	CVs := make([]*dto.JSONGetApplicantCV, 0, len(CVsModel))
 	for _, CVModel := range CVsModel {
 		CVs = append(CVs, &dto.JSONGetApplicantCV{
-			ID: CVModel.ID,
-			ApplicantID: CVModel.ApplicantID,
-			PositionRu: CVModel.PositionRus,
-			PositionEn: CVModel.PositionEng,
-			JobSearchStatusID: CVModel.JobSearchStatusID,
+			ID:                CVModel.ID,
+			ApplicantID:       CVModel.ApplicantID,
+			PositionRu:        CVModel.PositionRus,
+			PositionEn:        CVModel.PositionEng,
+			JobSearchStatus:   CVModel.JobSearchStatus,
 			WorkingExperience: CVModel.WorkingExperience,
-			CreatedAt: CVModel.CreatedAt.Format("2006.01.02 15:02:39"),
+			CreatedAt:         CVModel.CreatedAt.Format("2006.01.02 15:02:39"),
 		})
 	}
 

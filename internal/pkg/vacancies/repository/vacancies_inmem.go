@@ -27,55 +27,50 @@ func NewRepo() *vacanciesRepo {
 			Position: "Продавец консультант",
 			Description: `Ищем продавца на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
-			Salary:    "Не указана",
-			Employer:  "X5-Retail Group",
-			Location:  "Moscow",
-			CreatedAt: "2024.09.29 16:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:      "img/picture_name1.png",
+			Salary:     "Не указана",
+			EmployerID: 1,
+			CreatedAt:  "2024.09.29 16:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:       "img/picture_name1.png",
 		})
 		vacancies.data = append(vacancies.data, &models.Vacancy{
 			ID:       i + 1,
 			Position: "Продавец",
 			Description: `Ищем продавца на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
-			Salary:    "80 000",
-			Employer:  "X5-Retail Group",
-			Location:  "Moscow",
-			CreatedAt: "2024.09.29 17:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:      "img/picture_name2.png",
+			Salary:     "80 000",
+			EmployerID: 1,
+			CreatedAt:  "2024.09.29 17:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:       "img/picture_name2.png",
 		})
 		vacancies.data = append(vacancies.data, &models.Vacancy{
 			ID:       i + 2,
 			Position: "Администратор",
 			Description: `Ищем администратора на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на продуктивную работу с людьми. Своевременную оплату гарантируем.`,
-			Salary:    "100 500",
-			Employer:  "X5-Retail Group",
-			Location:  "Moscow",
-			CreatedAt: "2024.09.29 18:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:      "img/picture_name3.png",
+			Salary:     "100 500",
+			EmployerID: 1,
+			CreatedAt:  "2024.09.29 18:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:       "img/picture_name3.png",
 		})
 		vacancies.data = append(vacancies.data, &models.Vacancy{
 			ID:       i + 3,
 			Position: "Охранник",
 			Description: `Ищем охранника на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую посменную работу. Своевременную оплату гарантируем.`,
-			Salary:    "Не указана",
-			Employer:  "X5-Retail Group",
-			Location:  "Moscow",
-			CreatedAt: "2024.09.29 19:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:      "img/picture_name4.png",
+			Salary:     "Не указана",
+			EmployerID: 1,
+			CreatedAt:  "2024.09.29 19:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:       "img/picture_name4.png",
 		})
 		vacancies.data = append(vacancies.data, &models.Vacancy{
 			ID:       i + 4,
 			Position: "Уборщик помещений",
 			Description: `Ищем уборщика на полную ставку в ближайший магазин.
 			Требуются ответственные личности, способные на тяжелую кропотливую работу. Своевременную оплату гарантируем.`,
-			Salary:    "50 000",
-			Employer:  "X5-Retail Group",
-			Location:  "Moscow",
-			CreatedAt: "2024.09.29 20:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:      "img/picture_name5.png",
+			Salary:     "50 000",
+			EmployerID: 1,
+			CreatedAt:  "2024.09.29 20:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo:       "img/picture_name5.png",
 		})
 	}
 	return vacancies

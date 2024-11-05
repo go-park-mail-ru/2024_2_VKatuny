@@ -15,9 +15,9 @@ var (
 
 func GetIDSlugAtEnd(w http.ResponseWriter, r *http.Request, prefix string) (int, error) {
 	url := r.URL.Path[len(prefix):]
-	slugID := strings.Split(url, "/")[0]
-	ID, err := strconv.Atoi(slugID)
-	if len(url) > 1 || err != nil {
+	slug := strings.Split(url, "/")
+	ID, err := strconv.Atoi(slug[0])
+	if err != nil || len(slug) > 1 {
 		// h.logger.Errorf("function %s: got err %s", fn, ErrorSlug)
 		UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,

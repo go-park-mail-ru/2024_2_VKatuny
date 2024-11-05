@@ -33,10 +33,8 @@ func (s *PostgreSQLPortfolioStorage) GetPortfoliosByApplicantID(applicantID uint
 		if err := rows.Scan(&portfolio.ID, &portfolio.ApplicantID, &portfolio.Name, &portfolio.CreatedAt, &portfolio.UpdatedAt); err != nil {
 			return nil, err
 		}
+		portfolios = append(portfolios, &portfolio)
 		fmt.Println(portfolio)
-	}
-	if !rows.NextResultSet() {
-		return nil, fmt.Errorf("err with rows count")
 	}
 
 	return portfolios, nil
