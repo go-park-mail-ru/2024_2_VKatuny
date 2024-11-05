@@ -7,30 +7,22 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	vacanciesRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/sirupsen/logrus"
 )
 
 var ErrOffsetIsNotANumber = fmt.Errorf("query parameter offset isn't a number")
 var ErrNumIsNotANumber = fmt.Errorf("query parameter num isn't a number")
 
-type IVacanciesUsecase interface {
-	GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONGetEmployerVacancy, error)
-}
-
 type VacanciesUsecase struct {
 	logger              *logrus.Logger
-	vacanciesRepository vacanciesRepository.Repository
+	vacanciesRepository vacancies.IVacanciesRepository
 }
 
 func NewVacanciesUsecase(logger *logrus.Logger, repositories *internal.Repositories) *VacanciesUsecase {
-	vacanciesRepository, ok := repositories.VacanciesRepository.(vacanciesRepository.Repository)
-	if !ok {
-		return nil
-	}
 	return &VacanciesUsecase{
 		logger:              logger,
-		vacanciesRepository: vacanciesRepository,
+		vacanciesRepository: repositories.VacanciesRepository,
 	}
 }
 

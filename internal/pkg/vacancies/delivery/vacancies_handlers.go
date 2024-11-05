@@ -31,7 +31,7 @@ const (
 // @Failure     405
 // @Failure     500
 // @Router      /vacancies [get]
-func GetVacanciesHandler(repo vacancies.Repository) http.Handler { //vacanciesTable *inmemorydb.VacanciesHandler
+func GetVacanciesHandler(repo vacancies.IVacanciesRepository) http.Handler { //vacanciesTable *inmemorydb.VacanciesHandler
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
