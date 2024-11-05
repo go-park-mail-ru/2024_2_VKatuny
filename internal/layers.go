@@ -2,16 +2,18 @@ package internal
 
 import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 )
 
 type Repositories struct {
-	EmployerRepository  interface{}
-	ApplicantRepository interface{}
-	// SessionRepository sessionRepository.SessionRepository
-	PortfolioRepository interface{}
-	CVRepository        cvs.ICVsRepository
-	VacanciesRepository vacancies.IVacanciesRepository
+	EmployerRepository         interface{}
+	ApplicantRepository        interface{}
+	PortfolioRepository        interface{}
+	CVRepository               cvs.ICVsRepository
+	VacanciesRepository        vacancies.IVacanciesRepository
+	SessionApplicantRepository session.ISessionRepository
+	SessionEmployerRepository  session.ISessionRepository
 }
 
 type Usecases struct {
@@ -20,9 +22,9 @@ type Usecases struct {
 	PortfolioUsecase interface{}
 	CVUsecase        cvs.ICVsUsecase
 	VacanciesUsecase vacancies.IVacanciesUsecase
+	SessionUsecase   session.ISessionUsecase
 }
 
 // type Handlers struct {
 // 	ApplicantProfileHandlers *ApplicantProfileHandlers
 // }
-

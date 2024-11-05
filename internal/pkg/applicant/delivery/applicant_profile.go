@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
-	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
 	"github.com/sirupsen/logrus"
@@ -18,21 +18,20 @@ type ApplicantProfileHandlers struct {
 	logger           *logrus.Logger
 	applicantUsecase applicantUsecase.IApplicantUsecase
 	portfolioUsecase portfolioUsecase.IPortfolioUsecase
-	cvUsecase        cvUsecase.ICVsUsecase
+	cvUsecase        cvs.ICVsUsecase
 }
 
 func NewApplicantProfileHandlers(logger *logrus.Logger, usecases *internal.Usecases) (*ApplicantProfileHandlers, error) {
 	ApplicantUsecase, ok1 := usecases.ApplicantUsecase.(*applicantUsecase.ApplicantUsecase)
 	PortfolioUsecase, ok2 := usecases.PortfolioUsecase.(*portfolioUsecase.PortfolioUsecase)
-	CVUsecase, ok3 := usecases.CVUsecase.(*cvUsecase.CVsUsecase)
-	if !(ok1 && ok2 && ok3) {
+	if !(ok1 && ok2) {
 		return nil, commonerrors.ErrUnableToCast
 	}
 	return &ApplicantProfileHandlers{
 		logger:           logger,
 		applicantUsecase: ApplicantUsecase,
 		portfolioUsecase: PortfolioUsecase,
-		cvUsecase:        CVUsecase,
+		cvUsecase:        usecases.CVUsecase,
 	}, nil
 }
 

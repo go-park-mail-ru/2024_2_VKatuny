@@ -39,7 +39,6 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 		Vacancies = append(Vacancies, &Vacancy)
 		fmt.Println(Vacancy)
 	}
-
 	return Vacancies, nil
 }
 

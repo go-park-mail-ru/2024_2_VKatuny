@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 // PostgreSQLBoardStorage
@@ -31,6 +32,7 @@ func (s *PostgreSQLEmployerSession) GetUserIdBySession(sessionId string) (uint64
 	return id, err
 }
 func (s *PostgreSQLApplicantSession) GetUserIdBySession(sessionId string) (uint64, error) {
+	fmt.Println("1")
 	row := s.db.QueryRow(`select applicant_id from applicant_session  where session_token = $1`, sessionId)
 	var id uint64
 	err := row.Scan(&id)

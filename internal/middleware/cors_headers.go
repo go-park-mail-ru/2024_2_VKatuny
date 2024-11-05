@@ -11,7 +11,7 @@ func SetSecurityAndOptionsHeaders(next http.Handler, frontURI string) http.Handl
 		// Set up CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", frontURI)
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept")
 
 		if r.Method == http.MethodOptions {
