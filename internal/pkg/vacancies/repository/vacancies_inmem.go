@@ -18,7 +18,7 @@ type vacanciesRepo struct {
 func NewRepo() *vacanciesRepo {
 	vacancies := &vacanciesRepo{
 		lastID: 0,
-		data: make([]*models.Vacancy, 0, 10),
+		data:   make([]*models.Vacancy, 0, 10),
 	}
 	vacancies.lastID = 25
 	for i := uint64(0); i < 25; i += 5 {
@@ -84,7 +84,7 @@ func NewRepo() *vacanciesRepo {
 // Add new vacncy into the db
 // Accepts pointer to vacancy model
 // Returns ID of created vacancy and error
-func (repo *vacanciesRepo) Add(vacancy *models.Vacancy) (uint64, error) {
+func (repo *vacanciesRepo) Create(vacancy *models.Vacancy) (uint64, error) {
 	repo.lastID++
 	vacancy.ID = repo.lastID
 	repo.data = append(repo.data, vacancy)

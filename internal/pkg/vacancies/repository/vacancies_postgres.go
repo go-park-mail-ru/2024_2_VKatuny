@@ -67,7 +67,7 @@ func (s *PostgreSQLVacanciesStorage) GetWithOffset(offset uint64, num uint64) ([
 	return Vacancies, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) Add(vacancy *models.Vacancy) (uint64, error) {
+func (s *PostgreSQLVacanciesStorage) Create(vacancy *models.Vacancy) (uint64, error) {
 	var VacancyId uint64
 	row := s.db.QueryRow(`insert into vacancy (position, description, salary, employer_id,
 		path_to_company_avatar) VALUES ($1, $2, $3, $4, $5) returning id`, vacancy.Position, vacancy.Description, vacancy.Salary, vacancy.Employer, vacancy.Logo)
