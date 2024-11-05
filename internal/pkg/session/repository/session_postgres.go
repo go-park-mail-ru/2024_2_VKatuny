@@ -28,7 +28,7 @@ func (s *PostgreSQLEmployerSession) GetUserIdBySession(sessionId string) (uint64
 	if err != nil {
 		return 0, err
 	}
-	return id, nil
+	return id, err
 }
 func (s *PostgreSQLApplicantSession) GetUserIdBySession(sessionId string) (uint64, error) {
 	row := s.db.QueryRow(`select applicant_id from applicant_session  where session_token = $1`, sessionId)
@@ -37,35 +37,23 @@ func (s *PostgreSQLApplicantSession) GetUserIdBySession(sessionId string) (uint6
 	if err != nil {
 		return 0, err
 	}
-	return id, nil
+	return id, err
 }
 
 func (s *PostgreSQLEmployerSession) Create(userId uint64, sessionID string) error {
 	_, err := s.db.Exec(`insert into employer_session (employer_id, session_token) VALUES ($1, $2)`, userId, sessionID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 func (s *PostgreSQLApplicantSession) Create(userId uint64, sessionID string) error {
 	_, err := s.db.Exec(`insert into applicant_session (applicant_id, session_token) VALUES ($1, $2)`, userId, sessionID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (s *PostgreSQLEmployerSession) Delete(sessionId string) error {
 	_, err := s.db.Exec(`delete from employer_session where session_token = $1`, sessionId)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 func (s *PostgreSQLApplicantSession) Delete(sessionId string) error {
 	_, err := s.db.Exec(`delete from applicant_session where session_token = $1`, sessionId)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

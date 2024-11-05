@@ -249,6 +249,28 @@ type JSONGetApplicantCV struct {
 	CreatedAt         string `json:"createdAt"`
 }
 
-type JSONCv struct{}
+type JSONCv struct {
+	ID                  uint64 `json:"id"`
+	ApplicantID         uint64 `json:"applicant"`
+	PositionRu          string `json:"positionRu"`
+	PositionEn          string `json:"positionEn"`
+	Description         string `json:"description,omitempty"`
+	JobSearchStatusName string `json:"jobSearchStatus"`
+	WorkingExperience   string `json:"workingExperience"`
+	Avatar              string `json:"avatar"`
+	CreatedAt           string `json:"createdAt"`
+	UpdatedAt           string `json:"updatedAt"`
+}
 
-type JSONVacancy struct{}
+type JSONVacancy struct {
+	ID          uint64 `json:"id"`
+	EmployerID  uint64 `json:"employer"`
+	Salary      string `json:"salary"`
+	Position    string `json:"position"`
+	Location    string `json:"location"`
+	Description string `json:"description"`
+	WorkType    string `json:"workType"`
+	Avatar      string `json:"avatar"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
+}

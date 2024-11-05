@@ -133,11 +133,8 @@ func (s *PostgreSQLApplicantStorage) Create(applicantInput *dto.ApplicantInput) 
 	}
 
 	applicant, err := s.GetByEmail(applicantInput.Email)
-	if err != nil {
-		return nil, err
-	}
 
-	return applicant, nil
+	return applicant, err
 }
 
 func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) error {

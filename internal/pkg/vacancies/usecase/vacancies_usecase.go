@@ -60,7 +60,7 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 			Position:    vacancyModel.Position,
 			Description: vacancyModel.Description,
 			WorkType:    vacancyModel.WorkType,
-			Avatar:      vacancyModel.Logo,
+			Avatar:      vacancyModel.Avatar,
 			CreatedAt:   vacancyModel.CreatedAt,
 		})
 	}
