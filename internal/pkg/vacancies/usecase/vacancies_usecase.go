@@ -51,7 +51,7 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 		return nil, err
 	}
 
-	vacancies := make([]*dto.JSONGetEmployerVacancy, len(vacanciesModels))
+	vacancies := make([]*dto.JSONGetEmployerVacancy, 0, len(vacanciesModels))
 	for _, vacancyModel := range vacanciesModels {
 		vacancies = append(vacancies, &dto.JSONGetEmployerVacancy{
 			ID:          vacancyModel.ID,

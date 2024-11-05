@@ -65,8 +65,16 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
-	wroteCV, err := h.cvsUsecase.CreateCV(newCV)
+	session, err := r.Cookie(dto.SessionIDName)
+	if err == http.ErrNoCookie || session.Value == "" {
+		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      http.ErrNoCookie.Error(),
+		})
+		return
+	}
+	wroteCV, err := h.cvsUsecase.CreateCV(newCV, session.Value)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -116,7 +124,6 @@ func (h *CVsHandler) GetCVsHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-
 	fn := "CVsHandler.UpdateCVHandler"
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
 	if err != nil {
@@ -124,12 +131,9 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.logger.Debugf("function %s: got slug cvID: %d", fn, ID)
-
 	cvID := uint64(ID)
-
 	decoder := json.NewDecoder(r.Body)
 	newCV := new(dto.JSONCv)
-
 	err = decoder.Decode(newCV)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -139,7 +143,6 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
 	session, err := r.Cookie(dto.SessionIDName)
 	if err == http.ErrNoCookie || session.Value == "" {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -149,7 +152,6 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
 	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, session.Value, newCV)
 	if err == commonerrors.ErrUnauthorized || err == commonerrors.ErrSessionNotFound {
 		h.logger.Errorf("function %s: got err %s", fn, err)

@@ -57,7 +57,7 @@ func (s *PostgreSQLCVStorage) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
 		}
 	}
 	var oneCv dto.JSONCv
-	row = s.db.QueryRow(`update cv (applicant_id, position_rus, position_eng, cv_description, job_search_status_id, working_experience)
+	row = s.db.QueryRow(`insert into cv (applicant_id, position_rus, position_eng, cv_description, job_search_status_id, working_experience)
 		VALUES ($1, $2, $3, $4, $5, $6) returning id, applicant_id, position_rus, position_eng,
 		cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
 		cv.ApplicantID, cv.PositionRu, cv.PositionEn, cv.Description, JobSearchStatusID, cv.WorkingExperience)

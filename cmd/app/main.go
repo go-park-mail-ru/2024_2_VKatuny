@@ -129,11 +129,13 @@ func main() {
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	repositories := &internal.Repositories{
-		ApplicantRepository: applicantRepository,                                   // implement IApplicantRepository. Add method `Update`
-		PortfolioRepository: portfolioRepository.NewPortfolioStorage(dbConnection), // implement IPortfolioRepository
-		CVRepository:        cvRepository.NewCVStorage(dbConnection),               // implement necessary methods
-		VacanciesRepository: vacanciesRepository,
-		EmployerRepository:  employerRepository,
+		ApplicantRepository:        applicantRepository,                                   // implement IApplicantRepository. Add method `Update`
+		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection), // implement IPortfolioRepository
+		CVRepository:               cvRepository.NewCVStorage(dbConnection),               // implement necessary methods
+		VacanciesRepository:        vacanciesRepository,
+		EmployerRepository:         employerRepository,
+		SessionApplicantRepository: sessionApplicantRepository,
+		SessionEmployerRepository:  sessionEmployerRepository,
 	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories),

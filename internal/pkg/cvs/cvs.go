@@ -16,7 +16,7 @@ type ICVsRepository interface {
 
 type ICVsUsecase interface {
 	GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplicantCV, error)
-	CreateCV(cv *dto.JSONCv) (*dto.JSONCv, error)
+	CreateCV(cv *dto.JSONCv, sessionID string) (*dto.JSONCv, error)
 	GetCV(ID uint64) (*dto.JSONCv, error)
 	UpdateCV(ID uint64, sessionID string, cv *dto.JSONCv) (*dto.JSONCv, error)
 	DeleteCV(ID uint64, sessionID string) error
