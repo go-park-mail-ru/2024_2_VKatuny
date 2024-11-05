@@ -63,12 +63,11 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 	for _, vacancyModel := range vacanciesModels {
 		vacancies = append(vacancies, &dto.JSONGetEmployerVacancy{
 			ID:          vacancyModel.ID,
-			// EmployerID:  vacancyModel.Employer, // in model i have employer (string), but there is uint64
+			EmployerID:  vacancyModel.EmployerID,
 			Salary:      vacancyModel.Salary,
 			Position:    vacancyModel.Position,
-			Location:    vacancyModel.Location,
 			Description: vacancyModel.Description,
-			// WorkType:    vacancyModel.WorkType,
+			WorkType:    vacancyModel.WorkType,
 			Avatar:      vacancyModel.Logo,
 			CreatedAt:   vacancyModel.CreatedAt,
 		})

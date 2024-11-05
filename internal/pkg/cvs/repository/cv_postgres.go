@@ -21,8 +21,8 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*models
 
 	CVs := make([]*models.CV, 0)
 
-	rows, err := s.db.Query(`select id, applicant_id, position_rus, position_eng, job_search_status_id, working_experience,
-		path_to_profile_avatar, created_at, updated_at  from cv where cv.applicant_id = $1`, applicantID)
+	rows, err := s.db.Query(`select cv.id, applicant_id, position_rus, position_eng, job_search_status_name, working_experience,
+		path_to_profile_avatar, cv.created_at, cv.updated_at  from cv left join job_search_status on job_search_status.id = cv.job_search_status_id where cv.applicant_id = $1`, applicantID)
 	if err != nil {
 		return nil, err
 	}
@@ -30,9 +30,10 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*models
 
 	for rows.Next() {
 		var CV models.CV
-		if err := rows.Scan(&CV.ID, &CV.ApplicantID, &CV.PositionRus, &CV.PositionEng, &CV.JobSearchStatusID, &CV.WorkingExperience, &CV.PathToProfileAvatar, &CV.CreatedAt, &CV.UpdatedAt); err != nil {
+		if err := rows.Scan(&CV.ID, &CV.ApplicantID, &CV.PositionRus, &CV.PositionEng, &CV.JobSearchStatus, &CV.WorkingExperience, &CV.PathToProfileAvatar, &CV.CreatedAt, &CV.UpdatedAt); err != nil {
 			return nil, err
 		}
+		CVs = append(CVs, &CV)
 		fmt.Println(CV)
 	}
 

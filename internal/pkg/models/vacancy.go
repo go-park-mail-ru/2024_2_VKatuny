@@ -6,8 +6,8 @@ type Vacancy struct {
 	Position    string `json:"position"`
 	Description string `json:"description"`
 	Salary      string `json:"salary"`
-	Employer    string `json:"employer"` // need id
-	Location    string `json:"location"`
+	EmployerID  uint64 `json:"employerID"` // need id
+	WorkType    string `json:"workType"`
 	CreatedAt   string `json:"createdAt"`
 	Logo        string `json:"logo"`
 }

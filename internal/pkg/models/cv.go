@@ -7,9 +7,9 @@ type CV struct {
 	ApplicantID         uint64
 	PositionRus         string
 	PositionEng         string
-	JobSearchStatusID   int
-	WorkingExperience   string  
-	PathToProfileAvatar string // Для Олега на русском. оно нам надо? Разве там не аватарка пользователя?
-	CreatedAt           time.Time  // И еще нужно описание вакансии
+	JobSearchStatus     string
+	WorkingExperience   string
+	PathToProfileAvatar string
+	CreatedAt           time.Time
 	UpdatedAt           time.Time
 }

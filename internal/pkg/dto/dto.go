@@ -244,7 +244,7 @@ type JSONGetApplicantCV struct {
 	PositionRu        string `json:"positionRu"`
 	PositionEn        string `json:"positionEn"`
 	Description       string `json:"description,omitempty"`
-	JobSearchStatusID int    `json:"jobSearchStatusID"`
+	JobSearchStatus   string `json:"jobSearchStatus"`
 	WorkingExperience string `json:"workingExperience"`
 	CreatedAt         string `json:"createdAt"`
 }

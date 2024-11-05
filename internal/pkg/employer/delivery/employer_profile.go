@@ -35,18 +35,16 @@ func NewEmployerProfileHandlers(logger *logrus.Logger, usecases *internal.Usecas
 }
 
 func (h *EmployerProfileHandlers) EmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/api/v1/employer/profile/" {
-		switch r.Method {
-		case http.MethodGet:
-			h.GetEmployerProfileHandler(w, r)
-		case http.MethodPut:
-			h.UpdateEmployerProfileHandler(w, r)
-		default:
-			middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
-				HTTPStatus: http.StatusMethodNotAllowed,
-				Error:      http.StatusText(http.StatusMethodNotAllowed),
-			})
-		}
+	switch r.Method {
+	case http.MethodGet:
+		h.GetEmployerProfileHandler(w, r)
+	case http.MethodPut:
+		h.UpdateEmployerProfileHandler(w, r)
+	default:
+		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
+			HTTPStatus: http.StatusMethodNotAllowed,
+			Error:      http.StatusText(http.StatusMethodNotAllowed),
+		})
 	}
 }
 

@@ -154,7 +154,7 @@ func main() {
 		logger.Fatal(err)
 	}
 	Mux.HandleFunc("/api/v1/employer/profile/", employerProfileHandlers.EmployerProfileHandler)
-	Mux.HandleFunc("/api/v1/employer/portfolio/", employerProfileHandlers.GetEmployerVacanciesHandler)
+	Mux.HandleFunc("/api/v1/employer/vacancies/", employerProfileHandlers.GetEmployerVacanciesHandler)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
