@@ -50,35 +50,21 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 }
 
 func (cu *CVsUsecase) CreateCV(cv *dto.JSONCv) (*dto.JSONCv, error) {
-	newCVModel, err := cu.cvsRepo.Create(cv)
+	cv, err := cu.cvsRepo.Create(cv)
 	if err != nil {
 		cu.logger.Errorf("while adding to db got err: %s", err)
 		return nil, err
 	}
-	return &dto.JSONCv{
-		ApplicantID:       newCVModel.ApplicantID,
-		PositionRu:        newCVModel.PositionRus,
-		PositionEn:        newCVModel.PositionEng,
-		Description:       newCVModel.Description,
-		JobSearchStatus:   newCVModel.JobSearchStatus,
-		WorkingExperience: newCVModel.WorkingExperience,
-	}, nil
+	return cv, nil
 }
 
 func (cu *CVsUsecase) GetCV(cvID uint64) (*dto.JSONCv, error) {
-	CVModel, err := cu.cvsRepo.GetByID(cvID)
+	cv, err := cu.cvsRepo.GetByID(cvID)
 	if err != nil {
 		cu.logger.Errorf("while getting from db got err %s", err)
 		return nil, err
 	}
-	return &dto.JSONCv{
-		ApplicantID:       CVModel.ApplicantID,
-		PositionRu:        CVModel.PositionRus,
-		PositionEn:        CVModel.PositionEng,
-		Description:       CVModel.Description,
-		JobSearchStatus:   CVModel.JobSearchStatus,
-		WorkingExperience: CVModel.WorkingExperience,
-	}, nil
+	return cv , nil
 }
 
 func (cu *CVsUsecase) UpdateCV(ID uint64 , sessionID string, cv *dto.JSONCv) (*dto.JSONCv, error) {
@@ -93,19 +79,12 @@ func (cu *CVsUsecase) UpdateCV(ID uint64 , sessionID string, cv *dto.JSONCv) (*d
 		return nil, commonerrors.ErrUnauthorized
 	}
 
-	CVModel, err := cu.cvsRepo.Update(ID, cv)
+	newCV, err := cu.cvsRepo.Update(ID, cv)
 	if err != nil {
 		cu.logger.Errorf("while updating in db got err %s", err)
 		return nil, err
 	}
-	return &dto.JSONCv{
-		ApplicantID:       CVModel.ApplicantID,
-		PositionRu:        CVModel.PositionRus,
-		PositionEn:        CVModel.PositionEng,
-		Description:       CVModel.Description,
-		JobSearchStatus:   CVModel.JobSearchStatus,
-		WorkingExperience: CVModel.WorkingExperience,
-	}, nil
+	return newCV, nil
 }
 
 func (cu *CVsUsecase) DeleteCV(cvID uint64, sessionID string) error {
@@ -115,9 +94,9 @@ func (cu *CVsUsecase) DeleteCV(cvID uint64, sessionID string) error {
 		return commonerrors.ErrSessionNotFound
 	}
 
-	CVModel, err := cu.cvsRepo.GetByID(cvID)
-	if CVModel.ApplicantID != currentUserID {
-		cu.logger.Errorf("not an owner tried to delete CV, got %d expected %d", currentUserID, CVModel.ApplicantID)
+	cv, err := cu.cvsRepo.GetByID(cvID)
+	if cv.ApplicantID != currentUserID {
+		cu.logger.Errorf("not an owner tried to delete CV, got %d expected %d", currentUserID, cv.ApplicantID)
 		return commonerrors.ErrUnauthorized
 	}
 	err = cu.cvsRepo.Delete(cvID)
