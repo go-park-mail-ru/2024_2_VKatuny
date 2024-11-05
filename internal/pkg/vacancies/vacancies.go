@@ -10,10 +10,10 @@ import (
 // Implementation locates in ./repository
 type IVacanciesRepository interface { // TODO: rename to IVacanciesRepository
 	Create(vacancy *dto.JSONVacancy) (uint64, error) // TODO: should accept DTO not a model
-	GetWithOffset(offset uint64, num uint64) ([]*models.Vacancy, error)
-	GetVacanciesByEmployerID(employerID uint64) ([]*models.Vacancy, error)
-	GetByID(ID uint64) (*models.Vacancy, error)
-	Update(ID uint64, updatedVacancy *dto.JSONVacancy) (*models.Vacancy, error)
+	GetWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error)
+	GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONVacancy, error)
+	GetByID(ID uint64) (*dto.JSONVacancy, error)
+	Update(ID uint64, updatedVacancy *dto.JSONVacancy) (*dto.JSONVacancy, error)
 	Delete(ID uint64) error
 	Subscribe(ID uint64, applicantID uint64) error
 	GetSubscriptionStatus(ID uint64, applicantID uint64) (bool, error)

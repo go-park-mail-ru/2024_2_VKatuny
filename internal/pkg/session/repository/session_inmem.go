@@ -41,8 +41,8 @@ func (sa *SessionApplicantRepo) Create(userId uint64, sessionID string) error {
 		ID:          sa.lastID,
 		ApplicantID: userId,
 		CookieToken: sessionID,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		CreatedAt:   time.Now().String(),
+		UpdatedAt:   time.Now().String(),
 	}
 	sa.lastID++
 	return nil
@@ -68,8 +68,8 @@ func (se *SessionEmployerRepo) Create(userId uint64, sessionID string) error {
 		ID:          se.lastID,
 		EmployerID:  userId,
 		CookieToken: sessionID,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		CreatedAt:   time.Now().String(),
+		UpdatedAt:   time.Now().String(),
 	}
 	se.lastID++
 	return nil

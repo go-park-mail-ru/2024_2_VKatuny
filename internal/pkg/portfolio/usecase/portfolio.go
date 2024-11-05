@@ -44,7 +44,7 @@ func (pu *PortfolioUsecase) GetApplicantPortfolios(applicantID uint64) ([]*dto.J
 			ID:          portfolioModel.ID,
 			ApplicantID: portfolioModel.ApplicantID,
 			Name:        portfolioModel.Name,
-			CreatedAt:   portfolioModel.CreatedAt.Format("2006.01.02 15:04:05"),
+			CreatedAt:   portfolioModel.CreatedAt,
 		})
 	}
 

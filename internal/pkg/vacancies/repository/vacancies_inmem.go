@@ -29,8 +29,8 @@ func NewRepo() *vacanciesRepo {
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
 			Salary:     "Не указана",
 			EmployerID: 1,
-			CreatedAt:  "2024.09.29 16:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:       "img/picture_name1.png",
+			//CreatedAt:  "2024.09.29 16:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo: "img/picture_name1.png",
 		})
 		vacancies.data = append(vacancies.data, &models.Vacancy{
 			ID:       i + 1,
@@ -39,8 +39,8 @@ func NewRepo() *vacanciesRepo {
 			Требуются ответственные личности, способные на тяжелую работу. Своевременную оплату гарантируем.`,
 			Salary:     "80 000",
 			EmployerID: 1,
-			CreatedAt:  "2024.09.29 17:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:       "img/picture_name2.png",
+			//CreatedAt:  "2024.09.29 17:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo: "img/picture_name2.png",
 		})
 		vacancies.data = append(vacancies.data, &models.Vacancy{
 			ID:       i + 2,
@@ -49,8 +49,8 @@ func NewRepo() *vacanciesRepo {
 			Требуются ответственные личности, способные на продуктивную работу с людьми. Своевременную оплату гарантируем.`,
 			Salary:     "100 500",
 			EmployerID: 1,
-			CreatedAt:  "2024.09.29 18:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:       "img/picture_name3.png",
+			//CreatedAt:  "2024.09.29 18:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo: "img/picture_name3.png",
 		})
 		vacancies.data = append(vacancies.data, &models.Vacancy{
 			ID:       i + 3,
@@ -59,8 +59,8 @@ func NewRepo() *vacanciesRepo {
 			Требуются ответственные личности, способные на тяжелую посменную работу. Своевременную оплату гарантируем.`,
 			Salary:     "Не указана",
 			EmployerID: 1,
-			CreatedAt:  "2024.09.29 19:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:       "img/picture_name4.png",
+			//CreatedAt:  "2024.09.29 19:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo: "img/picture_name4.png",
 		})
 		vacancies.data = append(vacancies.data, &models.Vacancy{
 			ID:       i + 4,
@@ -69,8 +69,8 @@ func NewRepo() *vacanciesRepo {
 			Требуются ответственные личности, способные на тяжелую кропотливую работу. Своевременную оплату гарантируем.`,
 			Salary:     "50 000",
 			EmployerID: 1,
-			CreatedAt:  "2024.09.29 20:55:00", // YYYY.MM.DD HH:MM:SS
-			Logo:       "img/picture_name5.png",
+			//CreatedAt:  "2024.09.29 20:55:00", // YYYY.MM.DD HH:MM:SS
+			Logo: "img/picture_name5.png",
 		})
 	}
 	return vacancies
