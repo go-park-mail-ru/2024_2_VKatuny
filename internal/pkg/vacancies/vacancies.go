@@ -17,8 +17,8 @@ type IVacanciesRepository interface { // TODO: rename to IVacanciesRepository
 	Delete(ID uint64) error
 	Subscribe(ID uint64, applicantID uint64) error
 	GetSubscriptionStatus(ID uint64, applicantID uint64) (bool, error)
-	GetScribersCount(ID uint64) (uint64, error)
-	GetSubscribersList(ID uint64) ([]uint64, error)  // TODO: ask Ilya
+	GetSubscribersCount(ID uint64) (uint64, error)
+	GetSubscribersList(ID uint64) ([]*models.Applicant, error)
 	Unsubscribe(ID uint64, applicantID uint64) error
 }
 
