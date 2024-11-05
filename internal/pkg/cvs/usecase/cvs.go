@@ -74,6 +74,7 @@ func (cu *CVsUsecase) GetCV(cvID uint64) (*dto.JSONCv, error) {
 
 func (cu *CVsUsecase) UpdateCV(ID uint64, sessionID string, cv *dto.JSONCv) (*dto.JSONCv, error) {
 	currentUserID, err := cu.sessionRepo.GetUserIdBySession(sessionID)
+	cv.ApplicantID = currentUserID
 	if err != nil {
 		cu.logger.Errorf("while getting from db got err %s", err)
 		return nil, commonerrors.ErrSessionNotFound
