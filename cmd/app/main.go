@@ -129,9 +129,9 @@ func main() {
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	repositories := &internal.Repositories{
-		ApplicantRepository:        applicantRepository,                                   // implement IApplicantRepository. Add method `Update`
-		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection), // implement IPortfolioRepository
-		CVRepository:               cvRepository.NewCVStorage(dbConnection),               // implement necessary methods
+		ApplicantRepository:        applicantRepository,
+		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection),
+		CVRepository:               cvRepository.NewCVStorage(dbConnection),
 		VacanciesRepository:        vacanciesRepository,
 		EmployerRepository:         employerRepository,
 		SessionApplicantRepository: sessionApplicantRepository,
@@ -143,6 +143,11 @@ func main() {
 		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
 		VacanciesUsecase: vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
 		EmployerUsecase:  employerUsecase.NewEmployerUsecase(logger, repositories),
+	}
+	app := &internal.App{
+		Logger:       logger,
+		Repositories: repositories,
+		Usecases:     usecases,
 	}
 
 	applicantProfileHandlers, err := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)
@@ -160,7 +165,7 @@ func main() {
 	Mux.HandleFunc("/api/v1/employer/profile/", employerProfileHandlers.EmployerProfileHandler)
 	Mux.HandleFunc("/api/v1/employer/vacancies/", employerProfileHandlers.GetEmployerVacanciesHandler)
 
-	cvsHandlers := cvDelivery.NewCVsHandler(logger, usecases)
+	cvsHandlers := cvDelivery.NewCVsHandler(app)
 	Mux.HandleFunc("/api/v1/cv/", cvsHandlers.CVsRESTHandler)
 
 	// Wrapped multiplexer

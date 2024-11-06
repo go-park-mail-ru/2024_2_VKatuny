@@ -9,9 +9,13 @@ import (
 // DTOs used for tasering data from one part of the app to another.
 
 type loggerKey int
+type userKey int
 
-// LoggerContextKey is a key for logger
-const LoggerContextKey loggerKey = 1
+// Context keys
+const (
+	LoggerContextKey loggerKey = 1
+	UserContextKey   userKey   = 2
+)
 
 const (
 	// UserTypeApplicant is a constant for "applicant" user type
@@ -281,4 +285,9 @@ type JSONVacancy struct {
 	CompanyName string `json:"companyName"`
 	CreatedAt   string `json:"createdAt"`
 	UpdatedAt   string `json:"updatedAt"`
+}
+
+type SessionUser struct {
+	ID       uint64
+	UserType string
 }

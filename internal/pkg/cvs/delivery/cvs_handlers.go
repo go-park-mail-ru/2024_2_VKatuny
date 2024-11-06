@@ -9,36 +9,41 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/sirupsen/logrus"
 )
 
 type CVsHandler struct {
-	logger     *logrus.Logger
-	cvsUsecase cvs.ICVsUsecase
+	logger               *logrus.Logger
+	cvsUsecase           cvs.ICVsUsecase
+	sessionApplicantRepo session.ISessionRepository
 }
 
-func NewCVsHandler(logger *logrus.Logger, usecases *internal.Usecases) *CVsHandler {
+func NewCVsHandler(layers *internal.App) *CVsHandler {
+	logger := layers.Logger
 	logger.Debug("CVsHandler created")
 	return &CVsHandler{
 		logger:     logger,
-		cvsUsecase: usecases.CVUsecase,
+		cvsUsecase: layers.Usecases.CVUsecase,
+		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 	}
 }
 
 func (h *CVsHandler) CVsRESTHandler(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("CVsHandler.CVsRESTHandler got request: %s", r.URL.Path)
+	repositories := &internal.Repositories{SessionApplicantRepository: h.sessionApplicantRepo}
 	switch r.Method {
 	case http.MethodPost:
-		// TODO: навесить миддлвару проверки авторизации
-		h.CreateCVHandler(w, r)
+		handler := middleware.RequireAuthorization(h.CreateCVHandler, repositories, dto.UserTypeApplicant)
+		handler(w, r)
 	case http.MethodGet:
 		h.GetCVsHandler(w, r)
 	case http.MethodPut:
-		// TODO: навесить миддлвару проверки авторизации
-		h.UpdateCVHandler(w, r)
+		handler := middleware.RequireAuthorization(h.UpdateCVHandler, repositories, dto.UserTypeApplicant)
+		handler(w, r)
 	case http.MethodDelete:
-		// TODO: навесить миддлвару проверки авторизации
-		h.DeleteCVHandler(w, r)
+		handler := middleware.RequireAuthorization(h.DeleteCVHandler, repositories, dto.UserTypeApplicant)
+		handler(w, r)
 	default:
 		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
 			HTTPStatus: http.StatusMethodNotAllowed,
@@ -65,16 +70,18 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	session, err := r.Cookie(dto.SessionIDName)
-	if err == http.ErrNoCookie || session.Value == "" {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
-			Error:      http.ErrNoCookie.Error(),
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      "unable to get user from context", // TODO: make error without hardcode
 		})
 		return
 	}
-	wroteCV, err := h.cvsUsecase.CreateCV(newCV, session.Value)
+
+	wroteCV, err := h.cvsUsecase.CreateCV(newCV, currentUser)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -143,16 +150,18 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	session, err := r.Cookie(dto.SessionIDName)
-	if err == http.ErrNoCookie || session.Value == "" {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
-			Error:      http.ErrNoCookie.Error(),
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      "unable to get user from context", // TODO: make error without hardcode
 		})
 		return
 	}
-	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, session.Value, newCV)
+
+	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, currentUser, newCV)
 	if err == commonerrors.ErrUnauthorized || err == commonerrors.ErrSessionNotFound {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -190,17 +199,17 @@ func (h *CVsHandler) DeleteCVHandler(w http.ResponseWriter, r *http.Request) {
 
 	cvID := uint64(ID)
 
-	session, err := r.Cookie(dto.SessionIDName)
-	if err == http.ErrNoCookie || session.Value == "" {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
-			Error:      http.ErrNoCookie.Error(),
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      "unable to get user from context", // TODO: make error without hardcode
 		})
 		return
 	}
 
-	err = h.cvsUsecase.DeleteCV(cvID, session.Value)
+	err = h.cvsUsecase.DeleteCV(cvID, currentUser)
 	if err == commonerrors.ErrUnauthorized || err == commonerrors.ErrSessionNotFound {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
