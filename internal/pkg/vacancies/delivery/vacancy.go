@@ -37,15 +37,15 @@ func (h *VacanciesHandlers) VacanciesRESTHandler(w http.ResponseWriter, r *http.
 	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo}
 	switch r.Method {
 	case http.MethodPost:
-		handler := middleware.RequireAuthorization(h.CreateVacancyHandler, repository, dto.UserTypeEmployer)
+		handler := middleware.RequireAuthorization(h.createVacancyHandler, repository, dto.UserTypeEmployer)
 		handler(w, r)
 	case http.MethodGet:
-		h.GetVacancyHandler(w, r)
+		h.getVacancyHandler(w, r)
 	case http.MethodPut:
-		handler := middleware.RequireAuthorization(h.UpdateVacancyHandler, repository, dto.UserTypeEmployer)
+		handler := middleware.RequireAuthorization(h.updateVacancyHandler, repository, dto.UserTypeEmployer)
 		handler(w, r)
 	case http.MethodDelete:
-		handler := middleware.RequireAuthorization(h.DeleteVacancyHandler, repository, dto.UserTypeEmployer)
+		handler := middleware.RequireAuthorization(h.deleteVacancyHandler, repository, dto.UserTypeEmployer)
 		handler(w, r)
 	default:
 		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
@@ -60,12 +60,12 @@ func (h *VacanciesHandlers) VacanciesSubscribeRESTHandler(w http.ResponseWriter,
 	repository := &internal.Repositories{SessionApplicantRepository: h.sessionApplicantRepo}
 	switch r.Method {
 	case http.MethodPost:
-		handler := middleware.RequireAuthorization(h.SubscribeVacancyHandler, repository, dto.UserTypeApplicant)
+		handler := middleware.RequireAuthorization(h.subscribeVacancyHandler, repository, dto.UserTypeApplicant)
 		handler(w, r)
 	case http.MethodGet:
-		h.GetVacancySubscriptionHandler(w, r)
+		h.getVacancySubscriptionHandler(w, r)
 	case http.MethodDelete:
-		handler := middleware.RequireAuthorization(h.UnsubscribeVacancyHandler, repository, dto.UserTypeApplicant)
+		handler := middleware.RequireAuthorization(h.unsubscribeVacancyHandler, repository, dto.UserTypeApplicant)
 		handler(w, r)
 	default:
 		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
@@ -75,7 +75,13 @@ func (h *VacanciesHandlers) VacanciesSubscribeRESTHandler(w http.ResponseWriter,
 	}
 }
 
-func (h *VacanciesHandlers) CreateVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) GetVacancySubscribersHandler(w http.ResponseWriter, r *http.Request) {
+	repository := &internal.Repositories{SessionEmployerRepository: h.sessionApplicantRepo}
+	handler := middleware.RequireAuthorization(h.getVacancySubscribersHandler, repository, dto.UserTypeApplicant)
+	handler(w, r)
+}
+
+func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	decoder := json.NewDecoder(r.Body)
@@ -116,7 +122,7 @@ func (h *VacanciesHandlers) CreateVacancyHandler(w http.ResponseWriter, r *http.
 	})
 }
 
-func (h *VacanciesHandlers) GetVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) getVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
@@ -146,7 +152,7 @@ func (h *VacanciesHandlers) GetVacancyHandler(w http.ResponseWriter, r *http.Req
 	})
 }
 
-func (h *VacanciesHandlers) UpdateVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
@@ -198,7 +204,7 @@ func (h *VacanciesHandlers) UpdateVacancyHandler(w http.ResponseWriter, r *http.
 	})
 }
 
-func (h *VacanciesHandlers) DeleteVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) deleteVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
@@ -237,7 +243,7 @@ func (h *VacanciesHandlers) DeleteVacancyHandler(w http.ResponseWriter, r *http.
 	})
 }
 
-func (h *VacanciesHandlers) SubscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) subscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
@@ -278,7 +284,7 @@ func (h *VacanciesHandlers) SubscribeVacancyHandler(w http.ResponseWriter, r *ht
 	})
 }
 
-func (h *VacanciesHandlers) UnsubscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) unsubscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
@@ -319,7 +325,7 @@ func (h *VacanciesHandlers) UnsubscribeVacancyHandler(w http.ResponseWriter, r *
 	})
 }
 
-func (h *VacanciesHandlers) GetVacancySubscriptionHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) getVacancySubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
@@ -360,7 +366,7 @@ func (h *VacanciesHandlers) GetVacancySubscriptionHandler(w http.ResponseWriter,
 	})
 }
 
-func (h *VacanciesHandlers) GetVacancySubscribersHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) getVacancySubscribersHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscribers/")
