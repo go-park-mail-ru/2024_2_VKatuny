@@ -89,8 +89,6 @@ func main() {
 	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection) // just do it!
 
-	// Now your applicantRepository doesn't implement the IApplicantRepository interface
-	// Oleg you should implement method Update for applicant_repository.PostgreSQLApplicantStorage
 	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository, sessionApplicantRepository, conf.Server.GetAddress())
 	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
 
@@ -129,9 +127,9 @@ func main() {
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	repositories := &internal.Repositories{
-		ApplicantRepository:        applicantRepository,                                   // implement IApplicantRepository. Add method `Update`
-		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection), // implement IPortfolioRepository
-		CVRepository:               cvRepository.NewCVStorage(dbConnection),               // implement necessary methods
+		ApplicantRepository:        applicantRepository,
+		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection),
+		CVRepository:               cvRepository.NewCVStorage(dbConnection),
 		VacanciesRepository:        vacanciesRepository,
 		EmployerRepository:         employerRepository,
 		SessionApplicantRepository: sessionApplicantRepository,
@@ -143,6 +141,11 @@ func main() {
 		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
 		VacanciesUsecase: vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
 		EmployerUsecase:  employerUsecase.NewEmployerUsecase(logger, repositories),
+	}
+	app := &internal.App{
+		Logger:       logger,
+		Repositories: repositories,
+		Usecases:     usecases,
 	}
 
 	applicantProfileHandlers, err := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)
@@ -160,8 +163,13 @@ func main() {
 	Mux.HandleFunc("/api/v1/employer/profile/", employerProfileHandlers.EmployerProfileHandler)
 	Mux.HandleFunc("/api/v1/employer/vacancies/", employerProfileHandlers.GetEmployerVacanciesHandler)
 
-	cvsHandlers := cvDelivery.NewCVsHandler(logger, usecases)
+	cvsHandlers := cvDelivery.NewCVsHandler(app)
 	Mux.HandleFunc("/api/v1/cv/", cvsHandlers.CVsRESTHandler)
+
+	vacanciesHandlers := vacancies_delivery.NewVacanciesHandlers(app)
+	Mux.HandleFunc("/api/v1/vacancy/", vacanciesHandlers.VacanciesRESTHandler)
+	Mux.HandleFunc("/api/v1/vacancy/subscription/", vacanciesHandlers.VacanciesSubscribeRESTHandler)
+	Mux.HandleFunc("/api/v1/vacancy/subscribers/", vacanciesHandlers.GetVacancySubscribersHandler)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap

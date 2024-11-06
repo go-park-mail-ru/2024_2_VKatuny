@@ -22,10 +22,10 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 
 	Vacancies := make([]*dto.JSONVacancy, 0)
 
-	rows, err := s.db.Query(`select vacancy.id, city.city_name, position, vacancy_description, salary, employer_id, work_type.work_type_name,
+	rows, err := s.db.Query(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
 		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy 
 		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.company_name
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
 		where vacancy.employer_id = $1`, employerID)
 	if err != nil {
 		return nil, err
@@ -45,13 +45,13 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 }
 
 func (s *PostgreSQLVacanciesStorage) GetWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error) {
-
+	fmt.Println("1-------------------")
 	Vacancies := make([]*dto.JSONVacancy, 0)
 
-	rows, err := s.db.Query(`select vacancy.id, city.city_name, position, vacancy_description, salary, employer_id, work_type.work_type_name,
+	rows, err := s.db.Query(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
 		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy
 		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.company_name
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
 		ORDER BY created_at desc limit $1 offset $2`, num, offset)
 	if err != nil {
 		return nil, err
@@ -100,27 +100,30 @@ func (s *PostgreSQLVacanciesStorage) Create(vacancy *dto.JSONVacancy) (uint64, e
 			return 0, err
 		}
 	}
-	var VacancyId uint64
+	var VacancyId uint64 = 1
 	row = s.db.QueryRow(`insert into vacancy (position, vacancy_description, salary, employer_id, work_type_id,
-		path_to_company_avatar, city_id) VALUES ($1, $2, $3, $4, $5, $6, &7) returning id`, vacancy.Position, vacancy.Description, vacancy.Salary, vacancy.EmployerID, WorkTypeID, vacancy.Avatar, CityID)
+		path_to_company_avatar, city_id) VALUES ($1, $2, $3, $4, $5, $6, $7) returning id`, vacancy.Position, vacancy.Description,
+		vacancy.Salary, vacancy.EmployerID, WorkTypeID, vacancy.Avatar, CityID)
 	err := row.Scan(&VacancyId)
+	fmt.Println("1", VacancyId)
 	if err != nil {
 		return 0, err
 	}
-	return VacancyId, err
+	return VacancyId, nil
 }
 
 func (s *PostgreSQLVacanciesStorage) GetByID(ID uint64) (*dto.JSONVacancy, error) {
 
-	row := s.db.QueryRow(`select vacancy.id, city.city_name, position, vacancy_description, salary, employer_id, work_type.work_type_name,
+	row := s.db.QueryRow(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
 		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy 
 		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.company_name
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
 		where vacancy.id = $1`, ID)
 	var oneVacancy dto.JSONVacancy
 
 	err := row.Scan(
 		&oneVacancy.ID,
+		&oneVacancy.Location,
 		&oneVacancy.Position,
 		&oneVacancy.Description,
 		&oneVacancy.Salary,
@@ -167,31 +170,28 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 			return nil, err
 		}
 	}
-	row = s.db.QueryRow(`update applicant
-		set employer_id = $1, salary = $2, position = $3, city_id = $4, vacancy_description = $4,
-		work_type_id = $5, path_to_company_avatar = $5 where id=$7 returning id, position, vacancy_description, 
-		salary, employer_id, created_at, path_to_company_avatar, created_at, updated_at, employer_id`,
-		updatedVacancy.ID, updatedVacancy.EmployerID, updatedVacancy.Salary, updatedVacancy.Position,
+	row = s.db.QueryRow(`update vacancy
+		set employer_id = $1, salary = $2, position = $3, city_id = $4, vacancy_description = $5,
+		work_type_id = $6, path_to_company_avatar = $7 where id=$8 returning id, position, vacancy_description, 
+		salary, employer_id, path_to_company_avatar, created_at, updated_at`,
+		updatedVacancy.EmployerID, updatedVacancy.Salary, updatedVacancy.Position,
 		CityId, updatedVacancy.Description, WorkTypeID, updatedVacancy.Avatar, ID)
 
 	var oneVacancy dto.JSONVacancy
-	var EmployerId int
 	err := row.Scan(
 		&oneVacancy.ID,
 		&oneVacancy.Position,
 		&oneVacancy.Description,
 		&oneVacancy.Salary,
 		&oneVacancy.EmployerID,
-		&oneVacancy.CreatedAt,
 		&oneVacancy.Avatar,
 		&oneVacancy.CreatedAt,
 		&oneVacancy.UpdatedAt,
-		&EmployerId,
 	)
 	if err != nil {
 		return nil, err
 	}
-	row = s.db.QueryRow(`select company.company_name employer left join company on company.id = employer.company_name_id where employer.id=$1`, EmployerId)
+	row = s.db.QueryRow(`select company.company_name from employer left join company on company.id = employer.company_name_id where employer.id=$1`, oneVacancy.EmployerID)
 	err = row.Scan(
 		&oneVacancy.CompanyName)
 	oneVacancy.WorkType = updatedVacancy.WorkType
@@ -208,15 +208,16 @@ func (s *PostgreSQLVacanciesStorage) Delete(ID uint64) error {
 }
 
 func (s *PostgreSQLVacanciesStorage) Subscribe(ID uint64, applicantID uint64) error {
+	fmt.Println(ID, applicantID)
 	_, err := s.db.Exec(`insert into vacancy_subscriber (vacancy_id, applicant_id) VALUES ($1, $2)`, ID, applicantID)
 	return err
 }
 
 func (s *PostgreSQLVacanciesStorage) GetSubscriptionStatus(ID uint64, applicantID uint64) (bool, error) {
 	var rowID uint64
-	row := s.db.QueryRow(`select id from vacancy_subscriber where applicant_id=$1 and vacancy_id=$2`, ID, applicantID)
+	row := s.db.QueryRow(`select applicant_id from vacancy_subscriber where applicant_id=$1 and vacancy_id=$2`, applicantID, ID)
 	if err := row.Scan(&rowID); err != nil {
-		return false, err
+		return false, nil
 	}
 	return true, nil
 }

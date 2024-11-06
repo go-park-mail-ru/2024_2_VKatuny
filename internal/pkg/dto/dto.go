@@ -9,9 +9,17 @@ import (
 // DTOs used for tasering data from one part of the app to another.
 
 type loggerKey int
+type userKey int
 
-// LoggerContextKey is a key for logger
-const LoggerContextKey loggerKey = 1
+// Context keys
+const (
+	LoggerContextKey loggerKey = 1
+	UserContextKey   userKey   = 2
+)
+
+const (
+	MsgUnableToGetUserFromContext = "unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization"
+)
 
 const (
 	// UserTypeApplicant is a constant for "applicant" user type
@@ -228,7 +236,7 @@ type JSONUpdateApplicantProfile struct {
 type JSONGetEmployerVacancy struct {
 	ID          uint64 `json:"id"`
 	EmployerID  uint64 `json:"employer"`
-	Salary      string `json:"salary"`
+	Salary      int32  `json:"salary"`
 	Position    string `json:"position"`
 	Location    string `json:"location"`
 	Description string `json:"description"`
@@ -272,7 +280,7 @@ type JSONCv struct {
 type JSONVacancy struct {
 	ID          uint64 `json:"id"`
 	EmployerID  uint64 `json:"employer"`
-	Salary      string `json:"salary"`
+	Salary      int32  `json:"salary"`
 	Position    string `json:"position"`
 	Location    string `json:"location"`
 	Description string `json:"description"`
@@ -281,4 +289,20 @@ type JSONVacancy struct {
 	CompanyName string `json:"companyName"`
 	CreatedAt   string `json:"createdAt"`
 	UpdatedAt   string `json:"updatedAt"`
+}
+
+type JSONVacancySubscriptionStatus struct {
+	ID           uint64 `json:"id"`
+	ApplicantID  uint64 `json:"applicantID"`
+	IsSubscribed bool   `json:"isSubscribed"`
+}
+
+type JSONVacancySubscribers struct {
+	ID          uint64                     `json:"vacancyID"`
+	Subscribers []*JSONGetApplicantProfile `json:"subscribers"`
+}
+
+type SessionUser struct {
+	ID       uint64
+	UserType string
 }

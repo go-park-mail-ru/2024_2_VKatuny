@@ -4,7 +4,14 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	"github.com/sirupsen/logrus"
 )
+
+type App struct {
+	Logger       *logrus.Logger
+	Repositories *Repositories
+	Usecases     *Usecases
+}
 
 type Repositories struct {
 	EmployerRepository         interface{}
