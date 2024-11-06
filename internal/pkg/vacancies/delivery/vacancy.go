@@ -63,7 +63,8 @@ func (h *VacanciesHandlers) VacanciesSubscribeRESTHandler(w http.ResponseWriter,
 		handler := middleware.RequireAuthorization(h.subscribeVacancyHandler, repository, dto.UserTypeApplicant)
 		handler(w, r)
 	case http.MethodGet:
-		h.getVacancySubscriptionHandler(w, r)
+		handler := middleware.RequireAuthorization(h.getVacancySubscriptionHandler, repository, dto.UserTypeApplicant)
+		handler(w, r)
 	case http.MethodDelete:
 		handler := middleware.RequireAuthorization(h.unsubscribeVacancyHandler, repository, dto.UserTypeApplicant)
 		handler(w, r)
@@ -76,8 +77,8 @@ func (h *VacanciesHandlers) VacanciesSubscribeRESTHandler(w http.ResponseWriter,
 }
 
 func (h *VacanciesHandlers) GetVacancySubscribersHandler(w http.ResponseWriter, r *http.Request) {
-	repository := &internal.Repositories{SessionEmployerRepository: h.sessionApplicantRepo}
-	handler := middleware.RequireAuthorization(h.getVacancySubscribersHandler, repository, dto.UserTypeApplicant)
+	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo}
+	handler := middleware.RequireAuthorization(h.getVacancySubscribersHandler, repository, dto.UserTypeEmployer)
 	handler(w, r)
 }
 
@@ -128,10 +129,6 @@ func (h *VacanciesHandlers) getVacancyHandler(w http.ResponseWriter, r *http.Req
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
 		return
 	}
 
@@ -158,10 +155,6 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
 		return
 	}
 
@@ -188,7 +181,6 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 		})
 		return
 	}
-
 	wroteVacancy, err := h.vacanciesUsecase.UpdateVacancy(vacancyID, updatedVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -210,10 +202,6 @@ func (h *VacanciesHandlers) deleteVacancyHandler(w http.ResponseWriter, r *http.
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
 		return
 	}
 
@@ -249,10 +237,6 @@ func (h *VacanciesHandlers) subscribeVacancyHandler(w http.ResponseWriter, r *ht
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
 		return
 	}
 
@@ -290,10 +274,6 @@ func (h *VacanciesHandlers) unsubscribeVacancyHandler(w http.ResponseWriter, r *
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
 		return
 	}
 
@@ -331,10 +311,6 @@ func (h *VacanciesHandlers) getVacancySubscriptionHandler(w http.ResponseWriter,
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
 		return
 	}
 
@@ -372,10 +348,6 @@ func (h *VacanciesHandlers) getVacancySubscribersHandler(w http.ResponseWriter, 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscribers/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      err.Error(),
-		})
 		return
 	}
 

@@ -236,7 +236,7 @@ type JSONUpdateApplicantProfile struct {
 type JSONGetEmployerVacancy struct {
 	ID          uint64 `json:"id"`
 	EmployerID  uint64 `json:"employer"`
-	Salary      string `json:"salary"`
+	Salary      int32  `json:"salary"`
 	Position    string `json:"position"`
 	Location    string `json:"location"`
 	Description string `json:"description"`
@@ -280,7 +280,7 @@ type JSONCv struct {
 type JSONVacancy struct {
 	ID          uint64 `json:"id"`
 	EmployerID  uint64 `json:"employer"`
-	Salary      string `json:"salary"`
+	Salary      int32  `json:"salary"`
 	Position    string `json:"position"`
 	Location    string `json:"location"`
 	Description string `json:"description"`
@@ -293,12 +293,12 @@ type JSONVacancy struct {
 
 type JSONVacancySubscriptionStatus struct {
 	ID           uint64 `json:"id"`
-	ApplicantID  uint64 `json:"applicant"`
+	ApplicantID  uint64 `json:"applicantID"`
 	IsSubscribed bool   `json:"isSubscribed"`
 }
 
 type JSONVacancySubscribers struct {
-	ID          uint64                     `json:"id"`
+	ID          uint64                     `json:"vacancyID"`
 	Subscribers []*JSONGetApplicantProfile `json:"subscribers"`
 }
 

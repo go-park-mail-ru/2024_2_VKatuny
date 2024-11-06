@@ -69,11 +69,16 @@ func (cu *CVsUsecase) GetCV(cvID uint64) (*dto.JSONCv, error) {
 }
 
 func (cu *CVsUsecase) UpdateCV(ID uint64, currentUser *dto.SessionUser, cv *dto.JSONCv) (*dto.JSONCv, error) {
-	if currentUser.ID != cv.ApplicantID {
+	oldCv, err := cu.cvsRepo.GetByID(ID)
+	if err != nil {
+		cu.logger.Errorf("while getting from db got err %s", err)
+		return nil, err
+	}
+	if currentUser.ID != oldCv.ApplicantID {
 		cu.logger.Errorf("not an owner tried to update CV, got %d expected %d", currentUser.ID, cv.ApplicantID)
 		return nil, commonerrors.ErrUnauthorized
 	}
-
+	cv.ApplicantID = oldCv.ApplicantID
 	newCV, err := cu.cvsRepo.Update(ID, cv)
 
 	if err != nil {

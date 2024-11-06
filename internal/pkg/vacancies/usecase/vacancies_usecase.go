@@ -72,11 +72,12 @@ func (vu *VacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser 
 	// TODO: need to validate vacancy && currentUser is not nil
 
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got creation request")
-	vacancy.ID = currentUser.ID
+	vacancy.EmployerID = currentUser.ID
 	createdVacancyID, err := vu.vacanciesRepository.Create(vacancy)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(createdVacancyID, "123213")
 	return vu.vacanciesRepository.GetByID(createdVacancyID)
 }
 
@@ -90,10 +91,17 @@ func (vu *VacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
 
 func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, currentUser *dto.SessionUser) (*dto.JSONVacancy, error) {
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got update request")
+	oldVacancy, err := vu.vacanciesRepository.GetByID(ID)
+	fmt.Println(oldVacancy)
+	if err != nil {
+		return nil, err
+	}
+	vacancy.EmployerID = oldVacancy.EmployerID
 	if vacancy.EmployerID != currentUser.ID {
 		vu.logger.Debugf("not an owner tried to update vacancy, got %d expected %d", currentUser.ID, ID)
 		return nil, commonerrors.ErrUnauthorized
 	}
+
 	updatedVacancy, err := vu.vacanciesRepository.Update(ID, vacancy)
 	if err != nil {
 		return nil, err
