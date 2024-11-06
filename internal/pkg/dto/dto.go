@@ -18,6 +18,10 @@ const (
 )
 
 const (
+	MsgUnableToGetUserFromContext = "unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization"
+)
+
+const (
 	// UserTypeApplicant is a constant for "applicant" user type
 	UserTypeApplicant = "applicant"
 	// UserTypeEmployer is a constant for "employer" user type
@@ -285,6 +289,17 @@ type JSONVacancy struct {
 	CompanyName string `json:"companyName"`
 	CreatedAt   string `json:"createdAt"`
 	UpdatedAt   string `json:"updatedAt"`
+}
+
+type JSONVacancySubscriptionStatus struct {
+	ID           uint64 `json:"id"`
+	ApplicantID  uint64 `json:"applicant"`
+	IsSubscribed bool   `json:"isSubscribed"`
+}
+
+type JSONVacancySubscribers struct {
+	ID          uint64                     `json:"id"`
+	Subscribers []*JSONGetApplicantProfile `json:"subscribers"`
 }
 
 type SessionUser struct {

@@ -1,0 +1,393 @@
+package delivery
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	"github.com/sirupsen/logrus"
+)
+
+type VacanciesHandlers struct {
+	logger               *logrus.Logger
+	vacanciesUsecase     vacancies.IVacanciesUsecase
+	sessionEmployerRepo  session.ISessionRepository
+	sessionApplicantRepo session.ISessionRepository
+}
+
+func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
+	logger := layers.Logger
+	logger.Debug("VacanciesHandlers created")
+
+	return &VacanciesHandlers{
+		logger:               logger,
+		vacanciesUsecase:     layers.Usecases.VacanciesUsecase,
+		sessionEmployerRepo:  layers.Repositories.SessionEmployerRepository,
+		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
+	}
+}
+
+func (h *VacanciesHandlers) VacanciesRESTHandler(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("VacanciesHandlers.VacanciesRESTHandler got request: %s", r.URL.Path)
+	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo}
+	switch r.Method {
+	case http.MethodPost:
+		handler := middleware.RequireAuthorization(h.CreateVacancyHandler, repository, dto.UserTypeEmployer)
+		handler(w, r)
+	case http.MethodGet:
+		h.GetVacancyHandler(w, r)
+	case http.MethodPut:
+		handler := middleware.RequireAuthorization(h.UpdateVacancyHandler, repository, dto.UserTypeEmployer)
+		handler(w, r)
+	case http.MethodDelete:
+		handler := middleware.RequireAuthorization(h.DeleteVacancyHandler, repository, dto.UserTypeEmployer)
+		handler(w, r)
+	default:
+		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
+			HTTPStatus: http.StatusMethodNotAllowed,
+			Error:      http.StatusText(http.StatusMethodNotAllowed),
+		})
+	}
+}
+
+func (h *VacanciesHandlers) VacanciesSubscribeRESTHandler(w http.ResponseWriter, r *http.Request) {
+	h.logger.Debugf("VacanciesHandlers.VacanciesSubscribeRESTHandler got request: %s", r.URL.Path)
+	repository := &internal.Repositories{SessionApplicantRepository: h.sessionApplicantRepo}
+	switch r.Method {
+	case http.MethodPost:
+		handler := middleware.RequireAuthorization(h.SubscribeVacancyHandler, repository, dto.UserTypeApplicant)
+		handler(w, r)
+	case http.MethodGet:
+		h.GetVacancySubscriptionHandler(w, r)
+	case http.MethodDelete:
+		handler := middleware.RequireAuthorization(h.UnsubscribeVacancyHandler, repository, dto.UserTypeApplicant)
+		handler(w, r)
+	default:
+		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
+			HTTPStatus: http.StatusMethodNotAllowed,
+			Error:      http.StatusText(http.StatusMethodNotAllowed),
+		})
+	}
+}
+
+func (h *VacanciesHandlers) CreateVacancyHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	decoder := json.NewDecoder(r.Body)
+	newVacancy := new(dto.JSONVacancy)
+
+	err := decoder.Decode(newVacancy)
+	if err != nil {
+		h.logger.Errorf("unable to unmarshal JSON: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      commonerrors.ErrInvalidJSON.Error(),
+		})
+		return
+	}
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      "unable to get user from context", // TODO: make error without hardcode
+		})
+		return
+	}
+
+	wroteVacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
+	if err != nil {
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:     wroteVacancy,
+	})
+}
+
+func (h *VacanciesHandlers) GetVacancyHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
+	if err != nil {
+		h.logger.Errorf("while cutting slug got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	vacancyID := uint64(slug)
+
+	vacancy, err := h.vacanciesUsecase.GetVacancy(vacancyID)
+	if err != nil {
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       vacancy,
+	})
+}
+
+
+func (h *VacanciesHandlers) UpdateVacancyHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
+	if err != nil {
+		h.logger.Errorf("while cutting slug got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      err.Error(),	
+		})
+		return
+	}
+
+	vacancyID := uint64(slug)
+
+	decoder := json.NewDecoder(r.Body)
+	updatedVacancy := new(dto.JSONVacancy)
+	err = decoder.Decode(updatedVacancy)
+	if err != nil {
+		h.logger.Errorf("unable to unmarshal JSON: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      commonerrors.ErrInvalidJSON.Error(),
+		})
+		return
+	}
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      "unable to get user from context", // TODO: make error without hardcode
+		})
+		return
+	}
+
+	err = h.vacanciesUsecase.UpdateVacancy(vacancyID, updatedVacancy, currentUser)
+	if err != nil {
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       updatedVacancy,
+	})
+}
+
+func (h *VacanciesHandlers) DeleteVacancyHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
+	if err != nil {
+		h.logger.Errorf("while cutting slug got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	vacancyID := uint64(slug)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      "unable to get user from context", // TODO: make error without hardcode
+		})
+		return
+	}
+
+	err = h.vacanciesUsecase.DeleteVacancy(vacancyID, currentUser)
+	if err != nil {
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+	})
+}
+
+func (h *VacanciesHandlers) SubscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
+	if err != nil {
+		h.logger.Errorf("while cutting slug got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	vacancyID := uint64(slug)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      "unable to get user from context", // TODO: make error without hardcode
+		})
+		return
+	}
+
+	err = h.vacanciesUsecase.SubscribeOnVacancy(vacancyID, currentUser)
+	if err != nil {
+		h.logger.Errorf("while subscribing on vacancy got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("user_ID: %d subscribed on vacancy_ID %d", currentUser.ID, vacancyID)
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+	})
+}
+
+func (h *VacanciesHandlers) UnsubscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
+	if err != nil {
+		h.logger.Errorf("while cutting slug got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	vacancyID := uint64(slug)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      "unable to get user from context", // TODO: make error without hardcode
+		})
+		return
+	}
+
+	err = h.vacanciesUsecase.UnsubscribeFromVacancy(vacancyID, currentUser)
+	if err != nil {
+		h.logger.Errorf("while unsubscribing from vacancy got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("user_ID: %d unsubscribed from vacancy_ID %d", currentUser.ID, vacancyID)
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+	})
+}
+
+func (h *VacanciesHandlers) GetVacancySubscriptionHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
+	if err != nil {
+		h.logger.Errorf("while cutting slug got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	vacancyID := uint64(slug)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,	
+			Error:      "unable to get user from context", // TODO: make error without hardcode
+		})
+		return
+	}
+
+	vacancySubscriptionStatus, err := h.vacanciesUsecase.GetSubscriptions(vacancyID, currentUser)
+	if err != nil {
+		h.logger.Errorf("while getting subscription status got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       vacancySubscriptionStatus,
+	})
+}
+
+func (h *VacanciesHandlers) GetVacancySubscribersHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscribers/")
+	if err != nil {
+		h.logger.Errorf("while cutting slug got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	vacancyID := uint64(slug)
+
+	subscribers, err := h.vacanciesUsecase.GetVacancySubscribers(vacancyID)
+	if err != nil {
+		h.logger.Errorf("while getting subscribers got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       subscribers,
+	})
+}
