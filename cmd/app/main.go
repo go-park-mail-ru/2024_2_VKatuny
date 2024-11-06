@@ -89,8 +89,6 @@ func main() {
 	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection) // just do it!
 
-	// Now your applicantRepository doesn't implement the IApplicantRepository interface
-	// Oleg you should implement method Update for applicant_repository.PostgreSQLApplicantStorage
 	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository, sessionApplicantRepository, conf.Server.GetAddress())
 	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
 
