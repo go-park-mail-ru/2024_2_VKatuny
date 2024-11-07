@@ -28,14 +28,21 @@ func CreateEmployerInputCheck(form *dto.EmployerInput) error {
 
 // CreateEmployer accepts employer repository and validated form and creates new employer
 
-func CreateEmployer(repo repository.EmployerRepository, sessionRepoApplicant repoSession.SessionRepository, form *dto.EmployerInput) (*dto.EmployerOutput, string, error) {
+func CreateEmployer(repo repository.EmployerRepository, sessionRepoEmployer repoSession.SessionRepository, form *dto.EmployerInput) (*dto.EmployerOutput, string, error) {
+	employer, err := repo.GetByEmail(form.Email)
+	if employer != nil {
+		return nil, "", fmt.Errorf(dto.MsgUserAlreadyExists)
+	}
+	if err != nil {
+		return nil, "", fmt.Errorf(dto.MsgDataBaseError)
+	}
 	form.Password = utils.HashPassword(form.Password)
 	user, err := repo.Create(form)
 	if err != nil {
 		return nil, "", err
 	}
 	sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeEmployer)
-	sessionRepoApplicant.Create(user.ID, sessionID)
+	sessionRepoEmployer.Create(user.ID, sessionID)
 	return &dto.EmployerOutput{
 		ID:                  user.ID,
 		FirstName:           user.FirstName,

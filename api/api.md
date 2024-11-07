@@ -236,7 +236,6 @@ Query-параметры: `offset` и `num` - натуральные числа 
 ```go
 // Error messages
 const (
-	MsgUnableToGetUserFromContext = "unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization"
 	MsgMethodNotAllowed           = "method not allowed"
 	MsgInvalidJSON                = "invalid json"
 	MsgUnauthorized               = "user unauthorized"
@@ -247,5 +246,6 @@ const (
 	MsgBadUserType                = "got unknown user type"
 	MsgNoUserWithSession          = "no user with this session"
 	MsgWrongLoginOrPassword       = "wrong login or password"
+    MsgUserAlreadyExists          = "user already exists"
 )
 ```

@@ -30,6 +30,7 @@ const (
 	MsgBadUserType                = "got unknown user type"
 	MsgNoUserWithSession          = "no user with this session"
 	MsgWrongLoginOrPassword       = "wrong login or password"
+	MsgUserAlreadyExists          = "user already exists" // TODO: implement check in repository
 )
 
 const (
