@@ -196,6 +196,7 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.Se
 	subscribers := make([]*dto.JSONGetApplicantProfile, 0, len(subscribersModel))
 	for _, subscriberModel := range subscribersModel {
 		subscribers = append(subscribers, &dto.JSONGetApplicantProfile{
+			ID:        subscriberModel.ID,
 			FirstName: subscriberModel.FirstName,
 			LastName:  subscriberModel.LastName,
 			City:      subscriberModel.CityName,

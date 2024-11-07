@@ -43,6 +43,7 @@ func (au *ApplicantUsecase) GetApplicantProfile(userID uint64) (*dto.JSONGetAppl
 	}
 	au.logger.Debugf("function: %s; successfully got applicant profile: %v", fn, applicantModel)
 	return &dto.JSONGetApplicantProfile{
+		ID:        applicantModel.ID,
 		FirstName: applicantModel.FirstName,
 		LastName:  applicantModel.LastName,
 		City:      applicantModel.CityName,

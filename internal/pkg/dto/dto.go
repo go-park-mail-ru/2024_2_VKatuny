@@ -122,18 +122,18 @@ type ApplicantOutput struct {
 }
 
 type ApplicantWithNull struct {
-	ID                  uint64         `json:"id"`
-	FirstName           string         `json:"firstName"`
-	LastName            string         `json:"lastName"`
-	CityName            sql.NullString `json:"cityName"`
-	BirthDate           string         `json:"birthDate"`
-	PathToProfileAvatar string         `json:"pathToProfileAvatar"`
-	Contacts            sql.NullString `json:"contacts"`
-	Education           sql.NullString `json:"education"`
-	Email               string         `json:"email"`
-	PasswordHash        string         `json:"passwordHash"`
-	CreatedAt           string         `json:"createdAt"`
-	UpdatedAt           string         `json:"updatedAt"`
+	ID                  uint64
+	FirstName           string
+	LastName            string
+	CityName            sql.NullString
+	BirthDate           string
+	PathToProfileAvatar string
+	Contacts            sql.NullString
+	Education           sql.NullString
+	Email               string
+	PasswordHash        string
+	CreatedAt           string
+	UpdatedAt           string
 }
 
 type EmployerInput struct {
@@ -151,20 +151,20 @@ type EmployerInput struct {
 }
 
 type EmployerWithNull struct {
-	ID                  uint64         `json:"id"`
-	FirstName           string         `json:"firstName"`
-	LastName            string         `json:"lastName"`
-	CityName            sql.NullString `json:"cityName"`
-	Position            string         `json:"position"`
-	CompanyName         string         `json:"companyName"`
-	CompanyDescription  string         `json:"companyDescription"`
-	CompanyWebsite      string         `json:"companyWebsite"`
-	PathToProfileAvatar string         `json:"pathToProfileAvatar"`
-	Contacts            sql.NullString `json:"contacts"`
-	Email               string         `json:"email"`
-	PasswordHash        string         `json:"passwordHash"`
-	CreatedAt           string         `json:"createdAt"`
-	UpdatedAt           string         `json:"updatedAt"`
+	ID                  uint64
+	FirstName           string
+	LastName            string
+	CityName            sql.NullString
+	Position            string
+	CompanyName         string
+	CompanyDescription  string
+	CompanyWebsite      string
+	PathToProfileAvatar string
+	Contacts            sql.NullString
+	Email               string
+	PasswordHash        string
+	CreatedAt           string
+	UpdatedAt           string
 }
 
 type EmployerOutput struct {
@@ -196,6 +196,7 @@ type UserWithSession struct {
 }
 
 type JSONGetEmployerProfile struct {
+	ID                 uint64 `json:"id"`
 	FirstName          string `json:"firstName"`
 	LastName           string `json:"lastName"`
 	City               string `json:"city"`
@@ -208,6 +209,7 @@ type JSONGetEmployerProfile struct {
 }
 
 type JSONGetApplicantProfile struct {
+	ID        uint64 `json:"id"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	City      string `json:"city"`

@@ -37,6 +37,7 @@ func (eu *EmployerUsecase) GetEmployerProfile(employerID uint64) (*dto.JSONGetEm
 	}
 	eu.logger.Debugf("function: %s; got employer profile: %v", fn, employerModel)
 	return &dto.JSONGetEmployerProfile{
+		ID:                 employerModel.ID,
 		FirstName:          employerModel.FirstName,
 		LastName:           employerModel.LastName,
 		City:               employerModel.CityName,
