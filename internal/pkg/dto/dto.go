@@ -17,8 +17,19 @@ const (
 	UserContextKey   userKey   = 2
 )
 
+// Error messages
 const (
 	MsgUnableToGetUserFromContext = "unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization"
+	MsgMethodNotAllowed           = "method not allowed"
+	MsgInvalidJSON                = "invalid json"
+	MsgUnauthorized               = "user unauthorized"
+	MsgDataBaseError              = "database error"
+	MsgAccessDenied               = "no permissions to perform this action"
+	MsgNoCookie                   = "no cookie"
+	MsgBadCookie                  = "bad cookie"
+	MsgBadUserType                = "got unknown user type"
+	MsgNoUserWithSession          = "no user with this session"
+	MsgWrongLoginOrPassword       = "wrong login or password"
 )
 
 const (

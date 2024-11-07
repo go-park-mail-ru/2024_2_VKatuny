@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/sirupsen/logrus"
@@ -49,7 +48,7 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 	vacanciesModels, err := vu.vacanciesRepository.GetVacanciesByEmployerID(employerID)
 	if err != nil {
 		vu.logger.Errorf("function %s: unable to get vacancies: %s", fn, err)
-		return nil, err
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 
 	vacancies := make([]*dto.JSONGetEmployerVacancy, 0, len(vacanciesModels))
@@ -75,15 +74,24 @@ func (vu *VacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser 
 	vacancy.EmployerID = currentUser.ID
 	createdVacancyID, err := vu.vacanciesRepository.Create(vacancy)
 	if err != nil {
-		return nil, err
+		vu.logger.Errorf("while creating in db got err %s", err)
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
-	fmt.Println(createdVacancyID, "123213")
-	return vu.vacanciesRepository.GetByID(createdVacancyID)
+	vu.logger.Debugf("vacancy created successfully with id %d", createdVacancyID)
+
+	updatedVacancy, err := vu.vacanciesRepository.GetByID(createdVacancyID)
+	if err != nil {
+		vu.logger.Errorf("while getting from db got err %s", err)
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
+	}
+	vu.logger.Debugf("got updated vacancy with id %d", createdVacancyID)
+	return updatedVacancy, nil
 }
 
 func (vu *VacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
 	vacancy, err := vu.vacanciesRepository.GetByID(ID)
 	if err != nil {
+		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, err
 	}
 	return vacancy, nil
@@ -92,19 +100,20 @@ func (vu *VacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
 func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, currentUser *dto.SessionUser) (*dto.JSONVacancy, error) {
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got update request")
 	oldVacancy, err := vu.vacanciesRepository.GetByID(ID)
-	fmt.Println(oldVacancy)
 	if err != nil {
-		return nil, err
+		vu.logger.Errorf("while getting from db got err %s", err)
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 	vacancy.EmployerID = oldVacancy.EmployerID
 	if vacancy.EmployerID != currentUser.ID {
 		vu.logger.Debugf("not an owner tried to update vacancy, got %d expected %d", currentUser.ID, ID)
-		return nil, commonerrors.ErrUnauthorized
+		return nil, fmt.Errorf(dto.MsgAccessDenied)
 	}
 
 	updatedVacancy, err := vu.vacanciesRepository.Update(ID, vacancy)
 	if err != nil {
-		return nil, err
+		vu.logger.Errorf("while updating in db got err %s", err)
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 	vu.logger.Debugf("successfully updated vacancy, got %d", updatedVacancy.ID)
 	return updatedVacancy, nil
@@ -115,45 +124,48 @@ func (vu *VacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.SessionUse
 	vacancy, err := vu.vacanciesRepository.GetByID(ID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
-		return err
+		return fmt.Errorf(dto.MsgDataBaseError)
 	}
 	if vacancy.EmployerID != currentUser.ID {
 		vu.logger.Debugf("not an owner tried to delete vacancy, got %d expected %d", currentUser.ID, ID)
-		return commonerrors.ErrUnauthorized
+		return fmt.Errorf(dto.MsgAccessDenied)
 	}
 	err = vu.vacanciesRepository.Delete(ID)
 	if err != nil {
 		vu.logger.Errorf("while deleting from db got err %s", err)
-		return err
+		return fmt.Errorf(dto.MsgDataBaseError)
 	}
+	vu.logger.Debugf("successfully deleted vacancy with %d", ID)
 	return nil
 }
 
 func (vu *VacanciesUsecase) SubscribeOnVacancy(ID uint64, currentUser *dto.SessionUser) error {
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided")
-		return commonerrors.ErrUnauthorized
+		return fmt.Errorf(dto.MsgUnauthorized)
 	}
 
 	err := vu.vacanciesRepository.Subscribe(ID, currentUser.ID)
 	if err != nil {
 		vu.logger.Errorf("while subscribing on db got err %s", err)
-		return err
+		return fmt.Errorf(dto.MsgDataBaseError)
 	}
+	vu.logger.Debugf("successfully subscribed on vacancy with ID: %d", ID)
 	return nil
 }
 
 func (vu *VacanciesUsecase) UnsubscribeFromVacancy(ID uint64, currentUser *dto.SessionUser) error {
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided, currentUser = %v", currentUser)
-		return commonerrors.ErrUnauthorized
+		return fmt.Errorf(dto.MsgUnauthorized)
 	}
 
 	err := vu.vacanciesRepository.Unsubscribe(ID, currentUser.ID)
 	if err != nil {
 		vu.logger.Errorf("while unsubscribing on db got err %s", err)
-		return err
+		return fmt.Errorf(dto.MsgDataBaseError)
 	}
+	vu.logger.Debugf("successfully unsubscribed from vacancy with ID: %d", ID)
 	return nil
 }
 
@@ -161,8 +173,9 @@ func (vu *VacanciesUsecase) GetSubscriptionInfo(ID, applicantID uint64) (*dto.JS
 	isApplicantSubscribed, err := vu.vacanciesRepository.GetSubscriptionStatus(ID, applicantID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
-		return nil, err
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
+	vu.logger.Debugf("got subscription status: %v, for vacancy %d and user %d", isApplicantSubscribed, ID, applicantID)
 	return &dto.JSONVacancySubscriptionStatus{
 		ID:           ID,
 		ApplicantID:  applicantID,
@@ -173,24 +186,24 @@ func (vu *VacanciesUsecase) GetSubscriptionInfo(ID, applicantID uint64) (*dto.JS
 func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.SessionUser) (*dto.JSONVacancySubscribers, error) {
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided, currentUser = %v", currentUser)
-		return nil, commonerrors.ErrUnauthorized
+		return nil, fmt.Errorf(dto.MsgUnauthorized)
 	}
 
 	vacancy, err := vu.vacanciesRepository.GetByID(ID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
-		return nil, err
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 
 	if currentUser.UserType != dto.UserTypeEmployer || currentUser.ID != vacancy.EmployerID {
 		vu.logger.Errorf("user is not applicant, currentUser = %v", currentUser)
-		return nil, commonerrors.ErrUnauthorized
+		return nil, fmt.Errorf(dto.MsgUnauthorized)
 	}
 
 	subscribersModel, err := vu.vacanciesRepository.GetSubscribersList(ID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
-		return nil, err
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 
 	subscribers := make([]*dto.JSONGetApplicantProfile, 0, len(subscribersModel))
@@ -206,6 +219,8 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.Se
 			Education: subscriberModel.Education,
 		})
 	}
+
+	vu.logger.Debugf("successfully got %d subscribers for vacancy %d", len(subscribers), ID)
 	return &dto.JSONVacancySubscribers{
 		ID:          ID,
 		Subscribers: subscribers,
