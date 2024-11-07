@@ -128,7 +128,7 @@ func (s *PostgreSQLVacanciesStorage) GetByID(ID uint64) (*dto.JSONVacancy, error
 		&oneVacancy.Description,
 		&oneVacancy.Salary,
 		&oneVacancy.EmployerID,
-		&oneVacancy.CreatedAt,
+		&oneVacancy.WorkType,
 		&oneVacancy.Avatar,
 		&oneVacancy.CreatedAt,
 		&oneVacancy.UpdatedAt,
