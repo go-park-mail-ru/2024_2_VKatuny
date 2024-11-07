@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public."vacancy"
     position text NOT NULL,
     vacancy_description text NOT NULL,
     work_type_id int NOT NULL DEFAULT 1,
-    path_to_company_avatar text NOT NULL DEFAULT 'static/default_company.png',
+    path_to_company_avatar text NOT NULL DEFAULT '',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT vacancy_primary_key PRIMARY KEY (id),

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public."cv"
     job_search_status_id int NOT NULL DEFAULT 1,
     cv_description text NOT NULL,
     working_experience text NOT NULL,
-    path_to_profile_avatar text NOT NULL DEFAULT 'static/default_profile.png',
+    path_to_profile_avatar text NOT NULL DEFAULT '',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT cv_primary_key PRIMARY KEY (id),

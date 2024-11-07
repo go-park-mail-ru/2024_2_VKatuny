@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public."employer"
     company_name_id int,
     company_description text NOT NULL,
     company_website text NOT NULL,
-    path_to_profile_avatar text NOT NULL DEFAULT 'static/default_profile.png',
+    path_to_profile_avatar text NOT NULL DEFAULT '',
     contacts text,
     email text NOT NULL,
     password_hash text NOT NULL,
