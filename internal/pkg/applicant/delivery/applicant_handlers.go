@@ -54,7 +54,7 @@ func CreateApplicantHandler(repo repository.IApplicantRepository, repoApplicantS
 			logger.Errorf("function %s: %s", funcName, err.Error())
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      "user ",
+				Error:      "user's fields aren't valid", // TODO: refactor error after refactoring validation
 			})
 			return
 		}
