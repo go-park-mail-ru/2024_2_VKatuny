@@ -159,7 +159,7 @@ func LoginHandler(
 				http.StatusBadRequest,
 				dto.JSONResponse{
 					HTTPStatus: http.StatusBadRequest,
-					Error:      dto.MsgDataBaseError,
+					Error:      err.Error(),
 				},
 			)
 			return
@@ -176,7 +176,7 @@ func LoginHandler(
 				http.StatusBadRequest,
 				dto.JSONResponse{
 					HTTPStatus: http.StatusBadRequest,
-					Error:      dto.MsgDataBaseError,
+					Error:      err.Error(),
 				},
 			)
 			return
