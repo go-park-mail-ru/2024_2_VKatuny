@@ -237,19 +237,34 @@ func (s *PostgreSQLVacanciesStorage) GetSubscribersList(ID uint64) ([]*models.Ap
 	rows, err := s.db.Query(`select applicant_id, first_name, last_name, city.city_name, birth_date, path_to_profile_avatar,
 		contacts, education, email, password_hash , applicant.created_at, applicant.updated_at
 		from vacancy_subscriber	left join applicant on applicant.id = applicant_id
-		left join city on city.id =applicant.id where vacancy_subscriber.vacancy_id = $1`, ID)
+		left join city on city.id = applicant.id where vacancy_subscriber.vacancy_id = $1`, ID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var oneApplicant models.Applicant
-		if err := rows.Scan(&oneApplicant.ID, &oneApplicant.FirstName, &oneApplicant.LastName, &oneApplicant.CityName,
-			&oneApplicant.BirthDate, &oneApplicant.PathToProfileAvatar, &oneApplicant.Contacts, &oneApplicant.Education,
-			&oneApplicant.Email, &oneApplicant.PasswordHash, &oneApplicant.CreatedAt, &oneApplicant.UpdatedAt); err != nil {
+		var applicantWithNull dto.ApplicantWithNull
+		if err := rows.Scan(&applicantWithNull.ID, &applicantWithNull.FirstName, &applicantWithNull.LastName, &applicantWithNull.CityName,
+			&applicantWithNull.BirthDate, &applicantWithNull.PathToProfileAvatar, &applicantWithNull.Contacts, &applicantWithNull.Education,
+			&applicantWithNull.Email, &applicantWithNull.PasswordHash, &applicantWithNull.CreatedAt, &applicantWithNull.UpdatedAt); err != nil {
 			return nil, err
 		}
+		oneApplicant := models.Applicant{
+			ID:                  applicantWithNull.ID,
+			FirstName:           applicantWithNull.FirstName,
+			LastName:            applicantWithNull.LastName,
+			CityName:            applicantWithNull.CityName.String,
+			BirthDate:           applicantWithNull.BirthDate,
+			PathToProfileAvatar: applicantWithNull.PathToProfileAvatar,
+			Contacts:            applicantWithNull.Contacts.String,
+			Education:           applicantWithNull.Education.String,
+			Email:               applicantWithNull.Email,
+			PasswordHash:        applicantWithNull.PasswordHash,
+			CreatedAt:           applicantWithNull.CreatedAt,
+			UpdatedAt:           applicantWithNull.UpdatedAt,
+		}
+
 		Applicants = append(Applicants, &oneApplicant)
 		fmt.Println(oneApplicant)
 	}
