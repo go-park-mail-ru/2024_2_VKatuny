@@ -65,7 +65,7 @@ func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSessi
 			logger.Errorf("function %s: err - %s", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusInternalServerError,
-				Error:      dto.MsgDataBaseError,
+				Error:      err.Error(),
 			})
 			return
 		}

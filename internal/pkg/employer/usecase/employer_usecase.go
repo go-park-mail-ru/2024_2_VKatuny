@@ -39,7 +39,7 @@ func CreateEmployer(repo repository.EmployerRepository, sessionRepoEmployer repo
 	form.Password = utils.HashPassword(form.Password)
 	user, err := repo.Create(form)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf(dto.MsgDataBaseError)
 	}
 	sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeEmployer)
 	sessionRepoEmployer.Create(user.ID, sessionID)
