@@ -11,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
+// TODO: refactor valid code
 func CreateApplicantInputCheck(Name, LastName, Email, Password string) error {
 	if len(Name) > 50 || len(LastName) > 50 ||
 		strings.Index(Email, "@") < 0 || len(Password) > 50 {
@@ -31,10 +32,13 @@ func CreateApplicant(repo repoApplicant.IApplicantRepository, sessionRepoApplica
 	form.Password = utils.HashPassword(form.Password)
 	user, err := repo.Create(form)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf(dto.MsgDataBaseError)
 	}
 	sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeApplicant)
-	sessionRepoApplicant.Create(user.ID, sessionID)
+	err = sessionRepoApplicant.Create(user.ID, sessionID)
+	// if err != nil {
+	// 	return nil, "", fmt.Errorf(dto.MsgDataBaseError)
+	// }
 	return &dto.ApplicantOutput{
 		ID:                  user.ID,
 		FirstName:           user.FirstName,
@@ -47,5 +51,5 @@ func CreateApplicant(repo repoApplicant.IApplicantRepository, sessionRepoApplica
 		Email:               user.Email,
 		CreatedAt:           user.CreatedAt,
 		UpdatedAt:           user.UpdatedAt,
-	}, sessionID, err
+	}, sessionID, err // TODO: return nil instead of err
 }

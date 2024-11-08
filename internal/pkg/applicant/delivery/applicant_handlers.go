@@ -45,7 +45,7 @@ func CreateApplicantHandler(repo repository.IApplicantRepository, repoApplicantS
 			logger.Errorf("function %s: got err %s", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      "can't unmarshal JSON",
+				Error:      dto.MsgInvalidJSON,
 			})
 			return
 		}
@@ -54,39 +54,45 @@ func CreateApplicantHandler(repo repository.IApplicantRepository, repoApplicantS
 			logger.Errorf("function %s: %s", funcName, err.Error())
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      "user's fields aren't valid",
+				Error:      "user ",
 			})
 			return
 		}
 
 		logger.Debugf("function %s: adding applicant to db %v", funcName, newUserInput)
-
+		// TODO: creating applicant and adding created session with new user must be in different usecases. divide usecase
 		user, sessionID, err := applicantUsecase.CreateApplicant(repo, repoApplicantSession, newUserInput)
 		if err != nil {
-			logger.Errorf("function %s: err - ", funcName, err)
+			logger.Errorf("function %s: err - %s", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusInternalServerError,
-				Error:      "db err",
+				Error:      err.Error(),
 			})
 			return
 		}
 		logger.Debug("Cookie send")
 		cookie := utils.MakeAuthCookie(sessionID, backendAddress)
 		http.SetCookie(w, cookie)
-		if err == nil {
-			user.UserType = dto.UserTypeApplicant
-			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-				HTTPStatus: http.StatusOK,
-				Body:       user,
-			})
-		} else {
-			// is there actually should be HTTP 400?
-			logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
-			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-				HTTPStatus: http.StatusInternalServerError,
-				Error:      err.Error(),
-			})
-		}
+		// TODO: refactor code below
 
+		// if err == nil {
+		// 	user.UserType = dto.UserTypeApplicant
+		// 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		// 		HTTPStatus: http.StatusOK,
+		// 		Body:       user,
+		// 	})
+		// } else {
+		// 	// is there actually should be HTTP 400?
+		// 	logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
+		// 	middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+		// 		HTTPStatus: http.StatusInternalServerError,
+		// 		Error:      err.Error(),
+		// 	})
+		// }
+		user.UserType = dto.UserTypeApplicant
+		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+			HTTPStatus: http.StatusOK,
+			Body:       user,
+		})
 	})
 }
