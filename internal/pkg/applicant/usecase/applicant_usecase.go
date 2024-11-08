@@ -21,6 +21,13 @@ func CreateApplicantInputCheck(Name, LastName, Email, Password string) error {
 
 // CreateApplicant accepts employer repository and validated form and creates new employer
 func CreateApplicant(repo repoApplicant.IApplicantRepository, sessionRepoApplicant repoSession.SessionRepository, form *dto.ApplicantInput) (*dto.ApplicantOutput, string, error) {
+	applicant, err := repo.GetByEmail(form.Email)
+	if applicant != nil {
+		return nil, "", fmt.Errorf(dto.MsgUserAlreadyExists)
+	}
+	if err != nil {
+		return nil, "", fmt.Errorf(dto.MsgDataBaseError)
+	}
 	form.Password = utils.HashPassword(form.Password)
 	user, err := repo.Create(form)
 	if err != nil {

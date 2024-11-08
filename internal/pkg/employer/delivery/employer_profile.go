@@ -43,7 +43,7 @@ func (h *EmployerProfileHandlers) EmployerProfileHandler(w http.ResponseWriter, 
 	default:
 		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
 			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      http.StatusText(http.StatusMethodNotAllowed),
+			Error:      dto.MsgMethodNotAllowed,
 		})
 	}
 }
@@ -97,7 +97,7 @@ func (h *EmployerProfileHandlers) UpdateEmployerProfileHandler(w http.ResponseWr
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,
-			Error:      "unable to unmarshal JSON",
+			Error:      dto.MsgInvalidJSON,
 		})
 		return
 	}

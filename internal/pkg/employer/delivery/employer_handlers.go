@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
@@ -43,10 +42,10 @@ func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSessi
 		newUserInput := new(dto.EmployerInput)
 		err := decoder.Decode(newUserInput)
 		if err != nil {
-			logger.Errorf("error while unmarshalling employer  JSON: %s", err)
+			logger.Errorf("error while unmarshall employer  JSON: %s", err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      "can't unmarshal JSON",
+				Error:      dto.MsgInvalidJSON,
 			})
 			return
 		}
@@ -63,29 +62,27 @@ func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSessi
 
 		user, sessionID, err := employerUsecase.CreateEmployer(repo, repoEmployerSession, newUserInput)
 		if err != nil {
-			logger.Errorf("function %s: err - ", funcName, err)
+			logger.Errorf("function %s: err - %s", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusInternalServerError,
-				Error:      commonerrors.DBerr.Error(),
+				Error:      dto.MsgDataBaseError,
 			})
 			return
 		}
 		logger.Debug("Cookie send")
 		cookie := utils.MakeAuthCookie(sessionID, backendAddress)
 		http.SetCookie(w, cookie)
-		if err == nil {
-			user.UserType = dto.UserTypeEmployer
-			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-				HTTPStatus: http.StatusOK,
-				Body:       user,
-			})
-		} else {
-			// is there actually should be HTTP 400?
+		if err != nil {
 			logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
 			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 				HTTPStatus: http.StatusInternalServerError,
 				Error:      err.Error(),
 			})
 		}
+		user.UserType = dto.UserTypeEmployer
+			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+				HTTPStatus: http.StatusOK,
+				Body:       user,
+			})
 	})
 }

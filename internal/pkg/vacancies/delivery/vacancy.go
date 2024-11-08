@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
@@ -50,7 +49,7 @@ func (h *VacanciesHandlers) VacanciesRESTHandler(w http.ResponseWriter, r *http.
 	default:
 		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
 			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      http.StatusText(http.StatusMethodNotAllowed),
+			Error:      dto.MsgMethodNotAllowed,
 		})
 	}
 }
@@ -71,7 +70,7 @@ func (h *VacanciesHandlers) VacanciesSubscribeRESTHandler(w http.ResponseWriter,
 	default:
 		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
 			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      http.StatusText(http.StatusMethodNotAllowed),
+			Error:      dto.MsgMethodNotAllowed,
 		})
 	}
 }
@@ -93,17 +92,18 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 		h.logger.Errorf("unable to unmarshal JSON: %s", err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,
-			Error:      commonerrors.ErrInvalidJSON.Error(),
+			Error:      dto.MsgInvalidJSON,
 		})
 		return
 	}
+	
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
@@ -167,7 +167,7 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 		h.logger.Errorf("unable to unmarshal JSON: %s", err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,
-			Error:      commonerrors.ErrInvalidJSON.Error(),
+			Error:      dto.MsgInvalidJSON,
 		})
 		return
 	}
@@ -177,7 +177,7 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
@@ -212,7 +212,7 @@ func (h *VacanciesHandlers) deleteVacancyHandler(w http.ResponseWriter, r *http.
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
@@ -247,7 +247,7 @@ func (h *VacanciesHandlers) subscribeVacancyHandler(w http.ResponseWriter, r *ht
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
@@ -284,7 +284,7 @@ func (h *VacanciesHandlers) unsubscribeVacancyHandler(w http.ResponseWriter, r *
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
@@ -321,7 +321,7 @@ func (h *VacanciesHandlers) getVacancySubscriptionHandler(w http.ResponseWriter,
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
@@ -356,7 +356,7 @@ func (h *VacanciesHandlers) getVacancySubscribersHandler(w http.ResponseWriter, 
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}

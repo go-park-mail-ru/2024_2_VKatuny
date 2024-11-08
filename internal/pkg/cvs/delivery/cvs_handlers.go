@@ -47,7 +47,7 @@ func (h *CVsHandler) CVsRESTHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
 			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      http.StatusText(http.StatusMethodNotAllowed),
+			Error:      dto.MsgMethodNotAllowed,
 		})
 		r.Body.Close()
 	}
@@ -66,7 +66,7 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,
-			Error:      commonerrors.ErrInvalidJSON.Error(),
+			Error:      dto.MsgInvalidJSON,
 		})
 		return
 	}
@@ -76,7 +76,7 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
@@ -146,7 +146,7 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,
-			Error:      commonerrors.ErrInvalidJSON.Error(),
+			Error:      dto.MsgInvalidJSON,
 		})
 		return
 	}
@@ -156,7 +156,7 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
@@ -204,7 +204,7 @@ func (h *CVsHandler) DeleteCVHandler(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error:      "unable to get user from context", // TODO: make error without hardcode
+			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}

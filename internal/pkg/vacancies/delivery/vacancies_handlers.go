@@ -42,19 +42,6 @@ func GetVacanciesHandler(repo vacancies.IVacanciesRepository) http.Handler { //v
 			return
 		}
 
-		if r.Method != http.MethodGet {
-			logger.Errorf("Got %s method; allowed %s", r.Method, http.MethodGet)
-			middleware.UniversalMarshal(
-				w,
-				http.StatusMethodNotAllowed,
-				dto.JSONResponse{
-					HTTPStatus: http.StatusMethodNotAllowed,
-					Error:      "http request method isn't a GET",
-				},
-			)
-			return
-		}
-
 		queryParams := r.URL.Query()
 		logger.Debugf("function: %s; Query params read: %v", funcName, queryParams)
 
@@ -78,10 +65,10 @@ func GetVacanciesHandler(repo vacancies.IVacanciesRepository) http.Handler { //v
 			logger.Errorf("function: %s; got err while reading vacancies from db %s", funcName, err)
 			middleware.UniversalMarshal(
 				w,
-				http.StatusBadRequest,
+				http.StatusInternalServerError,
 				dto.JSONResponse{
-					HTTPStatus: http.StatusBadRequest,
-					Error:      "can't get vacancies from db",
+					HTTPStatus: http.StatusInternalServerError,
+					Error:      dto.MsgDataBaseError,
 				},
 			)
 			return

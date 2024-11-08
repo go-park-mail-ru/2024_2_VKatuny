@@ -1,6 +1,8 @@
 package usecase
 
 import (
+	"fmt"
+
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
@@ -34,7 +36,7 @@ func (pu *PortfolioUsecase) GetApplicantPortfolios(applicantID uint64) ([]*dto.J
 	portfoliosModel, err := pu.portfolioRepo.GetPortfoliosByApplicantID(applicantID)
 	if err != nil {
 		pu.logger.Errorf("function: %s; got err: %s", fn, err)
-		return nil, err
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 
 	pu.logger.Debugf("function: %s; successfully got applicant portfolios: %d", fn, len(portfoliosModel))

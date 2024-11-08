@@ -230,3 +230,22 @@ Query-параметры: `offset` и `num` - натуральные числа 
 ```
 3
 </details>
+
+## Ошибки
+Возможные сообщения об ошибках:
+```go
+// Error messages
+const (
+	MsgMethodNotAllowed           = "method not allowed"
+	MsgInvalidJSON                = "invalid json"
+	MsgUnauthorized               = "user unauthorized"
+	MsgDataBaseError              = "database error"
+	MsgAccessDenied               = "no permissions to perform this action"
+	MsgNoCookie                   = "no cookie"
+	MsgBadCookie                  = "bad cookie"
+	MsgBadUserType                = "got unknown user type"
+	MsgNoUserWithSession          = "no user with this session"
+	MsgWrongLoginOrPassword       = "wrong login or password"
+    MsgUserAlreadyExists          = "user already exists"
+)
+```
