@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public."applicant"
     last_name text NOT NULL,
     city_id int,
     birth_date timestamp without time zone NOT NULL,
-    path_to_profile_avatar text NOT NULL DEFAULT 'static/default_profile.png',
+    path_to_profile_avatar text NOT NULL DEFAULT '',
     contacts text,
     education text,
     email text NOT NULL,

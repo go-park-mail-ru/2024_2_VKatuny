@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public."applicant_creation_to_creation_tag"
     CONSTRAINT applicant_creation_to_creation_tag_creation_tag_id FOREIGN KEY (creation_tag_id)
         REFERENCES public.creation_tag (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE SET 1
+        ON DELETE CASCADE
         NOT VALID,
     CONSTRAINT applicant_creation_to_creation_tag_applicant_creation_id FOREIGN KEY (applicant_creation_id)
         REFERENCES public.applicant_creation (id) MATCH SIMPLE
