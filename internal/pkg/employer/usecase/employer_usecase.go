@@ -30,10 +30,11 @@ func CreateEmployerInputCheck(form *dto.EmployerInput) error {
 
 func CreateEmployer(repo repository.EmployerRepository, sessionRepoEmployer repoSession.SessionRepository, form *dto.EmployerInput) (*dto.EmployerOutput, string, error) {
 	employer, err := repo.GetByEmail(form.Email)
-	if employer != nil {
-		return nil, "", fmt.Errorf(dto.MsgUserAlreadyExists)
-	}
-	if err != nil {
+	fmt.Println("!-------------", employer, err)
+	// if err.Error() != "sql: no rows in result set" {
+	// 	return nil, "", fmt.Errorf(dto.MsgUserAlreadyExists)
+	// }
+	if err.Error() != "sql: no rows in result set" {
 		return nil, "", fmt.Errorf(dto.MsgDataBaseError)
 	}
 	form.Password = utils.HashPassword(form.Password)

@@ -48,7 +48,7 @@ func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
 			logger.Debugf("function: %s; problems with reading cookie", funcName)
 			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 				HTTPStatus: http.StatusUnauthorized,
-				Error:      dto.MsgNoCookie,
+				Error:      "client doesn't have a cookie",
 			})
 			return
 		}
@@ -56,9 +56,9 @@ func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
 		userType, err := utils.CheckToken(session.Value)
 		if err != nil {
 			logger.Errorf("wrong cookie")
-			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-				HTTPStatus: http.StatusUnauthorized,
-				Error:      dto.MsgBadCookie,
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      "wrong cookie",
 			})
 			return
 		}
@@ -70,7 +70,7 @@ func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
 			logger.Errorf("authorization error")
 			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 				HTTPStatus: http.StatusUnauthorized,
-				Error:      dto.MsgDataBaseError,
+				Error:      err.Error(),
 			})
 			return
 		}
@@ -105,7 +105,7 @@ func AuthorizedHandler(repoApplicantSession sessionRepo.SessionRepository,
 			http.StatusBadRequest,
 			dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      dto.MsgBadUserType,
+				Error:      "function " + funcName + ": login got strange type - " + newUserInput.UserType,
 			},
 		)
 	})
@@ -146,7 +146,7 @@ func LoginHandler(
 			logger.Errorf("can't unmarshal JSON")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      dto.MsgInvalidJSON,
+				Error:      "can't unmarshal JSON",
 			})
 			return
 		}
@@ -214,7 +214,7 @@ func LoginHandler(
 			http.StatusBadRequest,
 			dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      dto.MsgBadUserType,
+				Error:      "function " + funcName + ": login got strange type - " + newUserInput.UserType,
 			},
 		)
 
@@ -247,7 +247,7 @@ func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
 			logger.Errorf("client doesn't have a cookie")
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 				HTTPStatus: http.StatusOK,
-				Error:      dto.MsgNoCookie,
+				Error:      "client doesn't have a cookie",
 			})
 			return
 		}
@@ -257,7 +257,7 @@ func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
 			logger.Errorf("wrong cookie")
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      dto.MsgBadCookie,
+				Error:      "wrong cookie",
 			})
 			return
 		}
@@ -270,7 +270,7 @@ func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
 			logger.Errorf("no user with this session")
 			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 				HTTPStatus: http.StatusOK,
-				Error:      dto.MsgNoUserWithSession,
+				Error:      "no user with this session",
 			})
 			return
 		}
@@ -305,7 +305,7 @@ func LogoutHandler(repoApplicantSession sessionRepo.SessionRepository,
 			http.StatusBadRequest,
 			dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
-				Error:      dto.MsgBadUserType,
+				Error:      "function " + funcName + ": login got strange type - " + newUserInput.UserType,
 			},
 		)
 	})

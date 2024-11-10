@@ -2,6 +2,8 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 
@@ -152,7 +154,10 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 	}
 
 	employer, err := s.GetByEmail(employerInput.Email)
-
+	fmt.Println(err)
+	if !errors.Is(err, nil) {
+		return nil, err
+	}
 	return employer, err
 }
 
