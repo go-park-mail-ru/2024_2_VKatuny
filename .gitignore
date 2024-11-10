@@ -35,3 +35,7 @@ go.work.sum
 
 # vscode files
 .vscode/
+
+# config
+configs/conf.yaml
+configs/conf.yml

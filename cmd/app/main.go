@@ -37,8 +37,7 @@ import (
 	//worker_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/repository"
 )
 
-func GetDBConnection() (*sql.DB, error) { //conf DatabaseConfig) (*sql.DB, error) {
-	dbURL := "user=postgres dbname=postgres password=passIMO host=127.0.0.1 port=5432 sslmode=disable"
+func GetDBConnection(DSN string) (*sql.DB, error) { //conf DatabaseConfig) (*sql.DB, error) {
 	// dbURL := fmt.Sprintf(
 	// 	"postgres://%s:%s@%s:%d/%s?application_name=%s&search_path=%s&connect_timeout=%d",
 	// 	conf.User,
@@ -51,7 +50,7 @@ func GetDBConnection() (*sql.DB, error) { //conf DatabaseConfig) (*sql.DB, error
 	// 	conf.ConnectionTimeout,
 	// )
 
-	db, err := sql.Open("pgx", dbURL)
+	db, err := sql.Open("pgx", DSN)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +76,7 @@ func main() {
 	logger := logger.NewLogrusLogger()
 
 	// Try gorilla?
-	dbConnection, err := GetDBConnection() //(*config.Database)
+	dbConnection, err := GetDBConnection(conf.DataBase.GetDSN()) 
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
