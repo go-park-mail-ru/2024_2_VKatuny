@@ -1,11 +1,11 @@
 # define executable
-EXECUTABLE="uArt"
+EXECUTABLE=uArt.exe
 
-# siurce dir
-SRC_DIR="./cmd/myapp"
+# source dir
+SRC_DIR=./cmd/app
 
 # flags for compilation
-BUILD_FLAGS=""
+BUILD_FLAGS=
 
 all: build
 
@@ -17,3 +17,13 @@ tests:
 
 clean:
 	go clean
+
+lint:
+	revive -config reviveconfig.toml -formatter friendly ./...
+
+api:
+	swag init --parseInternal --pd --dir cmd/myapp/,delivery/handler/ --output api/
+	node ./api/server.js
+
+run:
+	go run $(SRC_DIR)/main.go
