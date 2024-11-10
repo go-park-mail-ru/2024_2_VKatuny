@@ -41,7 +41,7 @@ type DataBaseConfig struct {
 func ReadConfig(confPath string) (*Config, error) {
 	data, err := os.ReadFile(confPath)
 	if err != nil {
-		log.Fatal("unable to read config file")
+		log.Fatalf("unable to read config file: %s", confPath)
 		return nil, err
 	}
 
