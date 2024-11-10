@@ -2,6 +2,7 @@
 package configs
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -11,7 +12,8 @@ import (
 
 // Config is a struct of .yaml config file
 type Config struct {
-	Server *ServerConfig `yaml:"server"`
+	Server   *ServerConfig   `yaml:"server"`
+	DataBase *DataBaseConfig `yaml:"database"`
 }
 
 // ServerConfig is a struct of server config block in .yaml
@@ -22,13 +24,24 @@ type ServerConfig struct {
 	Front  string `yaml:"frontURI"`
 }
 
+type DataBaseConfig struct {
+	Host              string `yaml:"host"`
+	Port              int    `yaml:"port"`
+	User              string `yaml:"user"`
+	Password          string `yaml:"password"`
+	Schema            string `yaml:"schema"`
+	DBName            string `yaml:"db_name"`
+	SSLMode           string `yaml:"ssl_mode"`
+	ConnectionTimeout string `yaml:"conn_timeout,omitempty"`  // Temporary unused
+}
+
 // ReadConfig reads file with configuration.
 // Accepts path to .yaml config.
 // Returns pointer to Config.
 func ReadConfig(confPath string) (*Config, error) {
 	data, err := os.ReadFile(confPath)
 	if err != nil {
-		log.Fatal("unable to read config file")
+		log.Fatalf("unable to read config file: %s", confPath)
 		return nil, err
 	}
 
@@ -36,6 +49,10 @@ func ReadConfig(confPath string) (*Config, error) {
 	err = yaml.Unmarshal(data, &conf)
 	if err != nil {
 		log.Fatal("unable to unmarshal config file")
+	}
+
+	if conf.DataBase.ConnectionTimeout == "" {
+		conf.DataBase.ConnectionTimeout = "60s"
 	}
 
 	return conf, nil
@@ -55,4 +72,15 @@ func (s *ServerConfig) GetHostWithScheme() string {
 // GetFrontURI returns front uri. E.g http://127.0.0.1:3000
 func (s *ServerConfig) GetFrontURI() string {
 	return s.Front
+}
+
+func (d *DataBaseConfig) GetDSN() string {
+	return fmt.Sprintf("user=%s dbname=%s password=%s host=%s port=%d sslmode=%s",
+		d.User,
+		d.DBName,
+		d.Password,
+		d.Host,
+		d.Port,
+		d.SSLMode,
+	)
 }

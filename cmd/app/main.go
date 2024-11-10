@@ -2,7 +2,6 @@
 package main
 
 import (
-	"database/sql"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -15,6 +14,7 @@ import (
 	cvDelivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/delivery"
 	cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
 	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 
 	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
@@ -37,33 +37,6 @@ import (
 	//worker_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/repository"
 )
 
-func GetDBConnection() (*sql.DB, error) { //conf DatabaseConfig) (*sql.DB, error) {
-	dbURL := "user=postgres dbname=postgres password=passIMO host=127.0.0.1 port=5432 sslmode=disable"
-	// dbURL := fmt.Sprintf(
-	// 	"postgres://%s:%s@%s:%d/%s?application_name=%s&search_path=%s&connect_timeout=%d",
-	// 	conf.User,
-	// 	conf.Password,
-	// 	conf.Host,
-	// 	conf.Port,
-	// 	conf.DBName,
-	// 	conf.AppName,
-	// 	conf.Schema,
-	// 	conf.ConnectionTimeout,
-	// )
-
-	db, err := sql.Open("pgx", dbURL)
-	if err != nil {
-		return nil, err
-	}
-
-	err = db.Ping()
-	if err != nil {
-		return nil, err
-	}
-	db.SetMaxOpenConns(10)
-	return db, nil
-}
-
 // @title   uArt's API
 // @version 1.0
 
@@ -76,8 +49,7 @@ func main() {
 	conf, _ := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
 
-	// Try gorilla?
-	dbConnection, err := GetDBConnection() //(*config.Database)
+	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN()) 
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
