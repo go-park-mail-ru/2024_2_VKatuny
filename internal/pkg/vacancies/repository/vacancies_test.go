@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -21,7 +20,7 @@ func TestPostgresGetVacanciesByEmployerID(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
@@ -43,7 +42,7 @@ func TestPostgresGetVacanciesByEmployerID(t *testing.T) {
 			err:     nil,
 		},
 		{
-			name: "TestFail1",
+			name: "TestFailZeroID",
 			args: args{
 				ID: 0,
 				query: func(mock sqlmock.Sqlmock, args args) {
@@ -62,7 +61,7 @@ func TestPostgresGetVacanciesByEmployerID(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			err:     fmt.Errorf("some"),
+			err:     nil,
 		},
 	}
 	for _, tt := range tests {
@@ -104,7 +103,7 @@ func TestPostgresGetWithOffset(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				offset: 0,
 				num:    1,
@@ -166,7 +165,7 @@ func TestPostgresGetByID(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
@@ -188,7 +187,7 @@ func TestPostgresGetByID(t *testing.T) {
 			err:     nil,
 		},
 		{
-			name: "TestFail1",
+			name: "TestFailZeroID",
 			args: args{
 				ID: 0,
 				query: func(mock sqlmock.Sqlmock, args args) {
@@ -207,7 +206,7 @@ func TestPostgresGetByID(t *testing.T) {
 				},
 			},
 			wantErr: true,
-			err:     fmt.Errorf("some"),
+			err:     nil,
 		},
 	}
 	for _, tt := range tests {
@@ -252,7 +251,7 @@ func TestPostgresCreate(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				vacancy: dto.JSONVacancy{
 					EmployerID:  1,
@@ -345,7 +344,7 @@ func TestPostgresUpdate(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID: 1,
 				vacancy: dto.JSONVacancy{
@@ -445,7 +444,7 @@ func TestPostgresDelete(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
@@ -499,7 +498,7 @@ func TestPostgresSubscribe(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID:          1,
 				applicantID: 1,
@@ -555,7 +554,7 @@ func TestPostgresGetSubscriptionStatus(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID:          1,
 				applicantID: 1,
@@ -611,7 +610,7 @@ func TestPostgresGetSubscribersCount(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
@@ -665,7 +664,7 @@ func TestPostgresGetSubscribersList(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
@@ -722,7 +721,7 @@ func TestPostgresUnsubscribe(t *testing.T) {
 		err     error
 	}{
 		{
-			name: "TestOk1",
+			name: "TestOk",
 			args: args{
 				ID:          1,
 				applicantID: 1,

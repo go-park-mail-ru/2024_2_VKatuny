@@ -51,7 +51,7 @@ func (eu *EmployerUsecase) GetEmployerProfile(employerID uint64) (*dto.JSONGetEm
 
 func (eu *EmployerUsecase) UpdateEmployerProfile(employerID uint64, employerProfile *dto.JSONUpdateEmployerProfile) error {
 	fn := "EmployerUsecase.UpdateEmployerProfile"
-	err := eu.employerRepository.Update(employerID, employerProfile)
+	_, err := eu.employerRepository.Update(employerID, employerProfile)
 	if err != nil {
 		eu.logger.Errorf("function: %s; unable to update employer profile: %s", fn, err)
 		return err

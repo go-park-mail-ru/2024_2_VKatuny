@@ -29,8 +29,7 @@ func CreateEmployerInputCheck(form *dto.EmployerInput) error {
 // CreateEmployer accepts employer repository and validated form and creates new employer
 
 func CreateEmployer(repo repository.EmployerRepository, sessionRepoEmployer repoSession.SessionRepository, form *dto.EmployerInput) (*dto.EmployerOutput, string, error) {
-	employer, err := repo.GetByEmail(form.Email)
-	fmt.Println("!-------------", employer, err)
+	_, err := repo.GetByEmail(form.Email)
 	// if err.Error() != "sql: no rows in result set" {
 	// 	return nil, "", fmt.Errorf(dto.MsgUserAlreadyExists)
 	// }
@@ -40,9 +39,11 @@ func CreateEmployer(repo repository.EmployerRepository, sessionRepoEmployer repo
 	form.Password = utils.HashPassword(form.Password)
 	user, err := repo.Create(form)
 	if err != nil {
+		fmt.Println("err ------ ", err) // поменять на logger
 		return nil, "", fmt.Errorf(dto.MsgDataBaseError)
 	}
 	sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeEmployer)
+
 	sessionRepoEmployer.Create(user.ID, sessionID)
 	return &dto.EmployerOutput{
 		ID:                  user.ID,
