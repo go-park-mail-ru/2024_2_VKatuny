@@ -1,5 +1,4 @@
-// Package employer is a core element of project
-package repository
+package employer
 
 import (
 	"fmt"
@@ -11,7 +10,7 @@ import (
 // EmployerRepository is an interface for Employer.
 // Now implemented as a in memory db.
 // Implementation locates in ./repository
-type EmployerRepository interface {
+type IEmployerRepository interface {
 	//rename to Add
 	// probably shouldn't commit model to Create method
 	Create(*dto.EmployerInput) (*models.Employer, error)
@@ -20,7 +19,13 @@ type EmployerRepository interface {
 	GetByEmail(email string) (*models.Employer, error)
 }
 
+type IEmployerUsecase interface {
+	GetByID(id uint64) (*models.Employer, error)  // TODO: think about signature
+	GetEmployerProfile(employerID uint64) (*dto.JSONGetEmployerProfile, error)
+	UpdateEmployerProfile(employerID uint64, employerProfile *dto.JSONUpdateEmployerProfile) error
+}
+
 var (
 	// ErrNoUserExist error means that user doesn't exist
-	ErrNoUserExist = fmt.Errorf("user doesnt't exist")
+	ErrNoUserExist = fmt.Errorf("user doesn't exist")
 )

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	repoSession "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
@@ -28,7 +28,7 @@ func CreateEmployerInputCheck(form *dto.EmployerInput) error {
 
 // CreateEmployer accepts employer repository and validated form and creates new employer
 
-func CreateEmployer(repo repository.EmployerRepository, sessionRepoEmployer repoSession.SessionRepository, form *dto.EmployerInput) (*dto.EmployerOutput, string, error) {
+func CreateEmployer(repo employer.IEmployerRepository, sessionRepoEmployer repoSession.SessionRepository, form *dto.EmployerInput) (*dto.EmployerOutput, string, error) {
 	employer, err := repo.GetByEmail(form.Email)
 	fmt.Println("!-------------", employer, err)
 	// if err.Error() != "sql: no rows in result set" {

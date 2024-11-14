@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"	
 )
 
 // DOES NOT SUPPORT ASYNC
@@ -62,5 +63,5 @@ func (repo *employerRepo) GetByEmail(email string) (*models.Employer, error) {
 			return employer, nil
 		}
 	}
-	return nil, ErrNoUserExist
+	return nil, employer.ErrNoUserExist
 }

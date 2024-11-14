@@ -96,13 +96,20 @@ type JSONApplicantRegistrationForm struct {
 
 // JSONEmployer is a default representation of employer
 type JSONEmployer struct {
-	FirstName          string `json:"firstName"`
-	LastName           string `json:"lastName"`
-	Position           string `json:"position"`
-	Company            string `json:"company"`
-	CompanyDescription string `json:"companyDescription"`
-	CompanyWebsite     string `json:"companyWebsite"`
-	Email              string `json:"email"`
+	UserType            string `json:"userType"`
+	ID                  uint64 `json:"id"`
+	FirstName           string `json:"firstName"`
+	LastName            string `json:"lastName"`
+	CityName            string `json:"cityName"`
+	Position            string `json:"position"`
+	CompanyName         string `json:"companyName"`
+	CompanyDescription  string `json:"companyDescription"`
+	CompanyWebsite      string `json:"companyWebsite"`
+	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	Contacts            string `json:"contacts"`
+	Email               string `json:"email"`
+	CreatedAt           string `json:"createdAt"`
+	UpdatedAt           string `json:"updatedAt"`
 }
 
 // JSONEmployer is a default representation of employer

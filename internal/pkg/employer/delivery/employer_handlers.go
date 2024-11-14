@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
 	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
@@ -26,7 +26,7 @@ import (
 // @Success     200      {object}       dto.JSONResponse{statusCode=200,body=dto.JSONUserBody, error=""} "OK"
 // @Failure     400      {object}       nil
 // @Router      /registration/employer/ [post]
-func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSession sessionRepo.SessionRepository, backendAddress string) http.Handler {
+func CreateEmployerHandler(repo employer.IEmployerRepository, repoEmployerSession sessionRepo.SessionRepository, backendAddress string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 

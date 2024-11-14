@@ -4,17 +4,19 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/sirupsen/logrus"
 )
 
 type App struct {
-	Logger       *logrus.Logger
-	Repositories *Repositories
-	Usecases     *Usecases
+	Logger         *logrus.Logger
+	BackendAddress string
+	Repositories   *Repositories
+	Usecases       *Usecases
 }
 
 type Repositories struct {
-	EmployerRepository         interface{}
+	EmployerRepository         employer.IEmployerRepository
 	ApplicantRepository        interface{}
 	PortfolioRepository        interface{}
 	CVRepository               cvs.ICVsRepository
@@ -24,7 +26,7 @@ type Repositories struct {
 }
 
 type Usecases struct {
-	EmployerUsecase  interface{}
+	EmployerUsecase  employer.IEmployerUsecase
 	ApplicantUsecase interface{}
 	PortfolioUsecase interface{}
 	CVUsecase        cvs.ICVsUsecase
