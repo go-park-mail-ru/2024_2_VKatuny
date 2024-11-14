@@ -100,7 +100,7 @@ func TestPostgresGetByEmail(t *testing.T) {
 		{
 			name: "TestOk",
 			args: args{
-				Email: "a.mail.ru",
+				Email: "a@mail.ru",
 				query: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select applicant.id, first_name, last_name, city.city_name, birth_date, path_to_profile_avatar, contacts, 
 						education, email, password_hash, applicant.created_at, applicant.updated_at 
