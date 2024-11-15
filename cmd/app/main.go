@@ -26,15 +26,9 @@ import (
 	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
 	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 
-	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal"
-
-	//vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
-
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	vacancies_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
-	//worker_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/delivery"
-	//worker_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/repository"
 )
 
 // @title   uArt's API
@@ -57,53 +51,13 @@ func main() {
 
 	Mux := http.NewServeMux()
 
-	//applicantRepository := applicant_repository.NewRepo()
-	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)
-	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection) // just do it!
-
-	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository, sessionApplicantRepository, conf.Server.GetAddress())
-	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
-
-	//employerRepository := employer_repository.NewRepo()
-	employerRepository := employer_repository.NewEmployerStorage(dbConnection)
-
-	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository, sessionEmployerRepository, conf.Server.GetAddress())
-	Mux.Handle("/api/v1/registration/employer", employerHandler)
-
-	//sessionApplicantRepository, sessionEmployerRepository := session_repository.NewRepo() // just do it!
-
-	loginHandler := session_delivery.LoginHandler(
-		sessionApplicantRepository,
-		sessionEmployerRepository,
-		applicantRepository,
-		employerRepository,
-		conf.Server.GetAddress(),
-	)
-	Mux.Handle("/api/v1/login", loginHandler)
-
-	logoutHandler := session_delivery.LogoutHandler(sessionApplicantRepository,
-		sessionEmployerRepository,
-		applicantRepository,
-		employerRepository)
-	Mux.Handle("/api/v1/logout", logoutHandler)
-
-	authorizedHandler := session_delivery.AuthorizedHandler(sessionApplicantRepository,
-		sessionEmployerRepository,
-		applicantRepository,
-		employerRepository)
-	Mux.Handle("/api/v1/authorized", authorizedHandler)
-
-	// TODO: should be from db
-	vacanciesRepository := vacancies_repository.NewVacanciesStorage(dbConnection)
-	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository) //(&db.Vacancies)
-	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
-
+	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
 	repositories := &internal.Repositories{
-		ApplicantRepository:        applicantRepository,
+		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
 		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection),
 		CVRepository:               cvRepository.NewCVStorage(dbConnection),
-		VacanciesRepository:        vacanciesRepository,
-		EmployerRepository:         employerRepository,
+		VacanciesRepository:        vacancies_repository.NewVacanciesStorage(dbConnection),
+		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
 		SessionApplicantRepository: sessionApplicantRepository,
 		SessionEmployerRepository:  sessionEmployerRepository,
 	}
@@ -119,6 +73,22 @@ func main() {
 		Repositories: repositories,
 		Usecases:     usecases,
 	}
+
+
+	applicantHandler := applicant_delivery.CreateApplicantHandler(repositories.ApplicantRepository, sessionApplicantRepository, conf.Server.GetAddress())
+	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
+
+	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository, sessionEmployerRepository, conf.Server.GetAddress())
+	Mux.Handle("/api/v1/registration/employer", employerHandler)
+
+	sessionHandlers := session_delivery.NewSessionHandlers(app)
+	Mux.HandleFunc("/api/v1/login", sessionHandlers.Login)
+	Mux.HandleFunc("/api/v1/logout", sessionHandlers.Logout)
+	Mux.HandleFunc("/api/v1/authorized", sessionHandlers.IsAuthorized)
+
+	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository)
+	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
+
 
 	applicantProfileHandlers, err := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)
 	if err != nil {

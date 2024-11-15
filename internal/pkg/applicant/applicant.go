@@ -19,9 +19,8 @@ type IApplicantRepository interface { // TODO: rename to IApplicantRepository
 }
 
 type IApplicantUsecase interface {
-	GetByID(ID uint64) (*dto.JSONApplicant, error)
-	GetByEmail(email string) (*dto.JSONApplicant, error)
-
+	GetByID(ID uint64) (*dto.JSONApplicantOutput, error)
+	GetByEmail(email string) (*dto.JSONApplicantOutput, error)
 }
 
 var (

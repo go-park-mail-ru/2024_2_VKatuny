@@ -3,193 +3,249 @@ package usecase
 
 import (
 	"fmt"
-	"net/http"
-
+	
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	applicantRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	employerRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var ErrEmptyCookie = fmt.Errorf("client have an empty cookie")
 
-func CheckAuthorization(newUserInput *dto.JSONLogoutForm, session *http.Cookie, sessionRepoApplicant session.ISessionRepository, sessionRepoEmployer session.ISessionRepository) (uint64, error) {
-	if session == nil || session.Value == "" {
-		return 0, ErrEmptyCookie
-	}
-	sessionID := session.Value
-	if newUserInput.UserType == dto.UserTypeApplicant {
-		id, err := sessionRepoApplicant.GetUserIdBySession(sessionID)
-		return id, err
-	} else if newUserInput.UserType == dto.UserTypeEmployer {
-		id, err := sessionRepoEmployer.GetUserIdBySession(sessionID)
-		return id, err
-	}
-	return 0, fmt.Errorf(dto.MsgBadUserType)
+type sessionUsecase struct {
+	logger               *logrus.Entry
+	applicantRepo        applicantRepo.IApplicantRepository
+	employerRepo         employer.IEmployerRepository
+	sessionRepoApplicant session.ISessionRepository
+	sessionRepoEmployer  session.ISessionRepository
 }
 
-var (
-	// ErrWrongPassword means that password is wrong
-	ErrWrongPassword = fmt.Errorf("wrong password")
-	// ErrNoApplicantWithSuchEmail means that there is no applicant with such email
-	ErrNoApplicantWithSuchEmail = fmt.Errorf("there is no applicant with such email")
-	// ErrNoEmployerWithSuchEmail means that there is no employer with such email
-	ErrNoEmployerWithSuchEmail = fmt.Errorf("there is no employer with such email")
-)
-
-// LoginValidate ! TODO: rename function to more accurate meaning
-func LoginValidate(newUserInput *dto.JSONLoginForm, repoApplicant applicantRepo.IApplicantRepository, repoEmployer employerRepo.EmployerRepository) (user *dto.UserIDAndType, err error) {
-	// TODO: add logging
-	if newUserInput.UserType == dto.UserTypeApplicant {
-		var worker *models.Applicant
-		worker, err = repoApplicant.GetByEmail(newUserInput.Email)
-		if err != nil {
-			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
-		}
-		if !utils.EqualHashedPasswords(worker.PasswordHash, newUserInput.Password) {
-			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
-		}
-		user = &dto.UserIDAndType{ID: worker.ID, UserType: dto.UserTypeApplicant}
-	} else if newUserInput.UserType == dto.UserTypeEmployer {
-		var employer *models.Employer
-		employer, err = repoEmployer.GetByEmail(newUserInput.Email)
-		if err != nil {
-			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
-		}
-		if !utils.EqualHashedPasswords(employer.PasswordHash, newUserInput.Password) {
-			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
-		}
-		user = &dto.UserIDAndType{ID: employer.ID, UserType: dto.UserTypeEmployer}
+func NewSessionUsecase(app *internal.App) *sessionUsecase {
+	return &sessionUsecase{
+		logger:               &logrus.Entry{Logger: app.Logger},
+		sessionRepoApplicant: app.Repositories.SessionApplicantRepository,
+		sessionRepoEmployer:  app.Repositories.SessionEmployerRepository,
 	}
-	return user, err
 }
 
-// LogoutValidate tries to remove session from db
-// TODO: rename function to more accurate meaning
-func LogoutValidate(newUserInput *dto.JSONLogoutForm, session string, sessionRepoApplicant, sessionRepoEmployer session.ISessionRepository) (uint64, error) {
-	if newUserInput.UserType == dto.UserTypeApplicant {
-		id, err := sessionRepoApplicant.GetUserIdBySession(session)
-		if err != nil {
-			return 0, fmt.Errorf(dto.MsgDataBaseError)
-		}
-		err = sessionRepoApplicant.Delete(session)
-		if err == nil {
-			return id, nil
-		}
-	} else if newUserInput.UserType == dto.UserTypeEmployer {
-		id, err := sessionRepoEmployer.GetUserIdBySession(session)
-		if err != nil {
-			return 0, fmt.Errorf(dto.MsgDataBaseError)
-		}
-		err = sessionRepoEmployer.Delete(session)
-		if err == nil {
-			return id, nil
-		}
+// TODO: should return user
+func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, error) {
+	fn := "sessionUsecase.Login"
+	if user == nil {
+		u.logger.Errorf("%s: user is nil", fn)
+		return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
 	}
-	return 0, fmt.Errorf(dto.MsgBadUserType)
-}
-
-func AddSession(sessionRepoApplicant, sessionRepoEmployer session.ISessionRepository, user *dto.UserIDAndType) (string, error) {
-	var sessionID string
+	u.logger.Debugf("%s: logging in as %v", fn, user)
 	switch user.UserType {
 	case dto.UserTypeApplicant:
-		sessionID = utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeApplicant)
-		if err := sessionRepoApplicant.Create(user.ID, sessionID); err != nil {
-			return "", fmt.Errorf(dto.MsgDataBaseError)
+		applicant, err := u.applicantRepo.GetByEmail(user.Email)
+		if err != nil {
+			u.logger.Errorf("%s: got err %s", fn, err)
+			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
 		}
+		if !utils.EqualHashedPasswords(applicant.PasswordHash, user.Password) {
+			u.logger.Errorf("%s: password comparison failed", fn)
+			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
+		}
+
+		sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeApplicant)
+		err = u.sessionRepoApplicant.Create(applicant.ID, sessionID)
+		if err != nil {
+			u.logger.Errorf("%s: got err %s", fn, err)
+			return nil, fmt.Errorf(dto.MsgDataBaseError)
+		}
+
+		// TODO: logger with method from other PR
+		u.logger.
+			WithFields(logrus.Fields{"user_id": applicant.ID, "user_type": user.UserType}).
+			Debugf("%s: successfully logged in", fn)
+		
+		return &dto.UserWithSession{
+			ID:       applicant.ID,
+			UserType: dto.UserTypeApplicant,
+			SessionID: sessionID,
+		}, nil
 	case dto.UserTypeEmployer:
-		sessionID = utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeEmployer)
-		if err := sessionRepoEmployer.Create(user.ID, sessionID); err != nil {
-			return "", fmt.Errorf(dto.MsgDataBaseError)
+		employer, err := u.employerRepo.GetByEmail(user.Email)
+		if err != nil {
+			u.logger.Errorf("%s: got err %s", fn, err)
+			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
 		}
+		if !utils.EqualHashedPasswords(employer.PasswordHash, user.Password) {
+			u.logger.Errorf("%s: password comparison failed", fn)
+			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
+		}
+
+		sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeEmployer)
+
+		err = u.sessionRepoEmployer.Create(employer.ID, sessionID)
+		if err != nil {
+			u.logger.Errorf("%s: got err %s", fn, err)
+			return nil, fmt.Errorf(dto.MsgDataBaseError)
+		}
+
+		u.logger.
+			WithFields(logrus.Fields{"user_id": employer.ID, "user_type": user.UserType}).
+			Debugf("%s: successfully logged in", fn)
+		
+		return &dto.UserWithSession{
+			ID:       employer.ID,
+			UserType: dto.UserTypeEmployer,
+			SessionID: sessionID,
+		}, nil
 	}
-	return sessionID, nil
+	u.logger.Errorf("%s: bad user type", fn)
+	return nil, fmt.Errorf(dto.MsgBadUserType)
 }
 
-func GetApplicantByEmail(repoApplicant applicantRepo.IApplicantRepository, email string) (*dto.ApplicantOutput, error) {
-	user, err := repoApplicant.GetByEmail(email)
-	if err != nil {
-		return nil, fmt.Errorf(dto.MsgDataBaseError)
+func (u *sessionUsecase) Logout(userType string, sessionID string) (*dto.User, error) {
+	fn := "sessionUsecase.Logout"
+	switch userType {
+	case dto.UserTypeApplicant:
+		applicantID, err := u.sessionRepoApplicant.GetUserIdBySession(sessionID)
+		if err != nil {
+			u.logger.Errorf("%s: got err %s", fn, err)
+			return nil, fmt.Errorf(dto.MsgDataBaseError)
+		}
+		err = u.sessionRepoApplicant.Delete(sessionID)
+		if err != nil {
+			u.logger.Errorf("%s: got err %s", fn, err)
+			return nil, fmt.Errorf(dto.MsgDataBaseError)
+		}
+		u.logger.
+			WithFields(logrus.Fields{"user_id": applicantID, "user_type": userType}).
+			Debugf("%s: successfully logged out", fn)
+		return &dto.User{
+			ID:       applicantID,
+			UserType: dto.UserTypeApplicant,
+		}, nil
+	case dto.UserTypeEmployer:
+		employerID, err := u.sessionRepoEmployer.GetUserIdBySession(sessionID)
+		if err != nil {
+			u.logger.Errorf("%s: got err %s", fn, err)
+			return nil, fmt.Errorf(dto.MsgDataBaseError)
+		}
+		err = u.sessionRepoEmployer.Delete(sessionID)
+		if err != nil {
+			u.logger.Errorf("%s: got err %s", fn, err)
+			return nil, fmt.Errorf(dto.MsgDataBaseError)
+		}
+		u.logger.
+			WithFields(logrus.Fields{"user_id": employerID, "user_type": userType}).
+			Debugf("%s: successfully logged out", fn)
+		return &dto.User{
+			ID:       employerID,
+			UserType: dto.UserTypeEmployer,
+		}, nil
 	}
-	return &dto.ApplicantOutput{
-		ID:                  user.ID,
-		FirstName:           user.FirstName,
-		LastName:            user.LastName,
-		CityName:            user.CityName,
-		BirthDate:           user.BirthDate,
-		PathToProfileAvatar: user.PathToProfileAvatar,
-		Contacts:            user.Contacts,
-		Education:           user.Education,
-		Email:               user.Email,
-		CreatedAt:           user.CreatedAt,
-		UpdatedAt:           user.UpdatedAt,
-	}, nil
+	return nil, fmt.Errorf(dto.MsgBadUserType)
 }
 
-func GetEmployerByEmail(repoEmployer employerRepo.EmployerRepository, email string) (*dto.EmployerOutput, error) {
-	user, err := repoEmployer.GetByEmail(email)
-	if err != nil {
-		return nil, fmt.Errorf(dto.MsgDataBaseError)
+func (u *sessionUsecase) CheckAuthorization(userType, sessionID string) (uint64, error) {
+	if sessionID == "" {
+		return 0, fmt.Errorf(dto.MsgBadCookie)
 	}
-	return &dto.EmployerOutput{
-		ID:                  user.ID,
-		FirstName:           user.FirstName,
-		LastName:            user.LastName,
-		CityName:            user.CityName,
-		Position:            user.Position,
-		CompanyName:         user.CompanyName,
-		CompanyDescription:  user.CompanyDescription,
-		CompanyWebsite:      user.CompanyWebsite,
-		PathToProfileAvatar: user.PathToProfileAvatar,
-		Contacts:            user.Contacts,
-		Email:               user.Email,
-		PasswordHash:        user.PasswordHash,
-		CreatedAt:           user.CreatedAt,
-		UpdatedAt:           user.UpdatedAt,
-	}, nil
+	if userType == dto.UserTypeApplicant {
+		applicantID, err := u.sessionRepoApplicant.GetUserIdBySession(sessionID)
+		if err != nil {
+			return 0, fmt.Errorf(dto.MsgNoUserWithSession)
+		}
+		return applicantID, nil
+	} else if userType == dto.UserTypeEmployer {
+		employerID, err := u.sessionRepoEmployer.GetUserIdBySession(sessionID)
+		if err != nil {
+			return 0, fmt.Errorf(dto.MsgNoUserWithSession)
+		}
+		return employerID, nil
+	}
+	return 0, fmt.Errorf(dto.MsgBadUserType)
 }
 
-func GetApplicantByID(repoApplicant applicantRepo.IApplicantRepository, id uint64) (*dto.ApplicantOutput, error) {
-	user, err := repoApplicant.GetByID(id)
-	if err != nil {
-		return nil, fmt.Errorf(dto.MsgDataBaseError)
-	}
-	return &dto.ApplicantOutput{
-		ID:                  user.ID,
-		FirstName:           user.FirstName,
-		LastName:            user.LastName,
-		CityName:            user.CityName,
-		BirthDate:           user.BirthDate,
-		PathToProfileAvatar: user.PathToProfileAvatar,
-		Contacts:            user.Contacts,
-		Education:           user.Education,
-		Email:               user.Email,
-		CreatedAt:           user.CreatedAt,
-		UpdatedAt:           user.UpdatedAt,
-	}, nil
-}
+// func GetApplicantByEmail(repoApplicant applicantRepo.IApplicantRepository, email string) (*dto.ApplicantOutput, error) {
+// 	user, err := repoApplicant.GetByEmail(email)
+// 	if err != nil {
+// 		return nil, fmt.Errorf(dto.MsgDataBaseError)
+// 	}
+// 	return &dto.ApplicantOutput{
+// 		ID:                  user.ID,
+// 		FirstName:           user.FirstName,
+// 		LastName:            user.LastName,
+// 		CityName:            user.CityName,
+// 		BirthDate:           user.BirthDate,
+// 		PathToProfileAvatar: user.PathToProfileAvatar,
+// 		Contacts:            user.Contacts,
+// 		Education:           user.Education,
+// 		Email:               user.Email,
+// 		CreatedAt:           user.CreatedAt,
+// 		UpdatedAt:           user.UpdatedAt,
+// 	}, nil
+// }
 
-func GetEmployerByID(repoEmployer employerRepo.EmployerRepository, id uint64) (*dto.EmployerOutput, error) {
-	user, err := repoEmployer.GetByID(id)
-	if err != nil {
-		return nil, fmt.Errorf(dto.MsgDataBaseError)
-	}
-	return &dto.EmployerOutput{
-		ID:                  user.ID,
-		FirstName:           user.FirstName,
-		LastName:            user.LastName,
-		CityName:            user.CityName,
-		Position:            user.Position,
-		CompanyName:         user.CompanyName,
-		CompanyDescription:  user.CompanyDescription,
-		CompanyWebsite:      user.CompanyWebsite,
-		PathToProfileAvatar: user.PathToProfileAvatar,
-		Contacts:            user.Contacts,
-		Email:               user.Email,
-		PasswordHash:        user.PasswordHash,
-		CreatedAt:           user.CreatedAt,
-		UpdatedAt:           user.UpdatedAt,
-	}, nil
-}
+// func GetEmployerByEmail(repoEmployer employerRepo.EmployerRepository, email string) (*dto.EmployerOutput, error) {
+// 	user, err := repoEmployer.GetByEmail(email)
+// 	if err != nil {
+// 		return nil, fmt.Errorf(dto.MsgDataBaseError)
+// 	}
+// 	return &dto.EmployerOutput{
+// 		ID:                  user.ID,
+// 		FirstName:           user.FirstName,
+// 		LastName:            user.LastName,
+// 		CityName:            user.CityName,
+// 		Position:            user.Position,
+// 		CompanyName:         user.CompanyName,
+// 		CompanyDescription:  user.CompanyDescription,
+// 		CompanyWebsite:      user.CompanyWebsite,
+// 		PathToProfileAvatar: user.PathToProfileAvatar,
+// 		Contacts:            user.Contacts,
+// 		Email:               user.Email,
+// 		PasswordHash:        user.PasswordHash,
+// 		CreatedAt:           user.CreatedAt,
+// 		UpdatedAt:           user.UpdatedAt,
+// 	}, nil
+// }
+
+// func GetApplicantByID(repoApplicant applicantRepo.IApplicantRepository, id uint64) (*dto.ApplicantOutput, error) {
+// 	user, err := repoApplicant.GetByID(id)
+// 	if err != nil {
+// 		return nil, fmt.Errorf(dto.MsgDataBaseError)
+// 	}
+// 	return &dto.ApplicantOutput{
+// 		ID:                  user.ID,
+// 		FirstName:           user.FirstName,
+// 		LastName:            user.LastName,
+// 		CityName:            user.CityName,
+// 		BirthDate:           user.BirthDate,
+// 		PathToProfileAvatar: user.PathToProfileAvatar,
+// 		Contacts:            user.Contacts,
+// 		Education:           user.Education,
+// 		Email:               user.Email,
+// 		CreatedAt:           user.CreatedAt,
+// 		UpdatedAt:           user.UpdatedAt,
+// 	}, nil
+// }
+
+// func GetEmployerByID(repoEmployer employerRepo.EmployerRepository, id uint64) (*dto.EmployerOutput, error) {
+// 	user, err := repoEmployer.GetByID(id)
+// 	if err != nil {
+// 		return nil, fmt.Errorf(dto.MsgDataBaseError)
+// 	}
+// 	return &dto.EmployerOutput{
+// 		ID:                  user.ID,
+// 		FirstName:           user.FirstName,
+// 		LastName:            user.LastName,
+// 		CityName:            user.CityName,
+// 		Position:            user.Position,
+// 		CompanyName:         user.CompanyName,
+// 		CompanyDescription:  user.CompanyDescription,
+// 		CompanyWebsite:      user.CompanyWebsite,
+// 		PathToProfileAvatar: user.PathToProfileAvatar,
+// 		Contacts:            user.Contacts,
+// 		Email:               user.Email,
+// 		PasswordHash:        user.PasswordHash,
+// 		CreatedAt:           user.CreatedAt,
+// 		UpdatedAt:           user.UpdatedAt,
+// 	}, nil
+// }

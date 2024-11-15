@@ -24,12 +24,12 @@ type IVacanciesRepository interface { // TODO: rename to IVacanciesRepository
 
 type IVacanciesUsecase interface {
 	GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONGetEmployerVacancy, error)
-	CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.SessionUser) (*dto.JSONVacancy, error)
+	CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error)
 	GetVacancy(ID uint64) (*dto.JSONVacancy, error)
-	UpdateVacancy(ID uint64, updatedVacancy *dto.JSONVacancy, currentUser *dto.SessionUser) (*dto.JSONVacancy, error)
-	DeleteVacancy(ID uint64, currentUser *dto.SessionUser) error
-	SubscribeOnVacancy(ID uint64, currentUser *dto.SessionUser) error
-	UnsubscribeFromVacancy(ID uint64, currentUser *dto.SessionUser) error
+	UpdateVacancy(ID uint64, updatedVacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error)
+	DeleteVacancy(ID uint64, currentUser *dto.UserFromSession) error
+	SubscribeOnVacancy(ID uint64, currentUser *dto.UserFromSession) error
+	UnsubscribeFromVacancy(ID uint64, currentUser *dto.UserFromSession) error
 	GetSubscriptionInfo(ID uint64, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error)
-	GetVacancySubscribers(ID uint64, currentUser *dto.SessionUser) (*dto.JSONVacancySubscribers, error)
+	GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error)
 }

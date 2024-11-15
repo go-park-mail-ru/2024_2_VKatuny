@@ -66,7 +66,7 @@ func RequireAuthorization(next dto.HandlerFunc, repositories *internal.Repositor
 		}
 
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, dto.UserContextKey, &dto.SessionUser{
+		ctx = context.WithValue(ctx, dto.UserContextKey, &dto.UserFromSession{
 			ID:       userID,
 			UserType: userType,
 		})

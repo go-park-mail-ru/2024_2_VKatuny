@@ -50,10 +50,11 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	// TODO: session ID should be a field. Usable method in current PR
+	// TODO: session ID should be a field. Usable method in other PR
 	h.logger.Debugf("%s: got cookie: %s", fn, session.Value)
 
-	userType, err := h.sessionUsecase.GetUserTypeFromToken(session.Value)
+	// TODO: remake this. It should be a session usecase not utils
+	userType, err := utils.CheckToken(session.Value)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -123,7 +124,7 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.sessionUsecase.Login(loginForm)
+	userWithSession, err := h.sessionUsecase.Login(loginForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -132,52 +133,42 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	h.logger.Debugf("%s: user login successful: %v", fn, user)
+	h.logger.Debugf("%s: user login successful: %v", fn, userWithSession)
 
-	// TODO: check necessity of AddSession if there is a Login usecase
-	sessionID, err := h.sessionUsecase.AddSession(user)
-	if err != nil {
-		h.logger.Errorf("%s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
-			Error:      err.Error(), // TODO: formalize error
-		})
-		return
-	}
-	h.logger.Debugf("%s: session created with id: %s", fn, sessionID)
-
-	cookie := utils.MakeAuthCookie(sessionID, h.backendURL)
+	cookie := utils.MakeAuthCookie(userWithSession.SessionID, h.backendURL)
 	http.SetCookie(w, cookie)
 
-	var loggedUser interface{}
-	if loginForm.UserType == dto.UserTypeApplicant {
-		// TODO: think about usecase that i should use (session's or applicant's)
-		loggedUser, err = h.applicantUsecase.GetByID(user.ID)
-		if err != nil {
-			h.logger.Errorf("%s: got err %s", fn, err)
-			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-				HTTPStatus: http.StatusUnauthorized,
-				Error:      dto.MsgDataBaseError,
-			})
-			return
-		}
+	// var loggedUser interface{}
+	// if loginForm.UserType == dto.UserTypeApplicant {
+	// 	// TODO: think about usecase that i should use (session's or applicant's)
+	// 	loggedUser, err = h.applicantUsecase.GetByID(user.ID)
+	// 	if err != nil {
+	// 		h.logger.Errorf("%s: got err %s", fn, err)
+	// 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+	// 			HTTPStatus: http.StatusUnauthorized,
+	// 			Error:      dto.MsgDataBaseError,
+	// 		})
+	// 		return
+	// 	}
 
-	} else if loginForm.UserType == dto.UserTypeEmployer {
-		loggedUser, err = h.employerUsecase.GetByID(user.ID)
-		if err != nil {
-			h.logger.Errorf("%s: got err %s", fn, err)
-			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-				HTTPStatus: http.StatusUnauthorized,
-				Error:      dto.MsgDataBaseError,
-			})
-			return
-		}
-	}
+	// } else if loginForm.UserType == dto.UserTypeEmployer {
+	// 	loggedUser, err = h.employerUsecase.GetByID(user.ID)
+	// 	if err != nil {
+	// 		h.logger.Errorf("%s: got err %s", fn, err)
+	// 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+	// 			HTTPStatus: http.StatusUnauthorized,
+	// 			Error:      dto.MsgDataBaseError,
+	// 		})
+	// 		return
+	// 	}
+	// }
 
-	h.logger.Debugf("%s: user: %v", fn, user)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       loggedUser,
+		Body: &dto.JSONUserBody{
+			ID:       userWithSession.ID,
+			UserType: userWithSession.UserType,
+		},
 	})
 }
 
@@ -208,7 +199,7 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: got user type: %s", fn, userType)
 
-	userID, err := h.sessionUsecase.RemoveSession(userType, session.Value)
+	user, err := h.sessionUsecase.Logout(userType, session.Value)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -217,37 +208,37 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	h.logger.Debugf("%s: removed from session and got user id: %d", fn, userID)
+	h.logger.Debugf("%s: removed from session and got user: %v", fn, user)
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
 
-	var deletedUser interface{}
-	if userType == dto.UserTypeApplicant {
-		deletedUser, err = h.applicantUsecase.GetByID(userID)
-		if err != nil {
-			h.logger.Errorf("%s: got err %s", fn, err)
-			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-				HTTPStatus: http.StatusInternalServerError,
-				Error:      dto.MsgDataBaseError,
-			})
-			return
-		}
-	} else if userType == dto.UserTypeEmployer {
-		deletedUser, err = h.employerUsecase.GetByID(userID)
-		if err != nil {
-			h.logger.Errorf("%s: got err %s", fn, err)
-			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-				HTTPStatus: http.StatusInternalServerError,
-				Error:      dto.MsgDataBaseError,
-			})
-			return
-		}
-	}
+	// var deletedUser interface{}
+	// if userType == dto.UserTypeApplicant {
+	// 	deletedUser, err = h.applicantUsecase.GetByID(userID)
+	// 	if err != nil {
+	// 		h.logger.Errorf("%s: got err %s", fn, err)
+	// 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+	// 			HTTPStatus: http.StatusInternalServerError,
+	// 			Error:      dto.MsgDataBaseError,
+	// 		})
+	// 		return
+	// 	}
+	// } else if userType == dto.UserTypeEmployer {
+	// 	deletedUser, err = h.employerUsecase.GetByID(userID)
+	// 	if err != nil {
+	// 		h.logger.Errorf("%s: got err %s", fn, err)
+	// 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+	// 			HTTPStatus: http.StatusInternalServerError,
+	// 			Error:      dto.MsgDataBaseError,
+	// 		})
+	// 		return
+	// 	}
+	// }
 
-	h.logger.Debugf("%s: deleted user: %v", fn, deletedUser)
+	h.logger.Debugf("%s: deleted user: %v", fn, user)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       deletedUser,
+		Body:       user,
 	})
 }

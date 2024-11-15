@@ -65,6 +65,12 @@ type JSONLoginForm struct {
 	Password string `json:"password"`
 }
 
+type JSONLoginOutput struct {
+	UserType string      `json:"userType"` // use constants UserType
+	ID       uint64      `json:"id"`
+	Profile  interface{} `json:"profile"`
+}
+
 // JSONLoutForm accepts user type when someone log outs
 type JSONLogoutForm struct {
 	UserType string `json:"userType"` // use constants UserType
@@ -125,7 +131,7 @@ type ApplicantInput struct {
 	Password            string `json:"password"`
 }
 
-type ApplicantOutput struct {
+type JSONApplicantOutput struct {
 	UserType            string `json:"userType"`
 	ID                  uint64 `json:"id"`
 	FirstName           string `json:"firstName"`
@@ -204,7 +210,7 @@ type EmployerOutput struct {
 	CreatedAt           string `json:"createdAt"`
 	UpdatedAt           string `json:"updatedAt"`
 }
-type UserIDAndType struct {
+type User struct {
 	ID       uint64
 	UserType string
 }
@@ -324,7 +330,7 @@ type JSONVacancySubscribers struct {
 	Subscribers []*JSONGetApplicantProfile `json:"subscribers"`
 }
 
-type SessionUser struct {
+type UserFromSession struct {
 	ID       uint64
 	UserType string
 }

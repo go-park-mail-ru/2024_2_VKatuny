@@ -9,10 +9,8 @@ type ISessionRepository interface {
 }
 
 type ISessionUsecase interface {
-	GetUserTypeFromToken(sessionID string) (string, error)
+	// GetUserTypeFromToken(sessionID string) (string, error)
 	CheckAuthorization(userType string, sessionID string) (uint64, error)
-	Login(*dto.JSONLoginForm) (*dto.UserIDAndType, error)
-	RemoveSession(userType string, sessionID string) (uint64, error)
-	AddSession(*dto.UserIDAndType) (string, error)
-	// GetUserFromSession(session string) (uint64, error)
+	Login(*dto.JSONLoginForm) (*dto.UserWithSession, error)
+	Logout(userType string, sessionID string) (*dto.User, error)
 }
