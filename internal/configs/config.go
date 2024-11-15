@@ -18,10 +18,11 @@ type Config struct {
 
 // ServerConfig is a struct of server config block in .yaml
 type ServerConfig struct {
-	Scheme string `yaml:"scheme"`
-	Host   string `yaml:"host"`
-	Port   int    `yaml:"port"`
-	Front  string `yaml:"frontURI"`
+	Scheme   string `yaml:"scheme"`
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	Front    string `yaml:"frontURI"`
+	MediaDir string `yaml:"mediadir"`
 }
 
 type DataBaseConfig struct {
@@ -32,7 +33,7 @@ type DataBaseConfig struct {
 	Schema            string `yaml:"schema"`
 	DBName            string `yaml:"db_name"`
 	SSLMode           string `yaml:"ssl_mode"`
-	ConnectionTimeout string `yaml:"conn_timeout,omitempty"`  // Temporary unused
+	ConnectionTimeout string `yaml:"conn_timeout,omitempty"` // Temporary unused
 }
 
 // ReadConfig reads file with configuration.
@@ -72,6 +73,11 @@ func (s *ServerConfig) GetHostWithScheme() string {
 // GetFrontURI returns front uri. E.g http://127.0.0.1:3000
 func (s *ServerConfig) GetFrontURI() string {
 	return s.Front
+}
+
+// GetAddress returns directory with static
+func (s *ServerConfig) GetStaticDir() string {
+	return s.MediaDir
 }
 
 func (d *DataBaseConfig) GetDSN() string {
