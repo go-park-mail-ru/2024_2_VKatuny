@@ -43,7 +43,7 @@ func main() {
 	conf, _ := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
 
-	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN()) 
+	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN())
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -74,40 +74,27 @@ func main() {
 		Usecases:     usecases,
 	}
 
-
-	applicantHandler := applicant_delivery.CreateApplicantHandler(repositories.ApplicantRepository, sessionApplicantRepository, conf.Server.GetAddress())
-	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
-
-	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository, sessionEmployerRepository, conf.Server.GetAddress())
-	Mux.Handle("/api/v1/registration/employer", employerHandler)
-
 	sessionHandlers := session_delivery.NewSessionHandlers(app)
 	Mux.HandleFunc("/api/v1/login", sessionHandlers.Login)
 	Mux.HandleFunc("/api/v1/logout", sessionHandlers.Logout)
 	Mux.HandleFunc("/api/v1/authorized", sessionHandlers.IsAuthorized)
 
-	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository)
-	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
+	applicantHandlers, err := applicant_delivery.NewApplicantProfileHandlers(app)
+	Mux.HandleFunc("/api/v1/registration/applicant", applicantHandlers.ApplicantRegistration)
+	Mux.HandleFunc("/api/v1/applicant/profile/", applicantHandlers.ApplicantProfileHandler)
+	Mux.HandleFunc("/api/v1/applicant/portfolio/", applicantHandlers.GetApplicantPortfoliosHandler)
+	Mux.HandleFunc("/api/v1/applicant/cv/", applicantHandlers.GetApplicantCVsHandler)
 
-
-	applicantProfileHandlers, err := applicant_delivery.NewApplicantProfileHandlers(logger, usecases)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	Mux.HandleFunc("/api/v1/applicant/profile/", applicantProfileHandlers.ApplicantProfileHandler)
-	Mux.HandleFunc("/api/v1/applicant/portfolio/", applicantProfileHandlers.GetApplicantPortfoliosHandler)
-	Mux.HandleFunc("/api/v1/applicant/cv/", applicantProfileHandlers.GetApplicantCVsHandler)
-
-	employerProfileHandlers, err := employer_delivery.NewEmployerProfileHandlers(logger, usecases)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	Mux.HandleFunc("/api/v1/employer/profile/", employerProfileHandlers.EmployerProfileHandler)
-	Mux.HandleFunc("/api/v1/employer/vacancies/", employerProfileHandlers.GetEmployerVacanciesHandler)
+	employerHandlers := employer_delivery.NewEmployerHandlers(app)
+	Mux.HandleFunc("/api/v1/registration/employer", employerHandlers.EmployerRegistration)
+	Mux.HandleFunc("/api/v1/employer/profile/", employerHandlers.EmployerProfileHandler)
+	Mux.HandleFunc("/api/v1/employer/vacancies/", employerHandlers.GetEmployerVacanciesHandler)
 
 	cvsHandlers := cvDelivery.NewCVsHandler(app)
 	Mux.HandleFunc("/api/v1/cv/", cvsHandlers.CVsRESTHandler)
 
+	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository)
+	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 	vacanciesHandlers := vacancies_delivery.NewVacanciesHandlers(app)
 	Mux.HandleFunc("/api/v1/vacancy/", vacanciesHandlers.VacanciesRESTHandler)
 	Mux.HandleFunc("/api/v1/vacancy/subscription/", vacanciesHandlers.VacanciesSubscribeRESTHandler)

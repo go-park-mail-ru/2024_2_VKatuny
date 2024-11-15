@@ -14,10 +14,10 @@ type PortfolioUsecase struct {
 	portfolioRepo portfolio.IPortfolioRepository
 }
 
-func NewPortfolioUsecase(app *internal.App) *PortfolioUsecase {
+func NewPortfolioUsecase(logger *logrus.Logger, repositories *internal.Repositories) *PortfolioUsecase {
 	return &PortfolioUsecase{
-		logger:        logrus.NewEntry(app.Logger),
-		portfolioRepo: app.Repositories.PortfolioRepository,
+		logger:        logrus.NewEntry(logger),
+		portfolioRepo: repositories.PortfolioRepository,
 	}
 }
 

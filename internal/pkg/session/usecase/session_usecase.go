@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
-	applicantRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
@@ -17,17 +17,17 @@ var ErrEmptyCookie = fmt.Errorf("client have an empty cookie")
 
 type sessionUsecase struct {
 	logger               *logrus.Entry
-	applicantRepo        applicantRepo.IApplicantRepository
+	applicantRepo        applicant.IApplicantRepository
 	employerRepo         employer.IEmployerRepository
 	sessionRepoApplicant session.ISessionRepository
 	sessionRepoEmployer  session.ISessionRepository
 }
 
-func NewSessionUsecase(app *internal.App) *sessionUsecase {
+func NewSessionUsecase(logger *logrus.Logger, repositories *internal.Repositories) *sessionUsecase {
 	return &sessionUsecase{
-		logger:               &logrus.Entry{Logger: app.Logger},
-		sessionRepoApplicant: app.Repositories.SessionApplicantRepository,
-		sessionRepoEmployer:  app.Repositories.SessionEmployerRepository,
+		logger:               &logrus.Entry{Logger: logger},
+		sessionRepoApplicant: repositories.SessionApplicantRepository,
+		sessionRepoEmployer:  repositories.SessionEmployerRepository,
 	}
 }
 

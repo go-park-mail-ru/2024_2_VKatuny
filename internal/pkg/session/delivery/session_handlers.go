@@ -165,7 +165,7 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body: &dto.JSONUserBody{
+		Body: &dto.JSONUser{
 			ID:       userWithSession.ID,
 			UserType: userWithSession.UserType,
 		},

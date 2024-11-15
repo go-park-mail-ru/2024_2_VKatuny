@@ -53,12 +53,6 @@ type JSONResponse struct {
 	Error      string      `json:"error"`
 }
 
-// JSONUserBody is a struct that used as a field 'Body' in struct JsonResponse
-type JSONUserBody struct {
-	UserType string `json:"userType"` // use constants UserType
-	ID       uint64 `json:"id"`
-}
-
 // JSONLoginForm is a struct that receives login's form data from frontend
 type JSONLoginForm struct {
 	UserType string `json:"userType"` // use constants UserType
