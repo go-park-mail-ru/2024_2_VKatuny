@@ -14,6 +14,31 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "ApplicantRegistration"
+
+	applicantRegistrationForm := new(dto.JSONApplicantRegistrationForm)
+
+	err := json.NewDecoder(r.Body).Decode(applicantRegistrationForm)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      dto.MsgInvalidJSON,
+		})
+		return
+	}
+	h.logger.Debugf("%s: json decoded: %v", fn, applicantRegistrationForm)
+
+	// TODO: add json validation with govalidator
+
+	
+
+
+}
+
 // CreateWorkerHandler creates applicant in db
 // CreateWorker godoc
 // @Summary     Creates a new user as a applicant

@@ -7,36 +7,31 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
+	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/sirupsen/logrus"
 )
 
-type ApplicantProfileHandlers struct {
-	logger           *logrus.Logger
+type ApplicantHandlers struct {
+	logger           *logrus.Entry
+	backandURI       string
 	applicantUsecase applicantUsecase.IApplicantUsecase
 	portfolioUsecase portfolioUsecase.IPortfolioUsecase
 	cvUsecase        cvs.ICVsUsecase
 }
 
-func NewApplicantProfileHandlers(logger *logrus.Logger, usecases *internal.Usecases) (*ApplicantProfileHandlers, error) {
-	ApplicantUsecase, ok1 := usecases.ApplicantUsecase.(*applicantUsecase.ApplicantUsecase)
-	PortfolioUsecase, ok2 := usecases.PortfolioUsecase.(*portfolioUsecase.PortfolioUsecase)
-	if !(ok1 && ok2) {
-		return nil, commonerrors.ErrUnableToCast
-	}
-	return &ApplicantProfileHandlers{
-		logger:           logger,
-		applicantUsecase: ApplicantUsecase,
-		portfolioUsecase: PortfolioUsecase,
-		cvUsecase:        usecases.CVUsecase,
+func NewApplicantProfileHandlers(app *internal.App) (*ApplicantHandlers, error) {
+
+	return &ApplicantHandlers{
+		logger:           logrus.NewEntry(app.Logger),
+		applicantUsecase: app.Usecases.ApplicantUsecase,
+		portfolioUsecase: app.Usecases.PortfolioUsecase,
+		cvUsecase:        app.Usecases.CVUsecase,
 	}, nil
 }
 
-func (h *ApplicantProfileHandlers) ApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
-	//h.logger.Debug("1---------------------------------", r.URL.Path)
+func (h *ApplicantHandlers) ApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.GetApplicantProfileHandler(w, r)
@@ -50,7 +45,7 @@ func (h *ApplicantProfileHandlers) ApplicantProfileHandler(w http.ResponseWriter
 	}
 }
 
-func (h *ApplicantProfileHandlers) GetApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantProfileHandler"
@@ -80,7 +75,7 @@ func (h *ApplicantProfileHandlers) GetApplicantProfileHandler(w http.ResponseWri
 	})
 }
 
-func (h *ApplicantProfileHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.UpdateApplicantProfileHandler"
@@ -133,7 +128,7 @@ func (h *ApplicantProfileHandlers) UpdateApplicantProfileHandler(w http.Response
 	})
 }
 
-func (h *ApplicantProfileHandlers) GetApplicantPortfoliosHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetApplicantPortfoliosHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantPortfoliosHandler"
@@ -173,7 +168,7 @@ func (h *ApplicantProfileHandlers) GetApplicantPortfoliosHandler(w http.Response
 	})
 }
 
-func (h *ApplicantProfileHandlers) GetApplicantCVsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetApplicantCVsHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"

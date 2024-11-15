@@ -1,10 +1,12 @@
 package internal
 
 import (
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,8 +19,8 @@ type App struct {
 
 type Repositories struct {
 	EmployerRepository         employer.IEmployerRepository
-	ApplicantRepository        interface{}
-	PortfolioRepository        interface{}
+	ApplicantRepository        applicant.IApplicantRepository
+	PortfolioRepository        portfolio.IPortfolioRepository
 	CVRepository               cvs.ICVsRepository
 	VacanciesRepository        vacancies.IVacanciesRepository
 	SessionApplicantRepository session.ISessionRepository
@@ -27,8 +29,8 @@ type Repositories struct {
 
 type Usecases struct {
 	EmployerUsecase  employer.IEmployerUsecase
-	ApplicantUsecase interface{}
-	PortfolioUsecase interface{}
+	ApplicantUsecase applicant.IApplicantUsecase
+	PortfolioUsecase portfolio.IPortfolioUsecase
 	CVUsecase        cvs.ICVsUsecase
 	VacanciesUsecase vacancies.IVacanciesUsecase
 	SessionUsecase   session.ISessionUsecase
