@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -66,5 +67,5 @@ func (repo *applicantRepo) GetByEmail(email string) (*models.Applicant, error) {
 			return applicant, nil
 		}
 	}
-	return nil, ErrNoUserExist
+	return nil, fmt.Errorf("such user doesn't exist")
 }

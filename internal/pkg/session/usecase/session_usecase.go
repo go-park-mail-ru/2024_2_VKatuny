@@ -3,7 +3,7 @@ package usecase
 
 import (
 	"fmt"
-	
+
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	applicantRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -62,10 +62,10 @@ func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, e
 		u.logger.
 			WithFields(logrus.Fields{"user_id": applicant.ID, "user_type": user.UserType}).
 			Debugf("%s: successfully logged in", fn)
-		
+
 		return &dto.UserWithSession{
-			ID:       applicant.ID,
-			UserType: dto.UserTypeApplicant,
+			ID:        applicant.ID,
+			UserType:  dto.UserTypeApplicant,
 			SessionID: sessionID,
 		}, nil
 	case dto.UserTypeEmployer:
@@ -90,10 +90,10 @@ func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, e
 		u.logger.
 			WithFields(logrus.Fields{"user_id": employer.ID, "user_type": user.UserType}).
 			Debugf("%s: successfully logged in", fn)
-		
+
 		return &dto.UserWithSession{
-			ID:       employer.ID,
-			UserType: dto.UserTypeEmployer,
+			ID:        employer.ID,
+			UserType:  dto.UserTypeEmployer,
 			SessionID: sessionID,
 		}, nil
 	}
@@ -101,7 +101,7 @@ func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, e
 	return nil, fmt.Errorf(dto.MsgBadUserType)
 }
 
-func (u *sessionUsecase) Logout(userType string, sessionID string) (*dto.User, error) {
+func (u *sessionUsecase) Logout(userType string, sessionID string) (*dto.JSONUser, error) {
 	fn := "sessionUsecase.Logout"
 	switch userType {
 	case dto.UserTypeApplicant:
@@ -118,7 +118,7 @@ func (u *sessionUsecase) Logout(userType string, sessionID string) (*dto.User, e
 		u.logger.
 			WithFields(logrus.Fields{"user_id": applicantID, "user_type": userType}).
 			Debugf("%s: successfully logged out", fn)
-		return &dto.User{
+		return &dto.JSONUser{
 			ID:       applicantID,
 			UserType: dto.UserTypeApplicant,
 		}, nil
@@ -136,7 +136,7 @@ func (u *sessionUsecase) Logout(userType string, sessionID string) (*dto.User, e
 		u.logger.
 			WithFields(logrus.Fields{"user_id": employerID, "user_type": userType}).
 			Debugf("%s: successfully logged out", fn)
-		return &dto.User{
+		return &dto.JSONUser{
 			ID:       employerID,
 			UserType: dto.UserTypeEmployer,
 		}, nil

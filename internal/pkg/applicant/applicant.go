@@ -19,9 +19,11 @@ type IApplicantRepository interface { // TODO: rename to IApplicantRepository
 }
 
 type IApplicantUsecase interface {
-	Create(applicant *dto.JSONApplicantRegistrationForm) (*dto.User, error)
+	Create(applicant *dto.JSONApplicantRegistrationForm) (*dto.JSONUser, error)
 	GetByID(ID uint64) (*dto.JSONApplicantOutput, error)
 	GetByEmail(email string) (*dto.JSONApplicantOutput, error)
+	GetApplicantProfile(userID uint64) (*dto.JSONGetApplicantProfile, error)
+	UpdateApplicantProfile(applicantID uint64, newProfileData *dto.JSONUpdateApplicantProfile) error
 }
 
 var (

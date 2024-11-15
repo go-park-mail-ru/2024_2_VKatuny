@@ -32,6 +32,7 @@ const (
 	MsgWrongLoginOrPassword       = "wrong login or password"
 	MsgUserAlreadyExists          = "user already exists" // TODO: implement check in repository
 	MsgUnableToMarshalJSON        = "unable to marshal json"
+	MsgUnableToCreateUser         = "unable to create user"
 )
 
 const (
@@ -210,9 +211,9 @@ type EmployerOutput struct {
 	CreatedAt           string `json:"createdAt"`
 	UpdatedAt           string `json:"updatedAt"`
 }
-type User struct {
-	ID       uint64
-	UserType string
+type JSONUser struct {
+	ID       uint64 `json:"id"`
+	UserType string `json:"userType"`
 }
 
 type UserWithSession struct {

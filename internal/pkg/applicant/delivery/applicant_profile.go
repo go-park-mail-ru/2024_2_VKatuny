@@ -6,26 +6,29 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
-	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/sirupsen/logrus"
 )
 
 type ApplicantHandlers struct {
 	logger           *logrus.Entry
-	backandURI       string
-	applicantUsecase applicantUsecase.IApplicantUsecase
-	portfolioUsecase portfolioUsecase.IPortfolioUsecase
+	backendURI       string
+	applicantUsecase applicant.IApplicantUsecase
+	sessionUsecase   session.ISessionUsecase
+	portfolioUsecase portfolio.IPortfolioUsecase
 	cvUsecase        cvs.ICVsUsecase
 }
 
 func NewApplicantProfileHandlers(app *internal.App) (*ApplicantHandlers, error) {
-
 	return &ApplicantHandlers{
 		logger:           logrus.NewEntry(app.Logger),
+		backendURI:       app.BackendAddress,
 		applicantUsecase: app.Usecases.ApplicantUsecase,
+		sessionUsecase:   app.Usecases.SessionUsecase,
 		portfolioUsecase: app.Usecases.PortfolioUsecase,
 		cvUsecase:        app.Usecases.CVUsecase,
 	}, nil
