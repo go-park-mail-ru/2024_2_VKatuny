@@ -12,6 +12,5 @@ func SetRequestIDInLoggerFromRequest(r *http.Request, logger *logrus.Entry) *log
 	if ok {
 		return logger.WithField("request_id", requestID)
 	} 
-	logger.Errorf("unable to get requestID from context")
 	return logger
 }
