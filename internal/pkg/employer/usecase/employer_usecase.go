@@ -30,7 +30,7 @@ func (u *EmployerUsecase) Create(form *dto.JSONEmployerRegistrationForm) (*dto.J
 	u.logger.Debugf("%s: entering", fn)
 
 	_, err := u.employerRepository.GetByEmail(form.Email)
-	if err.Error() != "sql: no rows in result set" {
+	if err != nil && err.Error() != "sql: no rows in result set" {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgUserAlreadyExists)
 	}

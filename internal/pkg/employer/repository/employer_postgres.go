@@ -83,7 +83,6 @@ func (s *PostgreSQLEmployerStorage) GetByID(id uint64) (*models.Employer, error)
 
 func (s *PostgreSQLEmployerStorage) GetByEmail(email string) (*models.Employer, error) {
 	//log.Println("Looking for user with login", login.Value)
-
 	//log.Println("Built query:", sql, "\nwith args:", args)
 
 	row := s.db.QueryRow(`select employer.id, first_name, last_name, city.city_name, position, company.company_name, company_description, company_website, path_to_profile_avatar, contacts, 
