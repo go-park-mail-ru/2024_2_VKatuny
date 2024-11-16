@@ -16,6 +16,7 @@ func NewLogrusLogger() *logrus.Logger {
 			PadLevelText:           true,
 			TimestampFormat:        "2006.01.02 15:04:05", // default go time format
 		},
+		// TODO: add logging level to config
 		// ReportCaller: true,
 		Level: logrus.DebugLevel,
 	}
