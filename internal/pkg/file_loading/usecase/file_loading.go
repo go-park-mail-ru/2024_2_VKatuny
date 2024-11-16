@@ -32,19 +32,6 @@ func WriteFile(staticDir string, file multipart.File, header *multipart.FileHead
 		return "", fmt.Errorf("error creating file")
 	}
 	defer dst.Close()
-	// p := make([]byte, 10000)
-	// a, b := file.Read(p)
-	// fmt.Println("!!", a, b, string(p))
-
-	// mediatype, params, err := mime.ParseMediaType(string(p))
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// fmt.Println("type:", mediatype)
-	// fmt.Println("charset:", params["charset"])
-
-	// file.Seek(0, 0)
 	if _, err := io.Copy(dst, file); err != nil {
 		return "", fmt.Errorf("error copying file")
 	}

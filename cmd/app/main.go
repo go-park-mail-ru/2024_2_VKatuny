@@ -59,7 +59,7 @@ func main() {
 	Mux := http.NewServeMux()
 
 	Mux.Handle("/pictures", file_loading_delivery.CreateMainP())
-	Mux.Handle("/api/v1/upload", file_loading_delivery.CreateUploadHandler(conf.Server.GetStaticDir()))
+	Mux.Handle("/api/v1/upload", file_loading_delivery.CreateUploadHandler(conf.Server.GetMediaDir()))
 
 	//applicantRepository := applicant_repository.NewRepo()
 	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)

@@ -34,7 +34,7 @@ const (
 	MsgUnableToMarshalJSON        = "unable to marshal json"
 	MsgUnableToReadFile           = "unable to read file"
 	MsgUnableToUploadFile         = "unable to upload file"
-	MsgInvalidFile                = "Invalid type of file file"
+	MsgInvalidFile                = "invalid type of file file"
 )
 
 const (

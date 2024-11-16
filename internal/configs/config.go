@@ -75,8 +75,8 @@ func (s *ServerConfig) GetFrontURI() string {
 	return s.Front
 }
 
-// GetAddress returns directory with static
-func (s *ServerConfig) GetStaticDir() string {
+// GetAddress returns directory with user's files
+func (s *ServerConfig) GetMediaDir() string {
 	return s.MediaDir
 }
 
