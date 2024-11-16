@@ -210,14 +210,6 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 		}
 		updatedVacancy.Avatar = fileAddress
 	}
-	if err != nil {
-		h.logger.Errorf("unable to unmarshal JSON: %s", err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      dto.MsgInvalidJSON,
-		})
-		return
-	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
 	if !ok {
