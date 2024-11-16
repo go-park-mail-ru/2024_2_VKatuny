@@ -26,21 +26,35 @@ func NewVacanciesUsecase(logger *logrus.Logger, repositories *internal.Repositor
 	}
 }
 
-func ValidateRequestParams(offsetStr, numStr string) (uint64, uint64, error) {
+func (u *VacanciesUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, uint64, error) {
+	fn := "VacanciesUsecase.ValidateQueryParameters"
 	var err error
 	offset, err1 := strconv.Atoi(offsetStr)
 
 	if err1 != nil {
+		u.logger.Errorf("%s: query parameter offset isn't a number: %s", fn, err1)
 		offset = 0
 		err = ErrOffsetIsNotANumber
 	}
 
 	num, err2 := strconv.Atoi(numStr)
 	if err2 != nil {
+		u.logger.Errorf("%s:query parameter num isn't a number: %s", fn, err2)
 		num = 0
 		err = ErrNumIsNotANumber // previous err will be overwritten
 	}
 	return uint64(offset), uint64(num), err
+}
+
+func (u *VacanciesUsecase) GetVacanciesWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error) {
+	fn := "VacanciesUsecase.GetVacanciesWithOffset"
+	vacancies, err := u.vacanciesRepository.GetWithOffset(offset, num)
+	if err != nil {
+		u.logger.Errorf("%s: unable to get vacancies: %s", fn, err)
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
+	}
+	u.logger.Debugf("%s: got %d vacancies", fn, len(vacancies))
+	return vacancies, nil
 }
 
 func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONGetEmployerVacancy, error) {

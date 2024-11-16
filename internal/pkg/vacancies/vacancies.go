@@ -26,6 +26,8 @@ type IVacanciesUsecase interface {
 	GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONGetEmployerVacancy, error)
 	CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error)
 	GetVacancy(ID uint64) (*dto.JSONVacancy, error)
+	ValidateQueryParameters(offset, num string) (uint64, uint64, error)
+	GetVacanciesWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error)	
 	UpdateVacancy(ID uint64, updatedVacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error)
 	DeleteVacancy(ID uint64, currentUser *dto.UserFromSession) error
 	SubscribeOnVacancy(ID uint64, currentUser *dto.UserFromSession) error
