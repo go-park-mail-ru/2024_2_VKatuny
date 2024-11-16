@@ -9,11 +9,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
 type VacanciesHandlers struct {
-	logger               *logrus.Logger
+	logger               *logrus.Entry
 	vacanciesUsecase     vacancies.IVacanciesUsecase
 	sessionEmployerRepo  session.ISessionRepository
 	sessionApplicantRepo session.ISessionRepository
@@ -24,7 +25,7 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 	logger.Debug("VacanciesHandlers created")
 
 	return &VacanciesHandlers{
-		logger:               logger,
+		logger:               &logrus.Entry{Logger: logger},
 		vacanciesUsecase:     layers.Usecases.VacanciesUsecase,
 		sessionEmployerRepo:  layers.Repositories.SessionEmployerRepository,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
@@ -32,7 +33,7 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 }
 
 func (h *VacanciesHandlers) VacanciesRESTHandler(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("VacanciesHandlers.VacanciesRESTHandler got request: %s", r.URL.Path)
+	h.logger.Logger.Debugf("VacanciesHandlers.VacanciesRESTHandler got request: %s", r.URL.Path)
 	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo}
 	switch r.Method {
 	case http.MethodPost:
@@ -55,7 +56,7 @@ func (h *VacanciesHandlers) VacanciesRESTHandler(w http.ResponseWriter, r *http.
 }
 
 func (h *VacanciesHandlers) VacanciesSubscribeRESTHandler(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("VacanciesHandlers.VacanciesSubscribeRESTHandler got request: %s", r.URL.Path)
+	h.logger.Logger.Debugf("VacanciesHandlers.VacanciesSubscribeRESTHandler got request: %s", r.URL.Path)
 	repository := &internal.Repositories{SessionApplicantRepository: h.sessionApplicantRepo}
 	switch r.Method {
 	case http.MethodPost:
@@ -83,6 +84,8 @@ func (h *VacanciesHandlers) GetVacancySubscribersHandler(w http.ResponseWriter, 
 
 func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	decoder := json.NewDecoder(r.Body)
 	newVacancy := new(dto.JSONVacancy)
@@ -126,6 +129,8 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 func (h *VacanciesHandlers) getVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
@@ -151,6 +156,8 @@ func (h *VacanciesHandlers) getVacancyHandler(w http.ResponseWriter, r *http.Req
 
 func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
 	if err != nil {
@@ -199,6 +206,8 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 func (h *VacanciesHandlers) deleteVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
@@ -233,6 +242,8 @@ func (h *VacanciesHandlers) deleteVacancyHandler(w http.ResponseWriter, r *http.
 
 func (h *VacanciesHandlers) subscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
 	if err != nil {
@@ -271,6 +282,8 @@ func (h *VacanciesHandlers) subscribeVacancyHandler(w http.ResponseWriter, r *ht
 func (h *VacanciesHandlers) unsubscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
@@ -308,6 +321,8 @@ func (h *VacanciesHandlers) unsubscribeVacancyHandler(w http.ResponseWriter, r *
 func (h *VacanciesHandlers) getVacancySubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
 	if err != nil {
 		h.logger.Errorf("while cutting slug got: %s", err)
@@ -344,6 +359,8 @@ func (h *VacanciesHandlers) getVacancySubscriptionHandler(w http.ResponseWriter,
 
 func (h *VacanciesHandlers) getVacancySubscribersHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscribers/")
 	if err != nil {

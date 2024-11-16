@@ -49,7 +49,7 @@ func main() {
 	conf, _ := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
 
-	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN()) 
+	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN())
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -146,9 +146,9 @@ func main() {
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
 	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.GetFrontURI())
-	handlers = middleware.Panic(handlers)
 	handlers = middleware.AccessLogger(handlers, logger)
-	handlers = middleware.SetContext(handlers, logger)
+	handlers = middleware.SetLogger(handlers, logger)
+	handlers = middleware.Panic(handlers, logger)
 	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
 	err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
 	if err != nil {
