@@ -12,10 +12,10 @@ type EmployerUsecase struct {
 	employerRepository employer.IEmployerRepository
 }
 
-func NewEmployerUsecase(app *internal.App) *EmployerUsecase {
+func NewEmployerUsecase(logger *logrus.Logger, repositories *internal.Repositories) *EmployerUsecase {
 	return &EmployerUsecase{
-		logger:             &logrus.Entry{Logger: app.Logger},
-		employerRepository: app.Repositories.EmployerRepository,
+		logger:             &logrus.Entry{Logger: logger},
+		employerRepository: repositories.EmployerRepository,
 	}
 }
 

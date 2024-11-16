@@ -93,9 +93,8 @@ func main() {
 	cvsHandlers := cvDelivery.NewCVsHandler(app)
 	Mux.HandleFunc("/api/v1/cv/", cvsHandlers.CVsRESTHandler)
 
-	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository)
-	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 	vacanciesHandlers := vacancies_delivery.NewVacanciesHandlers(app)
+	Mux.HandleFunc("/api/v1/vacancies", vacanciesHandlers.GetVacancies)
 	Mux.HandleFunc("/api/v1/vacancy/", vacanciesHandlers.VacanciesRESTHandler)
 	Mux.HandleFunc("/api/v1/vacancy/subscription/", vacanciesHandlers.VacanciesSubscribeRESTHandler)
 	Mux.HandleFunc("/api/v1/vacancy/subscribers/", vacanciesHandlers.GetVacancySubscribersHandler)

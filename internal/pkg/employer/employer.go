@@ -20,8 +20,8 @@ type IEmployerRepository interface {
 }
 
 type IEmployerUsecase interface {
-	CreateEmployer(form *dto.JSONEmployerRegistrationForm) (*dto.JSONUser, error)
-	GetByID(id uint64) (*models.Employer, error) 
+	Create(form *dto.JSONEmployerRegistrationForm) (*dto.JSONUser, error)
+	GetByID(id uint64) (*dto.JSONEmployer, error) 
 	GetEmployerProfile(employerID uint64) (*dto.JSONGetEmployerProfile, error)
 	UpdateEmployerProfile(employerID uint64, employerProfile *dto.JSONUpdateEmployerProfile) error
 }

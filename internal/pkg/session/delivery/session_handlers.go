@@ -138,31 +138,6 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	cookie := utils.MakeAuthCookie(userWithSession.SessionID, h.backendURL)
 	http.SetCookie(w, cookie)
 
-	// var loggedUser interface{}
-	// if loginForm.UserType == dto.UserTypeApplicant {
-	// 	// TODO: think about usecase that i should use (session's or applicant's)
-	// 	loggedUser, err = h.applicantUsecase.GetByID(user.ID)
-	// 	if err != nil {
-	// 		h.logger.Errorf("%s: got err %s", fn, err)
-	// 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-	// 			HTTPStatus: http.StatusUnauthorized,
-	// 			Error:      dto.MsgDataBaseError,
-	// 		})
-	// 		return
-	// 	}
-
-	// } else if loginForm.UserType == dto.UserTypeEmployer {
-	// 	loggedUser, err = h.employerUsecase.GetByID(user.ID)
-	// 	if err != nil {
-	// 		h.logger.Errorf("%s: got err %s", fn, err)
-	// 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-	// 			HTTPStatus: http.StatusUnauthorized,
-	// 			Error:      dto.MsgDataBaseError,
-	// 		})
-	// 		return
-	// 	}
-	// }
-
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body: &dto.JSONUser{
@@ -212,29 +187,6 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
-
-	// var deletedUser interface{}
-	// if userType == dto.UserTypeApplicant {
-	// 	deletedUser, err = h.applicantUsecase.GetByID(userID)
-	// 	if err != nil {
-	// 		h.logger.Errorf("%s: got err %s", fn, err)
-	// 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-	// 			HTTPStatus: http.StatusInternalServerError,
-	// 			Error:      dto.MsgDataBaseError,
-	// 		})
-	// 		return
-	// 	}
-	// } else if userType == dto.UserTypeEmployer {
-	// 	deletedUser, err = h.employerUsecase.GetByID(userID)
-	// 	if err != nil {
-	// 		h.logger.Errorf("%s: got err %s", fn, err)
-	// 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-	// 			HTTPStatus: http.StatusInternalServerError,
-	// 			Error:      dto.MsgDataBaseError,
-	// 		})
-	// 		return
-	// 	}
-	// }
 
 	h.logger.Debugf("%s: deleted user: %v", fn, user)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{

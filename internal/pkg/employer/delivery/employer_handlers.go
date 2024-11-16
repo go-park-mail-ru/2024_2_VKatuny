@@ -39,7 +39,7 @@ func (h *EmployerHandlers) EmployerRegistration(w http.ResponseWriter, r *http.R
 
 	// TODO: implement usecase for validate registration data
 
-	employer, err := h.employerUsecase.CreateEmployer(employerRegistrationForm)
+	employer, err := h.employerUsecase.Create(employerRegistrationForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
