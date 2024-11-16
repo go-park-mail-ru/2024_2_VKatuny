@@ -39,3 +39,5 @@ go.work.sum
 # config
 configs/conf.yaml
 configs/conf.yml
+# html
+index.html

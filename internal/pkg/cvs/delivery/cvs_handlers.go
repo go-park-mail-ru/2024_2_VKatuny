@@ -10,11 +10,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
 type CVsHandler struct {
-	logger               *logrus.Logger
+	logger               *logrus.Entry
 	cvsUsecase           cvs.ICVsUsecase
 	sessionApplicantRepo session.ISessionRepository
 }
@@ -23,14 +24,14 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 	logger := layers.Logger
 	logger.Debug("CVsHandler created")
 	return &CVsHandler{
-		logger:               logger,
-		cvsUsecase:           layers.Usecases.CVUsecase,
+		logger:     &logrus.Entry{Logger: logger},
+		cvsUsecase: layers.Usecases.CVUsecase,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 	}
 }
 
 func (h *CVsHandler) CVsRESTHandler(w http.ResponseWriter, r *http.Request) {
-	h.logger.Debugf("CVsHandler.CVsRESTHandler got request: %s", r.URL.Path)
+	h.logger.Logger.Debugf("CVsHandler.CVsRESTHandler got request: %s", r.URL.Path)
 	repositories := &internal.Repositories{SessionApplicantRepository: h.sessionApplicantRepo}
 	switch r.Method {
 	case http.MethodPost:
@@ -57,6 +58,7 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.CreateCVHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	decoder := json.NewDecoder(r.Body)
 	newCV := new(dto.JSONCv)
@@ -102,6 +104,7 @@ func (h *CVsHandler) GetCVsHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.GetCVsHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
 	if err != nil {
@@ -131,7 +134,10 @@ func (h *CVsHandler) GetCVsHandler(w http.ResponseWriter, r *http.Request) {
 
 func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
 	fn := "CVsHandler.UpdateCVHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -190,6 +196,8 @@ func (h *CVsHandler) DeleteCVHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.DeleteCVHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)

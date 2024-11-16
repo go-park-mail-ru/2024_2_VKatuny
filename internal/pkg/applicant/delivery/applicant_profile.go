@@ -11,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -53,6 +54,8 @@ func (h *ApplicantHandlers) GetApplicantProfileHandler(w http.ResponseWriter, r 
 
 	fn := "ApplicantProfileHandlers.GetApplicantProfileHandler"
 
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -83,17 +86,7 @@ func (h *ApplicantHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter,
 
 	fn := "ApplicantProfileHandlers.UpdateApplicantProfileHandler"
 
-	// url := r.URL.Path[len("/api/v1/applicant/profile/"):]
-	// slugID := strings.Split(url, "/")[0]
-	// ID, err := strconv.Atoi(slugID)
-	// if len(url) < 1 || err != nil {
-	// 	h.logger.Errorf("function %s: something bad with slug", fn)
-	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusBadRequest,
-	// 		Error:      "something bad with slug",
-	// 	})
-	// 	return
-	// }
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
 	if err != nil {
@@ -136,17 +129,8 @@ func (h *ApplicantHandlers) GetApplicantPortfoliosHandler(w http.ResponseWriter,
 
 	fn := "ApplicantProfileHandlers.GetApplicantPortfoliosHandler"
 
-	// url := r.URL.Path[len("/api/v1/applicant/portfolio/"):]
-	// slugID := strings.Split(url, "/")[0]
-	// ID, err := strconv.Atoi(slugID)
-	// if len(url) < 1 || err != nil {
-	// 	h.logger.Errorf("function %s: something bad with slug", fn)
-	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusBadRequest,
-	// 		Error:      "something bad with slug",
-	// 	})
-	// 	return
-	// }
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/portfolio/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -176,17 +160,8 @@ func (h *ApplicantHandlers) GetApplicantCVsHandler(w http.ResponseWriter, r *htt
 
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"
 
-	// url := r.URL.Path[len("/api/v1/applicant/cv/"):]
-	// slugID := strings.Split(url, "/")[0]
-	// ID, err := strconv.Atoi(slugID)
-	// if len(url) < 1 || err != nil {
-	// 	h.logger.Errorf("function %s: something bad with slug", fn)
-	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusBadRequest,
-	// 		Error:      "something bad with slug",
-	// 	})
-	// 	return
-	// }
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/cv/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)

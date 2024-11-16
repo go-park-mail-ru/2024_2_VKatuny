@@ -10,6 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -49,6 +50,7 @@ func (h *EmployerHandlers) GetEmployerProfileHandler(w http.ResponseWriter, r *h
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerProfileHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/profile/")
 	if err != nil {
@@ -79,6 +81,8 @@ func (h *EmployerHandlers) UpdateEmployerProfileHandler(w http.ResponseWriter, r
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.UpdateEmployerProfileHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/profile/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -117,6 +121,7 @@ func (h *EmployerHandlers) GetEmployerVacanciesHandler(w http.ResponseWriter, r 
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerVacanciesHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/vacancies/")
 	if err != nil {

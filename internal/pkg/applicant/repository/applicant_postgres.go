@@ -124,22 +124,45 @@ func (s *PostgreSQLApplicantStorage) GetByEmail(email string) (*models.Applicant
 }
 
 func (s *PostgreSQLApplicantStorage) Create(applicantInput *dto.ApplicantInput) (*models.Applicant, error) {
-
-	_, err := s.db.Exec("insert into applicant (first_name, last_name, birth_date, education, email, password_hash) VALUES ($1, $2, $3, $4, $5, $6)",
+	row := s.db.QueryRow(`insert into applicant (first_name, last_name, birth_date, education, email, password_hash) VALUES ($1, $2, $3, $4, $5, $6)
+	returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at`,
 		applicantInput.FirstName, applicantInput.LastName, applicantInput.BirthDate, applicantInput.Education, applicantInput.Email, applicantInput.Password)
 
-	if err != nil {
-		return nil, err
+	var applicantWithNull dto.ApplicantWithNull
+	err := row.Scan(
+		&applicantWithNull.ID,
+		&applicantWithNull.FirstName,
+		&applicantWithNull.LastName,
+		&applicantWithNull.BirthDate,
+		&applicantWithNull.PathToProfileAvatar,
+		&applicantWithNull.Contacts,
+		&applicantWithNull.Education,
+		&applicantWithNull.Email,
+		&applicantWithNull.PasswordHash,
+		&applicantWithNull.CreatedAt,
+		&applicantWithNull.UpdatedAt,
+	)
+	applicant := models.Applicant{
+		ID:                  applicantWithNull.ID,
+		FirstName:           applicantWithNull.FirstName,
+		LastName:            applicantWithNull.LastName,
+		BirthDate:           applicantWithNull.BirthDate,
+		PathToProfileAvatar: applicantWithNull.PathToProfileAvatar,
+		Contacts:            applicantWithNull.Contacts.String,
+		Education:           applicantWithNull.Education.String,
+		Email:               applicantWithNull.Email,
+		PasswordHash:        applicantWithNull.PasswordHash,
+		CreatedAt:           applicantWithNull.CreatedAt,
+		UpdatedAt:           applicantWithNull.UpdatedAt,
 	}
+	applicant.CityName = applicantInput.CityName
 
-	applicant, err := s.GetByEmail(applicantInput.Email)
-
-	return applicant, err
+	return &applicant, err
 }
 
-func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) error {
+func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) (*models.Applicant, error) {
 
-	var CityId int
+	var CityId uint64
 	row := s.db.QueryRow(`select id from city where city_name=$1`, newApplicantData.City)
 	if err := row.Scan(&CityId); err != nil {
 		switch err {
@@ -147,15 +170,44 @@ func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSO
 			row = s.db.QueryRow(`insert into city (city_name) VALUES ($1) returning id`, newApplicantData.City)
 			err = row.Scan(&CityId)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		default:
-			return err
+			return nil, err
 		}
 	}
-	_, err := s.db.Exec(`update applicant
+	row = s.db.QueryRow(`update applicant
 		set first_name = $1, last_name = $2, city_id = $3, birth_date=$4,
-		contacts = $5, education = $6 where id=$7`,
+		contacts = $5, education = $6 where id=$7 returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at`,
 		newApplicantData.FirstName, newApplicantData.LastName, CityId, newApplicantData.BirthDate, newApplicantData.Contacts, newApplicantData.Education, ID)
-	return err
+	var applicantWithNull dto.ApplicantWithNull
+	err := row.Scan(
+		&applicantWithNull.ID,
+		&applicantWithNull.FirstName,
+		&applicantWithNull.LastName,
+		&applicantWithNull.BirthDate,
+		&applicantWithNull.PathToProfileAvatar,
+		&applicantWithNull.Contacts,
+		&applicantWithNull.Education,
+		&applicantWithNull.Email,
+		&applicantWithNull.PasswordHash,
+		&applicantWithNull.CreatedAt,
+		&applicantWithNull.UpdatedAt,
+	)
+	applicant := models.Applicant{
+		ID:                  applicantWithNull.ID,
+		FirstName:           applicantWithNull.FirstName,
+		LastName:            applicantWithNull.LastName,
+		BirthDate:           applicantWithNull.BirthDate,
+		PathToProfileAvatar: applicantWithNull.PathToProfileAvatar,
+		Contacts:            applicantWithNull.Contacts.String,
+		Education:           applicantWithNull.Education.String,
+		Email:               applicantWithNull.Email,
+		PasswordHash:        applicantWithNull.PasswordHash,
+		CreatedAt:           applicantWithNull.CreatedAt,
+		UpdatedAt:           applicantWithNull.UpdatedAt,
+	}
+	applicant.CityName = newApplicantData.City
+
+	return &applicant, err
 }

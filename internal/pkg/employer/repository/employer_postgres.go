@@ -2,8 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 
@@ -143,24 +141,49 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 			return nil, err
 		}
 	}
-
-	_, err := s.db.Exec(`insert into employer (first_name, last_name, position, company_name_id, company_description, company_website, email, password_hash)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+	row = s.db.QueryRow(`insert into employer (first_name, last_name, position, company_name_id, company_description, company_website, email, password_hash)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) returning id, first_name, last_name, position, company_description, 
+		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at`,
 		employerInput.FirstName, employerInput.LastName, employerInput.Position, CompanyNameId, employerInput.CompanyDescription,
 		employerInput.CompanyWebsite, employerInput.Email, employerInput.Password)
-	if err != nil {
-		return nil, err
-	}
 
-	employer, err := s.GetByEmail(employerInput.Email)
-	fmt.Println(err)
-	if !errors.Is(err, nil) {
-		return nil, err
+	var employerWithNull dto.EmployerWithNull
+	err := row.Scan(
+		&employerWithNull.ID,
+		&employerWithNull.FirstName,
+		&employerWithNull.LastName,
+		&employerWithNull.Position,
+		&employerWithNull.CompanyDescription,
+		&employerWithNull.CompanyWebsite,
+		&employerWithNull.PathToProfileAvatar,
+		&employerWithNull.Contacts,
+		&employerWithNull.Email,
+		&employerWithNull.PasswordHash,
+		&employerWithNull.CreatedAt,
+		&employerWithNull.UpdatedAt,
+	)
+	employer := models.Employer{
+		ID:                  employerWithNull.ID,
+		FirstName:           employerWithNull.FirstName,
+		LastName:            employerWithNull.LastName,
+		Position:            employerWithNull.Position,
+		CompanyDescription:  employerWithNull.CompanyDescription,
+		CompanyWebsite:      employerWithNull.CompanyWebsite,
+		PathToProfileAvatar: employerWithNull.PathToProfileAvatar,
+		Contacts:            employerWithNull.Contacts.String,
+		Email:               employerWithNull.Email,
+		PasswordHash:        employerWithNull.PasswordHash,
+		CreatedAt:           employerWithNull.CreatedAt,
+		UpdatedAt:           employerWithNull.UpdatedAt,
 	}
-	return employer, err
+	employer.CityName = employerInput.CityName
+	employer.CompanyName = employerInput.CompanyName
+	//log.Println(user)
+	//log.Println(err)
+	return &employer, err
 }
 
-func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) error {
+func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) (*models.Employer, error) {
 
 	var CityId int
 	row := s.db.QueryRow(`select id from city where city_name=$1`, newEmployerData.City)
@@ -170,15 +193,48 @@ func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONU
 			row = s.db.QueryRow(`insert into city (city_name) VALUES ($1) returning id`, newEmployerData.City)
 			err = row.Scan(&CityId)
 			if err != nil {
-				return err
+				return nil, err
 			}
 		default:
-			return err
+			return nil, err
 		}
 	}
-	_, err := s.db.Exec(`update employer
+	row = s.db.QueryRow(`update employer
 		set first_name = $1, last_name = $2, city_id = $3,
-		contacts = $4 where id=$5`,
+		contacts = $4 where id=$5 returning id, first_name, last_name, position, company_description, 
+		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at`,
 		newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, ID)
-	return err
+	var employerWithNull dto.EmployerWithNull
+	err := row.Scan(
+		&employerWithNull.ID,
+		&employerWithNull.FirstName,
+		&employerWithNull.LastName,
+		&employerWithNull.Position,
+		&employerWithNull.CompanyDescription,
+		&employerWithNull.CompanyWebsite,
+		&employerWithNull.PathToProfileAvatar,
+		&employerWithNull.Contacts,
+		&employerWithNull.Email,
+		&employerWithNull.PasswordHash,
+		&employerWithNull.CreatedAt,
+		&employerWithNull.UpdatedAt,
+	)
+	employer := models.Employer{
+		ID:                  employerWithNull.ID,
+		FirstName:           employerWithNull.FirstName,
+		LastName:            employerWithNull.LastName,
+		Position:            employerWithNull.Position,
+		CompanyDescription:  employerWithNull.CompanyDescription,
+		CompanyWebsite:      employerWithNull.CompanyWebsite,
+		PathToProfileAvatar: employerWithNull.PathToProfileAvatar,
+		Contacts:            employerWithNull.Contacts.String,
+		Email:               employerWithNull.Email,
+		PasswordHash:        employerWithNull.PasswordHash,
+		CreatedAt:           employerWithNull.CreatedAt,
+		UpdatedAt:           employerWithNull.UpdatedAt,
+	}
+	employer.CityName = newEmployerData.City
+	//log.Println(user)
+	//log.Println(err)
+	return &employer, err
 }
