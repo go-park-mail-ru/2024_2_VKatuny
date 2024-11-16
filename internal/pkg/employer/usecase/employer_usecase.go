@@ -27,6 +27,7 @@ func CreateEmployerInputCheck(form *dto.EmployerInput) error {
 // CreateEmployer accepts employer repository and validated form and creates new employer
 func (u *EmployerUsecase) Create(form *dto.JSONEmployerRegistrationForm) (*dto.JSONUser, error) {
 	fn := "EmployerUsecase.Create"
+	u.logger.Debugf("%s: entering", fn)
 
 	_, err := u.employerRepository.GetByEmail(form.Email)
 	if err.Error() != "sql: no rows in result set" {

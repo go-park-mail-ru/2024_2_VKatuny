@@ -31,6 +31,7 @@ func (u *ApplicantUsecase) Create(form *dto.JSONApplicantRegistrationForm) (*dto
 	applicant := &dto.ApplicantInput{
 		FirstName: form.FirstName,
 		LastName:  form.LastName,
+		BirthDate: form.BirthDate,
 		Email:     form.Email,
 		Password:  utils.HashPassword(form.Password),
 	}
@@ -50,6 +51,7 @@ func (u *ApplicantUsecase) Create(form *dto.JSONApplicantRegistrationForm) (*dto
 
 func (u *ApplicantUsecase) GetByID(ID uint64) (*dto.JSONApplicantOutput, error) {
 	fn := "ApplicantUsecase.GetByID"
+	u.logger.Debugf("%s: entering", fn)
 
 	applicantModel, err := u.applicantRepo.GetByID(ID)
 	if err != nil {

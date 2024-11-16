@@ -31,8 +31,10 @@ func NewSessionHandlers(app *internal.App) *SessionHandlers {
 	app.Logger.Debug("Session handlers initialized")
 	return &SessionHandlers{
 		logger:         &logrus.Entry{Logger: app.Logger},
-		sessionUsecase: app.Usecases.SessionUsecase,
 		backendURL:     app.BackendAddress,
+		sessionUsecase: app.Usecases.SessionUsecase,
+		applicantUsecase: app.Usecases.ApplicantUsecase,
+		employerUsecase:  app.Usecases.EmployerUsecase,
 	}
 }
 
@@ -112,6 +114,7 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "SessionHandlers.Login"
+	h.logger.Debugf("%s: entering", fn)
 
 	loginForm := new(dto.JSONLoginForm)
 	err := json.NewDecoder(r.Body).Decode(loginForm)
@@ -123,6 +126,7 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	h.logger.Debugf("%s: login form parsed: %v", fn, loginForm)
 
 	userWithSession, err := h.sessionUsecase.Login(loginForm)
 	if err != nil {
@@ -151,6 +155,7 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "SessionHandlers.Logout"
+	h.logger.Debugf("%s: entering", fn)
 
 	session, err := r.Cookie(dto.SessionIDName)
 	if err == http.ErrNoCookie {

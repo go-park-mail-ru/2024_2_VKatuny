@@ -23,6 +23,7 @@ import (
 	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
 	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
+	session_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
 	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
 	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 
@@ -67,6 +68,7 @@ func main() {
 		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
 		VacanciesUsecase: vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
 		EmployerUsecase:  employerUsecase.NewEmployerUsecase(logger, repositories),
+		SessionUsecase:   session_usecase.NewSessionUsecase(logger, repositories),
 	}
 	app := &internal.App{
 		Logger:       logger,

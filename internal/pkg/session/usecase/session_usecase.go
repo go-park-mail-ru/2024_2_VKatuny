@@ -28,12 +28,16 @@ func NewSessionUsecase(logger *logrus.Logger, repositories *internal.Repositorie
 		logger:               &logrus.Entry{Logger: logger},
 		sessionRepoApplicant: repositories.SessionApplicantRepository,
 		sessionRepoEmployer:  repositories.SessionEmployerRepository,
+		applicantRepo:        repositories.ApplicantRepository,
+		employerRepo:         repositories.EmployerRepository,
 	}
 }
 
 // TODO: should return user
 func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, error) {
 	fn := "sessionUsecase.Login"
+	u.logger.Debugf("%s: entering", fn)
+	
 	if user == nil {
 		u.logger.Errorf("%s: user is nil", fn)
 		return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
@@ -41,6 +45,7 @@ func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, e
 	u.logger.Debugf("%s: logging in as %v", fn, user)
 	switch user.UserType {
 	case dto.UserTypeApplicant:
+		u.logger.Debugf("%s: handling %s", fn, dto.UserTypeApplicant)
 		applicant, err := u.applicantRepo.GetByEmail(user.Email)
 		if err != nil {
 			u.logger.Errorf("%s: got err %s", fn, err)
@@ -50,6 +55,7 @@ func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, e
 			u.logger.Errorf("%s: password comparison failed", fn)
 			return nil, fmt.Errorf(dto.MsgWrongLoginOrPassword)
 		}
+		u.logger.Debugf("%s: password comparison succeeded", fn)
 
 		sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeApplicant)
 		err = u.sessionRepoApplicant.Create(applicant.ID, sessionID)
