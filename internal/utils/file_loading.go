@@ -1,4 +1,4 @@
-package usecase
+package utils
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
 func WriteFile(staticDir string, file multipart.File, header *multipart.FileHeader) (string, error) {
@@ -25,7 +24,7 @@ func WriteFile(staticDir string, file multipart.File, header *multipart.FileHead
 			return "", fmt.Errorf(dto.MsgInvalidFile)
 		}
 	}
-	filename := utils.GenerateSessionToken(utils.TokenLength+10, dto.UserTypeApplicant)
+	filename := GenerateSessionToken(TokenLength+10, dto.UserTypeApplicant)
 	dst, err := os.Create(staticDir + filename + header.Filename)
 	if err != nil {
 		log.Println("error creating file", err) // just do it

@@ -19,7 +19,6 @@ import (
 	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
-	file_loading_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/delivery"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
 	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
 	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
@@ -57,9 +56,6 @@ func main() {
 	defer dbConnection.Close()
 
 	Mux := http.NewServeMux()
-
-	Mux.Handle("/pictures", file_loading_delivery.CreateMainP())
-	Mux.Handle("/api/v1/upload", file_loading_delivery.CreateUploadHandler(conf.Server.GetMediaDir()))
 
 	//applicantRepository := applicant_repository.NewRepo()
 	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)
