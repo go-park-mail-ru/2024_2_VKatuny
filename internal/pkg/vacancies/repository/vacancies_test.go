@@ -382,13 +382,12 @@ func TestPostgresUpdate(t *testing.T) {
 							args.locationId,
 							args.vacancy.Description,
 							args.worTypeId,
-							args.vacancy.Avatar,
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "position", "vacancy_description",
-							"salary", "employer_id", "path_to_company_avatar", "created_at", "updated_at"}).
-							AddRow(1, "Скульптор", "Требуется скульптор без опыта работы", 90000, 1,
-								"", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+							"salary", "employer_id", "path_to_profile_avatar", "created_at", "updated_at"}).
+							AddRow(1, "Скульптор", "Требуется скульптор без опыта работы", 90000, 1, "",
+								"2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
 				},
 				query4: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select  (.+)`).
