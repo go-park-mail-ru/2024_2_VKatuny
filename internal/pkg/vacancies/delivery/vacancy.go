@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -126,7 +125,7 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	fmt.Println(newVacancy)
+	h.logger.Debug(newVacancy)
 	wroteVacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{

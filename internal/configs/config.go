@@ -22,7 +22,7 @@ type ServerConfig struct {
 	Host     string `yaml:"host"`
 	Port     int    `yaml:"port"`
 	Front    string `yaml:"frontURI"`
-	MediaDir string `yaml:"mediadir"`
+	mediaDir string `yaml:"mediadir"`
 }
 
 type DataBaseConfig struct {
@@ -77,7 +77,7 @@ func (s *ServerConfig) GetFrontURI() string {
 
 // GetAddress returns directory with user's files
 func (s *ServerConfig) GetMediaDir() string {
-	return s.MediaDir
+	return s.mediaDir
 }
 
 func (d *DataBaseConfig) GetDSN() string {
