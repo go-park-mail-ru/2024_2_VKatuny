@@ -10,11 +10,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
 	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
 type EmployerProfileHandlers struct {
-	logger           *logrus.Logger
+	logger           *logrus.Entry
 	employerUsecase  *employerUsecase.EmployerUsecase
 	vacanciesUsecase *vacanciesUsecase.VacanciesUsecase
 }
@@ -28,7 +29,7 @@ func NewEmployerProfileHandlers(logger *logrus.Logger, usecases *internal.Usecas
 		return nil, commonerrors.ErrUnableToCast
 	}
 	return &EmployerProfileHandlers{
-		logger:           logger,
+		logger:           &logrus.Entry{Logger: logger},
 		employerUsecase:  employerUsecase,
 		vacanciesUsecase: vacanciesUsecase,
 	}, nil
@@ -52,6 +53,7 @@ func (h *EmployerProfileHandlers) GetEmployerProfileHandler(w http.ResponseWrite
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerProfileHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/profile/")
 	if err != nil {
@@ -82,6 +84,8 @@ func (h *EmployerProfileHandlers) UpdateEmployerProfileHandler(w http.ResponseWr
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.UpdateEmployerProfileHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/profile/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -120,6 +124,7 @@ func (h *EmployerProfileHandlers) GetEmployerVacanciesHandler(w http.ResponseWri
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerVacanciesHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/vacancies/")
 	if err != nil {

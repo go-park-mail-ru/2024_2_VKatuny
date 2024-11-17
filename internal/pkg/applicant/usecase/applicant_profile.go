@@ -61,7 +61,7 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(applicantID uint64, newProfil
 
 	au.logger.Debugf("function: %s; applicant id: %d. Trying to update applicant profile", fn, applicantID)
 
-	err := au.applicantRepo.Update(applicantID, newProfileData)
+	_, err := au.applicantRepo.Update(applicantID, newProfileData)
 
 	if err != nil {
 		au.logger.Errorf("function: %s; got err: %s", fn, err)

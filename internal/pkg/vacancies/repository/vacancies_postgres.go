@@ -45,7 +45,6 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 }
 
 func (s *PostgreSQLVacanciesStorage) GetWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error) {
-	fmt.Println("1-------------------")
 	Vacancies := make([]*dto.JSONVacancy, 0)
 
 	rows, err := s.db.Query(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
@@ -105,7 +104,6 @@ func (s *PostgreSQLVacanciesStorage) Create(vacancy *dto.JSONVacancy) (uint64, e
 		path_to_company_avatar, city_id) VALUES ($1, $2, $3, $4, $5, $6, $7) returning id`, vacancy.Position, vacancy.Description,
 		vacancy.Salary, vacancy.EmployerID, WorkTypeID, vacancy.Avatar, CityID)
 	err := row.Scan(&VacancyId)
-	fmt.Println("1", VacancyId)
 	if err != nil {
 		return 0, err
 	}

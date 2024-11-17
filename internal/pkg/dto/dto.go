@@ -10,11 +10,13 @@ import (
 
 type loggerKey int
 type userKey int
+type requestIDKey int
 
 // Context keys
 const (
-	LoggerContextKey loggerKey = 1
-	UserContextKey   userKey   = 2
+	LoggerContextKey    loggerKey    = 1
+	UserContextKey      userKey      = 2
+	RequestIDContextKey requestIDKey = 3
 )
 
 // Error messages

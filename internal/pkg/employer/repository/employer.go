@@ -15,7 +15,7 @@ type EmployerRepository interface {
 	//rename to Add
 	// probably shouldn't commit model to Create method
 	Create(*dto.EmployerInput) (*models.Employer, error)
-	Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) error
+	Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) (*models.Employer, error)
 	GetByID(id uint64) (*models.Employer, error)
 	GetByEmail(email string) (*models.Employer, error)
 }

@@ -11,11 +11,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
 type ApplicantProfileHandlers struct {
-	logger           *logrus.Logger
+	logger           *logrus.Entry
 	applicantUsecase applicantUsecase.IApplicantUsecase
 	portfolioUsecase portfolioUsecase.IPortfolioUsecase
 	cvUsecase        cvs.ICVsUsecase
@@ -28,7 +29,7 @@ func NewApplicantProfileHandlers(logger *logrus.Logger, usecases *internal.Useca
 		return nil, commonerrors.ErrUnableToCast
 	}
 	return &ApplicantProfileHandlers{
-		logger:           logger,
+		logger:           &logrus.Entry{Logger: logger},
 		applicantUsecase: ApplicantUsecase,
 		portfolioUsecase: PortfolioUsecase,
 		cvUsecase:        usecases.CVUsecase,
@@ -36,7 +37,7 @@ func NewApplicantProfileHandlers(logger *logrus.Logger, usecases *internal.Useca
 }
 
 func (h *ApplicantProfileHandlers) ApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
-	//h.logger.Debug("1---------------------------------", r.URL.Path)
+	h.logger.Logger.Debug("Got request", r.URL.Path)
 	switch r.Method {
 	case http.MethodGet:
 		h.GetApplicantProfileHandler(w, r)
@@ -55,6 +56,8 @@ func (h *ApplicantProfileHandlers) GetApplicantProfileHandler(w http.ResponseWri
 
 	fn := "ApplicantProfileHandlers.GetApplicantProfileHandler"
 
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -85,17 +88,7 @@ func (h *ApplicantProfileHandlers) UpdateApplicantProfileHandler(w http.Response
 
 	fn := "ApplicantProfileHandlers.UpdateApplicantProfileHandler"
 
-	// url := r.URL.Path[len("/api/v1/applicant/profile/"):]
-	// slugID := strings.Split(url, "/")[0]
-	// ID, err := strconv.Atoi(slugID)
-	// if len(url) < 1 || err != nil {
-	// 	h.logger.Errorf("function %s: something bad with slug", fn)
-	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusBadRequest,
-	// 		Error:      "something bad with slug",
-	// 	})
-	// 	return
-	// }
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
 	if err != nil {
@@ -138,17 +131,8 @@ func (h *ApplicantProfileHandlers) GetApplicantPortfoliosHandler(w http.Response
 
 	fn := "ApplicantProfileHandlers.GetApplicantPortfoliosHandler"
 
-	// url := r.URL.Path[len("/api/v1/applicant/portfolio/"):]
-	// slugID := strings.Split(url, "/")[0]
-	// ID, err := strconv.Atoi(slugID)
-	// if len(url) < 1 || err != nil {
-	// 	h.logger.Errorf("function %s: something bad with slug", fn)
-	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusBadRequest,
-	// 		Error:      "something bad with slug",
-	// 	})
-	// 	return
-	// }
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/portfolio/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -178,17 +162,8 @@ func (h *ApplicantProfileHandlers) GetApplicantCVsHandler(w http.ResponseWriter,
 
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"
 
-	// url := r.URL.Path[len("/api/v1/applicant/cv/"):]
-	// slugID := strings.Split(url, "/")[0]
-	// ID, err := strconv.Atoi(slugID)
-	// if len(url) < 1 || err != nil {
-	// 	h.logger.Errorf("function %s: something bad with slug", fn)
-	// 	middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusBadRequest,
-	// 		Error:      "something bad with slug",
-	// 	})
-	// 	return
-	// }
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/cv/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
