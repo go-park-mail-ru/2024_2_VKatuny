@@ -13,11 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const (
-	defaultVacanciesOffset = 0
-	defaultVacanciesNum    = 10
-)
-
 // GetVacanciesHandler returns list of vacancies
 // GetVacancies godoc
 // @Summary     Gets list of vacancies
@@ -47,19 +42,24 @@ func GetVacanciesHandler(repo vacancies.IVacanciesRepository) http.Handler { //v
 
 		offsetStr := queryParams.Get("offset")
 		numStr := queryParams.Get("num")
-		offset, num, err := vacanciesUsecase.ValidateRequestParams(offsetStr, numStr)
+		searchStr := queryParams.Get("positionDescription")
+		vacancies, err := vacanciesUsecase.SearchVacancies(offsetStr, numStr, searchStr, repo)
 
-		// at lest one param is incorrect or not presented
-		// using default values
-		if err != nil {
-			logger.Debugf("function: %s; got err: %s - processing with default values", funcName, err)
-			offset = defaultVacanciesOffset
-			num = defaultVacanciesNum
-		}
+		// // at lest one param is incorrect or not presented
+		// // using default values
+		// if err != nil {
+		// 	logger.Debugf("function: %s; got err: %s - processing with default values", funcName, err)
+		// 	offset = defaultVacanciesOffset
+		// 	num = defaultVacanciesNum
+		// }
 
-		logger.Debugf("function: %s; going to db for vacancies", funcName)
-		// TODO: use usecase
-		vacancies, err := repo.GetWithOffset(offset, offset+num)
+		// logger.Debugf("function: %s; going to db for vacancies", funcName)
+		// var vacancies []*dto.JSONVacancy
+		// if searchStr != "" {
+		// 	vacancies, err = repo.SearchByPositionDescription(searchStr)
+		// } else {
+		// 	vacancies, err = repo.GetWithOffset(offset, offset+num)
+		// }
 
 		if err != nil {
 			logger.Errorf("function: %s; got err while reading vacancies from db %s", funcName, err)

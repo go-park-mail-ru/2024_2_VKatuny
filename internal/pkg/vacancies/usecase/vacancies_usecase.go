@@ -2,6 +2,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -41,6 +42,31 @@ func ValidateRequestParams(offsetStr, numStr string) (uint64, uint64, error) {
 		err = ErrNumIsNotANumber // previous err will be overwritten
 	}
 	return uint64(offset), uint64(num), err
+}
+
+const (
+	defaultVacanciesOffset = 0
+	defaultVacanciesNum    = 10
+)
+
+func SearchVacancies(offsetStr, numStr, searchStr string, repo vacancies.IVacanciesRepository) ([]*dto.JSONVacancy, error) {
+	offset, num, err := ValidateRequestParams(offsetStr, numStr)
+	if errors.Is(ErrOffsetIsNotANumber, err) {
+		offset = defaultVacanciesOffset
+	}
+	if errors.Is(ErrNumIsNotANumber, err) {
+		num = defaultVacanciesNum
+	}
+	var vacancies []*dto.JSONVacancy
+	if searchStr != "" {
+		vacancies, err = repo.SearchByPositionDescription(offset, offset+num, searchStr)
+	} else {
+		vacancies, err = repo.GetWithOffset(offset, offset+num)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return vacancies, nil
 }
 
 func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
