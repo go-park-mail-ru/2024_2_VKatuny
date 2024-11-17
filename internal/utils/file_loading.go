@@ -13,7 +13,7 @@ import (
 
 var allowedTypes = []string{"image/jpeg", "image/jpg", "image/svg", "image/svg+xml"}
 
-func WriteFile(staticDir string, file multipart.File, header *multipart.FileHeader) (string, error) {
+func writeFile(staticDir string, file multipart.File, header *multipart.FileHeader) (string, error) {
 	a := header.Header
 	fmt.Println(a["Content-Type"][0])
 	for _, i := range a["Content-Type"] {

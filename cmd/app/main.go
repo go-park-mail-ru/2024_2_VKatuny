@@ -19,6 +19,8 @@ import (
 	employer_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
+	file_loading_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/repository"
+	file_loading_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/usecase"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
 	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
 	session_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/delivery"
@@ -28,13 +30,9 @@ import (
 
 	// "github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 
-	//vacancies_repostory "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
-
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	vacancies_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
-	//worker_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/delivery"
-	//worker_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/worker/repository"
 )
 
 // @title   uArt's API
@@ -57,20 +55,16 @@ func main() {
 
 	Mux := http.NewServeMux()
 
-	//applicantRepository := applicant_repository.NewRepo()
 	applicantRepository := applicant_repository.NewApplicantStorage(dbConnection)
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection) // just do it!
 
 	applicantHandler := applicant_delivery.CreateApplicantHandler(applicantRepository, sessionApplicantRepository, conf.Server.GetAddress())
 	Mux.Handle("/api/v1/registration/applicant", applicantHandler)
 
-	//employerRepository := employer_repository.NewRepo()
 	employerRepository := employer_repository.NewEmployerStorage(dbConnection)
 
 	employerHandler := employer_delivery.CreateEmployerHandler(employerRepository, sessionEmployerRepository, conf.Server.GetAddress())
 	Mux.Handle("/api/v1/registration/employer", employerHandler)
-
-	//sessionApplicantRepository, sessionEmployerRepository := session_repository.NewRepo() // just do it!
 
 	loginHandler := session_delivery.LoginHandler(
 		sessionApplicantRepository,
@@ -93,9 +87,8 @@ func main() {
 		employerRepository)
 	Mux.Handle("/api/v1/authorized", authorizedHandler)
 
-	// TODO: should be from db
 	vacanciesRepository := vacancies_repository.NewVacanciesStorage(dbConnection)
-	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository) //(&db.Vacancies)
+	vacanciesListHandler := vacancies_delivery.GetVacanciesHandler(vacanciesRepository)
 	Mux.Handle("/api/v1/vacancies", vacanciesListHandler)
 
 	repositories := &internal.Repositories{
@@ -106,13 +99,15 @@ func main() {
 		EmployerRepository:         employerRepository,
 		SessionApplicantRepository: sessionApplicantRepository,
 		SessionEmployerRepository:  sessionEmployerRepository,
+		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.GetMediaDir()),
 	}
 	usecases := &internal.Usecases{
-		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories),
-		PortfolioUsecase: portfolioUsecase.NewPortfolioUsecase(logger, repositories),
-		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
-		VacanciesUsecase: vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
-		EmployerUsecase:  employerUsecase.NewEmployerUsecase(logger, repositories),
+		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories),
+		PortfolioUsecase:   portfolioUsecase.NewPortfolioUsecase(logger, repositories),
+		CVUsecase:          cvUsecase.NewCVsUsecase(logger, repositories),
+		VacanciesUsecase:   vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
+		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
+		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
 	}
 	app := &internal.App{
 		Logger:       logger,

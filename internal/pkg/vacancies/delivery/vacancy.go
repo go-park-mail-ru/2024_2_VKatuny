@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
@@ -18,6 +19,8 @@ type VacanciesHandlers struct {
 	vacanciesUsecase     vacancies.IVacanciesUsecase
 	sessionEmployerRepo  session.ISessionRepository
 	sessionApplicantRepo session.ISessionRepository
+	fileLoadingUsecase   fileloading.IFileLoadingUsecase
+	fileLoadingRepo      fileloading.IFileLoadingRepository
 }
 
 func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
@@ -29,12 +32,14 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 		vacanciesUsecase:     layers.Usecases.VacanciesUsecase,
 		sessionEmployerRepo:  layers.Repositories.SessionEmployerRepository,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
+		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
+		fileLoadingRepo:      layers.Repositories.FileLoadingRepository,
 	}
 }
 
 func (h *VacanciesHandlers) VacanciesRESTHandler(w http.ResponseWriter, r *http.Request) {
 	h.logger.Logger.Debugf("VacanciesHandlers.VacanciesRESTHandler got request: %s", r.URL.Path)
-	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo}
+	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo, FileLoadingRepository: h.fileLoadingRepo}
 	switch r.Method {
 	case http.MethodPost:
 		handler := middleware.RequireAuthorization(h.createVacancyHandler, repository, dto.UserTypeEmployer)
@@ -106,7 +111,7 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 	file, header, err := r.FormFile("my_file")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := utils.WriteFile("media/", file, header)
+		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -205,7 +210,7 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 	file, header, err := r.FormFile("my_file")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := utils.WriteFile("media/", file, header)
+		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
