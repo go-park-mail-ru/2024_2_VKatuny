@@ -24,6 +24,7 @@ func (h *EmployerHandlers) EmployerRegistration(w http.ResponseWriter, r *http.R
 	defer r.Body.Close()
 
 	fn := "EmployerHandlers.CreateEmployerHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	employerRegistrationForm := new(dto.JSONEmployerRegistrationForm)
 	err := json.NewDecoder(r.Body).Decode(employerRegistrationForm)
@@ -42,8 +43,8 @@ func (h *EmployerHandlers) EmployerRegistration(w http.ResponseWriter, r *http.R
 	employer, err := h.employerUsecase.Create(employerRegistrationForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
 			Error:      err.Error(),
 		})
 		return

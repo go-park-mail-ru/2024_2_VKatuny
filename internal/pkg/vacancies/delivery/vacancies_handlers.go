@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
 const (
@@ -29,6 +30,7 @@ func (h *VacanciesHandlers) GetVacancies(w http.ResponseWriter, r *http.Request)
 	defer r.Body.Close()
 
 	fn := "VacanciesHandlers.GetVacancies"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	queryParams := r.URL.Query()
 	h.logger.Debugf("%s; Query params read: %v", fn, queryParams)

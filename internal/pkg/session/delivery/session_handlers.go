@@ -36,6 +36,7 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "SessionHandlers.IsAuthorized"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	session, err := r.Cookie(dto.SessionIDName)
 	if err != nil {
@@ -87,6 +88,8 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "SessionHandlers.Login"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+
 	h.logger.Debugf("%s: entering", fn)
 
 	loginForm := new(dto.JSONLoginForm)
@@ -128,6 +131,8 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "SessionHandlers.Logout"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	
 	h.logger.Debugf("%s: entering", fn)
 
 	session, err := r.Cookie(dto.SessionIDName)
