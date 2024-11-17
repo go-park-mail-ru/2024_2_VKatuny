@@ -1,8 +1,8 @@
 package delivery
 
 import (
-	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
@@ -83,21 +83,38 @@ func (h *VacanciesHandlers) GetVacancySubscribersHandler(w http.ResponseWriter, 
 }
 
 func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
+	r.ParseMultipartForm(25 << 20) // 25Mb
+	newVacancy := &dto.JSONVacancy{}
+	newVacancy.Position = r.FormValue("position")
+	newVacancy.Location = r.FormValue("location")
+	newVacancy.Description = r.FormValue("description")
+	newVacancy.WorkType = r.FormValue("workType")
+	newVacancy.CompanyName = r.FormValue("companyName")
+	temp, err := strconv.Atoi(r.FormValue("salary"))
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	decoder := json.NewDecoder(r.Body)
-	newVacancy := new(dto.JSONVacancy)
-
-	err := decoder.Decode(newVacancy)
 	if err != nil {
-		h.logger.Errorf("unable to unmarshal JSON: %s", err)
+		h.logger.Errorf("bad input of salary: %s", err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,
 			Error:      dto.MsgInvalidJSON,
 		})
 		return
+	}
+	newVacancy.Salary = int32(temp)
+	defer r.MultipartForm.RemoveAll()
+	file, header, err := r.FormFile("my_file")
+	if err == nil {
+		defer file.Close()
+		fileAddress, err := utils.WriteFile("media/", file, header)
+		if err != nil {
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      err.Error(),
+			})
+			return
+		}
+		newVacancy.Avatar = fileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
@@ -110,6 +127,7 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
+	h.logger.Debug(newVacancy)
 	wroteVacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -166,16 +184,36 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 
 	vacancyID := uint64(slug)
 
-	decoder := json.NewDecoder(r.Body)
-	updatedVacancy := new(dto.JSONVacancy)
-	err = decoder.Decode(updatedVacancy)
+	r.ParseMultipartForm(25 << 20) // 25Mb
+	updatedVacancy := &dto.JSONVacancy{}
+	updatedVacancy.Position = r.FormValue("position")
+	updatedVacancy.Location = r.FormValue("location")
+	updatedVacancy.Description = r.FormValue("description")
+	updatedVacancy.WorkType = r.FormValue("workType")
+	updatedVacancy.CompanyName = r.FormValue("companyName")
+	temp, err := strconv.Atoi(r.FormValue("salary"))
 	if err != nil {
-		h.logger.Errorf("unable to unmarshal JSON: %s", err)
+		h.logger.Errorf("bad input of salary: %s", err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,
 			Error:      dto.MsgInvalidJSON,
 		})
 		return
+	}
+	updatedVacancy.Salary = int32(temp)
+	defer r.MultipartForm.RemoveAll()
+	file, header, err := r.FormFile("my_file")
+	if err == nil {
+		defer file.Close()
+		fileAddress, err := utils.WriteFile("media/", file, header)
+		if err != nil {
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      err.Error(),
+			})
+			return
+		}
+		updatedVacancy.Avatar = fileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
