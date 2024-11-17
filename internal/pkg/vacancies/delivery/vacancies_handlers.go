@@ -45,22 +45,6 @@ func GetVacanciesHandler(repo vacancies.IVacanciesRepository) http.Handler { //v
 		searchStr := queryParams.Get("positionDescription")
 		vacancies, err := vacanciesUsecase.SearchVacancies(offsetStr, numStr, searchStr, repo)
 
-		// // at lest one param is incorrect or not presented
-		// // using default values
-		// if err != nil {
-		// 	logger.Debugf("function: %s; got err: %s - processing with default values", funcName, err)
-		// 	offset = defaultVacanciesOffset
-		// 	num = defaultVacanciesNum
-		// }
-
-		// logger.Debugf("function: %s; going to db for vacancies", funcName)
-		// var vacancies []*dto.JSONVacancy
-		// if searchStr != "" {
-		// 	vacancies, err = repo.SearchByPositionDescription(searchStr)
-		// } else {
-		// 	vacancies, err = repo.GetWithOffset(offset, offset+num)
-		// }
-
 		if err != nil {
 			logger.Errorf("function: %s; got err while reading vacancies from db %s", funcName, err)
 			middleware.UniversalMarshal(
