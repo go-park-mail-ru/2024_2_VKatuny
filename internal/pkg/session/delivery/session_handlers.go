@@ -9,9 +9,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
@@ -23,8 +21,6 @@ type SessionHandlers struct {
 	logger           *logrus.Entry
 	backendURL       string
 	sessionUsecase   session.ISessionUsecase
-	applicantUsecase applicant.IApplicantUsecase
-	employerUsecase  employer.IEmployerUsecase
 }
 
 func NewSessionHandlers(app *internal.App) *SessionHandlers {
@@ -33,8 +29,6 @@ func NewSessionHandlers(app *internal.App) *SessionHandlers {
 		logger:         &logrus.Entry{Logger: app.Logger},
 		backendURL:     app.BackendAddress,
 		sessionUsecase: app.Usecases.SessionUsecase,
-		applicantUsecase: app.Usecases.ApplicantUsecase,
-		employerUsecase:  app.Usecases.EmployerUsecase,
 	}
 }
 
@@ -78,31 +72,10 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	// TODO: userID should be a field
 	h.logger.Debugf("%s: got userID: %d", fn, userID)
 
-	var user interface{}
-	if userType == dto.UserTypeApplicant {
-		// TODO: think about usecase that i should use (session's or applicant's)
-		user, err = h.applicantUsecase.GetByID(userID)
-		if err != nil {
-			h.logger.Errorf("%s: got err %s", fn, err)
-			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-				HTTPStatus: http.StatusUnauthorized,
-				Error:      dto.MsgDataBaseError,
-			})
-			return
-		}
-
-	} else if userType == dto.UserTypeEmployer {
-		user, err = h.employerUsecase.GetByID(userID)
-		if err != nil {
-			h.logger.Errorf("%s: got err %s", fn, err)
-			middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-				HTTPStatus: http.StatusUnauthorized,
-				Error:      dto.MsgDataBaseError,
-			})
-			return
-		}
+	user := &dto.JSONUser{
+		ID:       userID,
+		UserType: userType,
 	}
-
 	h.logger.Debugf("%s: user: %v", fn, user)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
