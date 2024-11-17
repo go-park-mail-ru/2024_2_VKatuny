@@ -6,21 +6,18 @@ import (
 	"log"
 	"mime/multipart"
 	"os"
+	"slices"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 )
+
+var allowedTypes = []string{"image/jpeg", "image/jpg", "image/svg", "image/svg+xml"}
 
 func WriteFile(staticDir string, file multipart.File, header *multipart.FileHeader) (string, error) {
 	a := header.Header
 	fmt.Println(a["Content-Type"][0])
 	for _, i := range a["Content-Type"] {
-		switch i {
-		case "image/jpeg":
-		case "image/jpg":
-		case "image/png":
-		case "image/svg":
-		case "image/svg+xml":
-		default:
+		if !slices.Contains(allowedTypes, i) {
 			return "", fmt.Errorf(dto.MsgInvalidFile)
 		}
 	}
