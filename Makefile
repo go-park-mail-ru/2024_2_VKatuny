@@ -1,5 +1,5 @@
 # define executable
-EXECUTABLE=uArt.exe
+EXECUTABLE=uArt
 
 # source dir
 SRC_DIR=./cmd/app
@@ -7,10 +7,18 @@ SRC_DIR=./cmd/app
 # flags for compilation
 BUILD_FLAGS=
 
-all: build
+# domain dirs in internal/pkg
+DOMAINS=applicant cvs employer portfolio session vacancies
+
+.PHONY: mock-gen
+
+all: install build
 
 build:
 	go build $(BUILD_FLAGS) -o $(EXECUTABLE) $(SRC_DIR)
+
+install:
+	go mod tidy
 
 tests:
 	go test ./... -coverprofile cover.out && go tool cover -func cover.out
@@ -25,6 +33,17 @@ lint:
 api:
 	swag init --parseInternal --pd --dir cmd/myapp/,delivery/handler/ --output api/
 	node ./api/server.js
+
+mock-gen:
+	@echo "Generating mocks..."
+	@for domain in $(DOMAINS); do \
+		echo "Generating mocks for domain: $$domain"; \
+		rm -rf internal/pkg/$$domain/mock; \
+		mockgen -source=internal/pkg/$$domain/$$domain.go \
+		    -destination=internal/pkg/$$domain/mock/$$domain.go \
+			-package=mocks; \
+	done
+	@echo "OK!"
 
 run:
 	go run $(SRC_DIR)/main.go
