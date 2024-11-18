@@ -34,6 +34,10 @@ const (
 	MsgWrongLoginOrPassword       = "wrong login or password"
 	MsgUserAlreadyExists          = "user already exists" // TODO: implement check in repository
 	MsgUnableToMarshalJSON        = "unable to marshal json"
+	MsgUnableToCreateUser         = "unable to create user"
+	MsgUnableToReadFile           = "unable to read file"
+	MsgUnableToUploadFile         = "unable to upload file"
+	MsgInvalidFile                = "invalid type of file file"
 )
 
 const (
@@ -54,17 +58,17 @@ type JSONResponse struct {
 	Error      string      `json:"error"`
 }
 
-// JSONUserBody is a struct that used as a field 'Body' in struct JsonResponse
-type JSONUserBody struct {
-	UserType string `json:"userType"` // use constants UserType
-	ID       uint64 `json:"id"`
-}
-
 // JSONLoginForm is a struct that receives login's form data from frontend
 type JSONLoginForm struct {
 	UserType string `json:"userType"` // use constants UserType
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type JSONLoginOutput struct {
+	UserType string      `json:"userType"` // use constants UserType
+	ID       uint64      `json:"id"`
+	Profile  interface{} `json:"profile"`
 }
 
 // JSONLoutForm accepts user type when someone log outs
@@ -98,13 +102,20 @@ type JSONApplicantRegistrationForm struct {
 
 // JSONEmployer is a default representation of employer
 type JSONEmployer struct {
-	FirstName          string `json:"firstName"`
-	LastName           string `json:"lastName"`
-	Position           string `json:"position"`
-	Company            string `json:"company"`
-	CompanyDescription string `json:"companyDescription"`
-	CompanyWebsite     string `json:"companyWebsite"`
-	Email              string `json:"email"`
+	UserType            string `json:"userType"`
+	ID                  uint64 `json:"id"`
+	FirstName           string `json:"firstName"`
+	LastName            string `json:"lastName"`
+	CityName            string `json:"cityName"`
+	Position            string `json:"position"`
+	CompanyName         string `json:"companyName"`
+	CompanyDescription  string `json:"companyDescription"`
+	CompanyWebsite      string `json:"companyWebsite"`
+	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	Contacts            string `json:"contacts"`
+	Email               string `json:"email"`
+	CreatedAt           string `json:"createdAt"`
+	UpdatedAt           string `json:"updatedAt"`
 }
 
 // JSONEmployer is a default representation of employer
@@ -120,7 +131,7 @@ type ApplicantInput struct {
 	Password            string `json:"password"`
 }
 
-type ApplicantOutput struct {
+type JSONApplicantOutput struct {
 	UserType            string `json:"userType"`
 	ID                  uint64 `json:"id"`
 	FirstName           string `json:"firstName"`
@@ -199,9 +210,9 @@ type EmployerOutput struct {
 	CreatedAt           string `json:"createdAt"`
 	UpdatedAt           string `json:"updatedAt"`
 }
-type UserIDAndType struct {
-	ID       uint64
-	UserType string
+type JSONUser struct {
+	ID       uint64 `json:"id"`
+	UserType string `json:"userType"`
 }
 
 type UserWithSession struct {
@@ -319,7 +330,7 @@ type JSONVacancySubscribers struct {
 	Subscribers []*JSONGetApplicantProfile `json:"subscribers"`
 }
 
-type SessionUser struct {
+type UserFromSession struct {
 	ID       uint64
 	UserType string
 }

@@ -2,16 +2,11 @@ package delivery
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
-	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
-	"github.com/sirupsen/logrus"
 )
 
 // CreateWorkerHandler creates applicant in db
@@ -26,73 +21,62 @@ import (
 // @Success     200 {object} inmemorydb.UserInput
 // @Failure     http.StatusBadRequest {object} nil
 // @Router      /registration/applicant/ [post]
-func CreateApplicantHandler(repo repository.IApplicantRepository, repoApplicantSession sessionRepo.SessionRepository, backendAddress string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
+func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 
-		funcName := "CreateApplicantHandler"
-		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
-		if !ok {
-			fmt.Printf("function %s: can't get logger from context\n", funcName)
-			return
-		}
+	fn := "ApplicantRegistration"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-		decoder := json.NewDecoder(r.Body)
+	applicantRegistrationForm := new(dto.JSONApplicantRegistrationForm)
 
-		newUserInput := new(dto.ApplicantInput)
-		err := decoder.Decode(newUserInput)
-		if err != nil {
-			logger.Errorf("function %s: got err %s", funcName, err)
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusBadRequest,
-				Error:      dto.MsgInvalidJSON,
-			})
-			return
-		}
-
-		if err := applicantUsecase.CreateApplicantInputCheck(newUserInput.FirstName, newUserInput.LastName, newUserInput.Email, newUserInput.Password); err != nil {
-			logger.Errorf("function %s: %s", funcName, err.Error())
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusBadRequest,
-				Error:      "user's fields aren't valid", // TODO: refactor error after refactoring validation
-			})
-			return
-		}
-
-		logger.Debugf("function %s: adding applicant to db %v", funcName, newUserInput)
-		// TODO: creating applicant and adding created session with new user must be in different usecases. divide usecase
-		user, sessionID, err := applicantUsecase.CreateApplicant(repo, repoApplicantSession, newUserInput)
-		if err != nil {
-			logger.Errorf("function %s: err - %s", funcName, err)
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusInternalServerError,
-				Error:      err.Error(),
-			})
-			return
-		}
-		logger.Debug("Cookie send")
-		cookie := utils.MakeAuthCookie(sessionID, backendAddress)
-		http.SetCookie(w, cookie)
-		// TODO: refactor code below
-
-		// if err == nil {
-		// 	user.UserType = dto.UserTypeApplicant
-		// 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-		// 		HTTPStatus: http.StatusOK,
-		// 		Body:       user,
-		// 	})
-		// } else {
-		// 	// is there actually should be HTTP 400?
-		// 	logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
-		// 	middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-		// 		HTTPStatus: http.StatusInternalServerError,
-		// 		Error:      err.Error(),
-		// 	})
-		// }
-		user.UserType = dto.UserTypeApplicant
-		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-			HTTPStatus: http.StatusOK,
-			Body:       user,
+	err := json.NewDecoder(r.Body).Decode(applicantRegistrationForm)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      dto.MsgInvalidJSON,
 		})
+		return
+	}
+	h.logger.Debugf("%s: json decoded: %v", fn, applicantRegistrationForm)
+
+	// TODO: add json validation with govalidator
+
+	applicant, err := h.applicantUsecase.Create(applicantRegistrationForm)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      dto.MsgUnableToCreateUser,
+		})
+		return
+	}
+	h.logger.Debugf("%s: user created successfully: %v", fn, applicant)
+
+	loginForm := &dto.JSONLoginForm{
+		UserType: dto.UserTypeApplicant,
+		Email:    applicantRegistrationForm.Email,
+		Password: applicantRegistrationForm.Password,
+	}
+	userWithSession, err := h.sessionUsecase.Login(loginForm)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      err.Error(), // TODO: standardize errors
+		})
+		return
+	}
+	h.logger.Debugf("%s: user logged in: %v", fn, userWithSession)
+
+	cookie := utils.MakeAuthCookie(userWithSession.SessionID, h.backendURI)
+	http.SetCookie(w, cookie)
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body: &dto.JSONUser{
+			ID:       userWithSession.ID,
+			UserType: userWithSession.UserType,
+		},
 	})
 }

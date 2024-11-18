@@ -2,29 +2,20 @@ package usecase
 
 import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
-	applicantRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/sirupsen/logrus"
 )
 
-type IApplicantUsecase interface {
-	GetApplicantProfile(userID uint64) (*dto.JSONGetApplicantProfile, error)
-	UpdateApplicantProfile(applicantID uint64, newProfileData *dto.JSONUpdateApplicantProfile) error
-}
-
 type ApplicantUsecase struct {
 	logger        *logrus.Logger
-	applicantRepo applicantRepository.IApplicantRepository // TODO: add prefix I to interface
+	applicantRepo applicant.IApplicantRepository
 }
 
 func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories) *ApplicantUsecase {
-	ApplicantRepository, ok := repositories.ApplicantRepository.(applicantRepository.IApplicantRepository)
-	if !ok {
-		return nil
-	}
 	return &ApplicantUsecase{
 		logger:        logger,
-		applicantRepo: ApplicantRepository,
+		applicantRepo: repositories.ApplicantRepository,
 	}
 }
 

@@ -194,12 +194,21 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 			return nil, err
 		}
 	}
-	row = s.db.QueryRow(`update vacancy
+	if updatedVacancy.Avatar != "" {
+		row = s.db.QueryRow(`update vacancy
 		set employer_id = $1, salary = $2, position = $3, city_id = $4, vacancy_description = $5,
 		work_type_id = $6, path_to_company_avatar = $7 where id=$8 returning id, position, vacancy_description, 
 		salary, employer_id, path_to_company_avatar, created_at, updated_at`,
-		updatedVacancy.EmployerID, updatedVacancy.Salary, updatedVacancy.Position,
-		CityId, updatedVacancy.Description, WorkTypeID, updatedVacancy.Avatar, ID)
+			updatedVacancy.EmployerID, updatedVacancy.Salary, updatedVacancy.Position,
+			CityId, updatedVacancy.Description, WorkTypeID, updatedVacancy.Avatar, ID)
+	} else {
+		row = s.db.QueryRow(`update vacancy
+		set employer_id = $1, salary = $2, position = $3, city_id = $4, vacancy_description = $5,
+		work_type_id = $6 where id=$7 returning id, position, vacancy_description, 
+		salary, employer_id, path_to_company_avatar, created_at, updated_at`,
+			updatedVacancy.EmployerID, updatedVacancy.Salary, updatedVacancy.Position,
+			CityId, updatedVacancy.Description, WorkTypeID, ID)
+	}
 
 	var oneVacancy dto.JSONVacancy
 	err := row.Scan(

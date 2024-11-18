@@ -1,4 +1,4 @@
-package repository
+package applicant
 
 import (
 	"fmt"
@@ -16,6 +16,13 @@ type IApplicantRepository interface { // TODO: rename to IApplicantRepository
 	Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) (*models.Applicant, error)
 	GetByID(ID uint64) (*models.Applicant, error)
 	GetByEmail(email string) (*models.Applicant, error)
+}
+
+type IApplicantUsecase interface {
+	Create(applicant *dto.JSONApplicantRegistrationForm) (*dto.JSONUser, error)
+	GetByID(ID uint64) (*dto.JSONApplicantOutput, error)
+	GetApplicantProfile(userID uint64) (*dto.JSONGetApplicantProfile, error)
+	UpdateApplicantProfile(applicantID uint64, newProfileData *dto.JSONUpdateApplicantProfile) error
 }
 
 var (
