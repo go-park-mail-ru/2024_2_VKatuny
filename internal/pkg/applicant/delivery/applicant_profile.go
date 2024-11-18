@@ -24,7 +24,7 @@ type ApplicantHandlers struct {
 	cvUsecase        cvs.ICVsUsecase
 }
 
-func NewApplicantProfileHandlers(app *internal.App) (*ApplicantHandlers, error) {
+func NewApplicantProfileHandlers(app *internal.App) (*ApplicantHandlers) {
 	return &ApplicantHandlers{
 		logger:           logrus.NewEntry(app.Logger),
 		backendURI:       app.BackendAddress,
@@ -32,7 +32,7 @@ func NewApplicantProfileHandlers(app *internal.App) (*ApplicantHandlers, error) 
 		sessionUsecase:   app.Usecases.SessionUsecase,
 		portfolioUsecase: app.Usecases.PortfolioUsecase,
 		cvUsecase:        app.Usecases.CVUsecase,
-	}, nil
+	}
 }
 
 func (h *ApplicantHandlers) ApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
