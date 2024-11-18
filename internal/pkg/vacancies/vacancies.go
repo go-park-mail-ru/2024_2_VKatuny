@@ -33,4 +33,5 @@ type IVacanciesUsecase interface {
 	UnsubscribeFromVacancy(ID uint64, currentUser *dto.SessionUser) error
 	GetSubscriptionInfo(ID uint64, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error)
 	GetVacancySubscribers(ID uint64, currentUser *dto.SessionUser) (*dto.JSONVacancySubscribers, error)
+	SearchVacancies(offsetStr, numStr, searchStr string) ([]*dto.JSONVacancy, error)
 }

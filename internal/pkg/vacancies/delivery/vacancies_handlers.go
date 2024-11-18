@@ -43,7 +43,7 @@ func GetVacanciesHandler(repo vacancies.IVacanciesRepository) http.Handler { //v
 		offsetStr := queryParams.Get("offset")
 		numStr := queryParams.Get("num")
 		searchStr := queryParams.Get("positionDescription")
-		vacancies, err := vacanciesUsecase.SearchVacancies(offsetStr, numStr, searchStr, repo)
+		vacancies, err := vacanciesUsecase.SearchVacancies(offsetStr, numStr, searchStr)
 
 		if err != nil {
 			logger.Errorf("function: %s; got err while reading vacancies from db %s", funcName, err)

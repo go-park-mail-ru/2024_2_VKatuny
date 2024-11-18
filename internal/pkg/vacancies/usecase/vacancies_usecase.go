@@ -49,7 +49,7 @@ const (
 	defaultVacanciesNum    = 10
 )
 
-func SearchVacancies(offsetStr, numStr, searchStr string, repo vacancies.IVacanciesRepository) ([]*dto.JSONVacancy, error) {
+func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr string) ([]*dto.JSONVacancy, error) {
 	offset, num, err := ValidateRequestParams(offsetStr, numStr)
 	if errors.Is(ErrOffsetIsNotANumber, err) {
 		offset = defaultVacanciesOffset
@@ -59,9 +59,9 @@ func SearchVacancies(offsetStr, numStr, searchStr string, repo vacancies.IVacanc
 	}
 	var vacancies []*dto.JSONVacancy
 	if searchStr != "" {
-		vacancies, err = repo.SearchByPositionDescription(offset, offset+num, searchStr)
+		vacancies, err = vu.vacanciesRepository.SearchByPositionDescription(offset, offset+num, searchStr)
 	} else {
-		vacancies, err = repo.GetWithOffset(offset, offset+num)
+		vacancies, err = vu.vacanciesRepository.GetWithOffset(offset, offset+num)
 	}
 	if err != nil {
 		return nil, err
