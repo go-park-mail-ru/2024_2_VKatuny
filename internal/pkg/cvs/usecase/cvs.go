@@ -1,7 +1,9 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
@@ -22,6 +24,68 @@ func NewCVsUsecase(logger *logrus.Logger, repositories *internal.Repositories) *
 		cvsRepo:     repositories.CVRepository,
 		sessionRepo: repositories.SessionApplicantRepository,
 	}
+}
+
+var ErrOffsetIsNotANumber = fmt.Errorf("query parameter offset isn't a number")
+var ErrNumIsNotANumber = fmt.Errorf("query parameter num isn't a number")
+
+func (u *CVsUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, uint64, error) {
+	fn := "VacanciesUsecase.ValidateQueryParameters"
+	var err error
+	offset, err1 := strconv.Atoi(offsetStr)
+
+	if err1 != nil {
+		u.logger.Errorf("%s: query parameter offset isn't a number: %s", fn, err1)
+		offset = 0
+		err = ErrOffsetIsNotANumber
+	}
+
+	num, err2 := strconv.Atoi(numStr)
+	if err2 != nil {
+		u.logger.Errorf("%s:query parameter num isn't a number: %s", fn, err2)
+		num = 0
+		err = ErrNumIsNotANumber // previous err will be overwritten
+	}
+	return uint64(offset), uint64(num), err
+}
+
+const (
+	defaultVacanciesOffset = 0
+	defaultVacanciesNum    = 10
+)
+
+func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr string) ([]*dto.JSONGetApplicantCV, error) {
+	fn := "VacanciesUsecase.GetVacanciesWithOffset"
+	offset, num, err := cu.ValidateQueryParameters(offsetStr, numStr)
+	if errors.Is(ErrOffsetIsNotANumber, err) {
+		offset = defaultVacanciesOffset
+	}
+	if errors.Is(ErrNumIsNotANumber, err) {
+		num = defaultVacanciesNum
+	}
+	var CVsModel []*dto.JSONCv
+	if searchStr != "" {
+		CVsModel, err = cu.cvsRepo.SearchByPositionDescription(offset, offset+num, searchStr)
+	} else {
+		CVsModel, err = cu.cvsRepo.GetWithOffset(offset, offset+num)
+	}
+	var CVs []*dto.JSONGetApplicantCV
+	for _, CVModel := range CVsModel {
+		CVs = append(CVs, &dto.JSONGetApplicantCV{
+			ID:                CVModel.ID,
+			ApplicantID:       CVModel.ApplicantID,
+			PositionRu:        CVModel.PositionRu,
+			PositionEn:        CVModel.PositionEn,
+			JobSearchStatus:   CVModel.JobSearchStatusName,
+			WorkingExperience: CVModel.WorkingExperience,
+			CreatedAt:         CVModel.CreatedAt,
+		})
+	}
+	if err != nil {
+		return nil, err
+	}
+	cu.logger.Debugf("%s: got %d vacancies", fn, len(CVs))
+	return CVs, nil
 }
 
 func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplicantCV, error) {

@@ -72,7 +72,6 @@ func (s *PostgreSQLVacanciesStorage) GetWithOffset(offset uint64, num uint64) ([
 
 func (s *PostgreSQLVacanciesStorage) SearchByPositionDescription(offset uint64, num uint64, searchStr string) ([]*dto.JSONVacancy, error) {
 	Vacancies := make([]*dto.JSONVacancy, 0)
-	fmt.Println(searchStr, num, offset)
 	rows, err := s.db.Query(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
 		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name FROM vacancy
 		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
