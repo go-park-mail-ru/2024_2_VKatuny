@@ -50,7 +50,7 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 	return CVs, nil
 }
 
-func (cu *CVsUsecase) CreateCV(cv *dto.JSONCv, currentUser *dto.SessionUser) (*dto.JSONCv, error) {
+func (cu *CVsUsecase) CreateCV(cv *dto.JSONCv, currentUser *dto.UserFromSession) (*dto.JSONCv, error) {
 	cv.ApplicantID = currentUser.ID
 	cv, err := cu.cvsRepo.Create(cv)
 	if err != nil {
@@ -69,7 +69,7 @@ func (cu *CVsUsecase) GetCV(cvID uint64) (*dto.JSONCv, error) {
 	return cv, nil
 }
 
-func (cu *CVsUsecase) UpdateCV(ID uint64, currentUser *dto.SessionUser, cv *dto.JSONCv) (*dto.JSONCv, error) {
+func (cu *CVsUsecase) UpdateCV(ID uint64, currentUser *dto.UserFromSession, cv *dto.JSONCv) (*dto.JSONCv, error) {
 	oldCv, err := cu.cvsRepo.GetByID(ID)
 	if err != nil {
 		cu.logger.Errorf("while getting from db got err %s", err)
@@ -89,7 +89,7 @@ func (cu *CVsUsecase) UpdateCV(ID uint64, currentUser *dto.SessionUser, cv *dto.
 	return newCV, nil
 }
 
-func (cu *CVsUsecase) DeleteCV(cvID uint64, currentUser *dto.SessionUser) error {
+func (cu *CVsUsecase) DeleteCV(cvID uint64, currentUser *dto.UserFromSession) error {
 	cv, err := cu.cvsRepo.GetByID(cvID)
 	if err != nil {
 		cu.logger.Errorf("while getting from db got err %s", err)

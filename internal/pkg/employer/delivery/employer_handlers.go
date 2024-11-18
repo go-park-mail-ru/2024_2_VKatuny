@@ -3,17 +3,11 @@ package delivery
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
-	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
-	sessionRepo "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
-
-	"github.com/sirupsen/logrus"
 )
 
 // CreateEmployerHandler creates employers in db
@@ -26,63 +20,62 @@ import (
 // @Success     200      {object}       dto.JSONResponse{statusCode=200,body=dto.JSONUserBody, error=""} "OK"
 // @Failure     400      {object}       nil
 // @Router      /registration/employer/ [post]
-func CreateEmployerHandler(repo repository.EmployerRepository, repoEmployerSession sessionRepo.SessionRepository, backendAddress string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
+func (h *EmployerHandlers) EmployerRegistration(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 
-		funcName := "CreateEmployerHandler"
-		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
-		if !ok {
-			fmt.Printf("function %s: can't get logger from context\n", funcName)
-			return
-		}
+	fn := "EmployerHandlers.CreateEmployerHandler"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-		decoder := json.NewDecoder(r.Body)
+	employerRegistrationForm := new(dto.JSONEmployerRegistrationForm)
+	err := json.NewDecoder(r.Body).Decode(employerRegistrationForm)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+			HTTPStatus: http.StatusBadRequest,
+			Error:      dto.MsgInvalidJSON,
+		})
+		return
+	}
+	h.logger.Debugf("%s: json decoded successfully: %v", fn, employerRegistrationForm)
 
-		newUserInput := new(dto.EmployerInput)
-		err := decoder.Decode(newUserInput)
-		if err != nil {
-			logger.Errorf("error while unmarshall employer  JSON: %s", err)
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusBadRequest,
-				Error:      dto.MsgInvalidJSON,
-			})
-			return
-		}
+	// TODO: implement usecase for validate registration data
 
-		if err := employerUsecase.CreateEmployerInputCheck(newUserInput); err != nil {
-			logger.Errorf("employer invalid fields")
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusBadRequest,
-				Error:      err.Error(),
-			})
-			return
-		}
-		logger.Debugf("function %s: employer input check passed", funcName)
+	employer, err := h.employerUsecase.Create(employerRegistrationForm)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("%s: employer created successfully", fn)
 
-		user, sessionID, err := employerUsecase.CreateEmployer(repo, repoEmployerSession, newUserInput)
-		if err != nil {
-			logger.Errorf("function %s: err - %s", funcName, err)
-			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-				HTTPStatus: http.StatusInternalServerError,
-				Error:      err.Error(),
-			})
-			return
-		}
-		logger.Debug("Cookie send")
-		cookie := utils.MakeAuthCookie(sessionID, backendAddress)
-		http.SetCookie(w, cookie)
-		if err != nil {
-			logger.Errorf("function %s: got err while adding applicant to db %s", funcName, err)
-			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-				HTTPStatus: http.StatusInternalServerError,
-				Error:      err.Error(),
-			})
-		}
-		user.UserType = dto.UserTypeEmployer
-			middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-				HTTPStatus: http.StatusOK,
-				Body:       user,
-			})
+	employerLogin := &dto.JSONLoginForm{
+		UserType: dto.UserTypeEmployer,
+		Email:    employerRegistrationForm.Email,
+		Password: employerRegistrationForm.Password,
+	}
+	employerWithSession, err := h.sessionUsecase.Login(employerLogin)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("%s: employer logged in successfully", fn)
+
+	cookie := utils.MakeAuthCookie(employerWithSession.SessionID, h.backendAddress)
+	h.logger.Debugf("%s: cookie created %s", fn, cookie.Value)
+	http.SetCookie(w, cookie)
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       &dto.JSONUser{
+			ID: employer.ID,
+			UserType: dto.UserTypeEmployer,
+		},
 	})
 }

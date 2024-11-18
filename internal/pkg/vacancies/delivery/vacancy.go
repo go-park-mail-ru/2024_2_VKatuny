@@ -117,7 +117,7 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 		newVacancy.Avatar = fileAddress
 	}
 
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -216,7 +216,7 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 		updatedVacancy.Avatar = fileAddress
 	}
 
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -253,7 +253,7 @@ func (h *VacanciesHandlers) deleteVacancyHandler(w http.ResponseWriter, r *http.
 
 	vacancyID := uint64(slug)
 
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -290,7 +290,7 @@ func (h *VacanciesHandlers) subscribeVacancyHandler(w http.ResponseWriter, r *ht
 
 	vacancyID := uint64(slug)
 
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -329,7 +329,7 @@ func (h *VacanciesHandlers) unsubscribeVacancyHandler(w http.ResponseWriter, r *
 
 	vacancyID := uint64(slug)
 
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -368,7 +368,7 @@ func (h *VacanciesHandlers) getVacancySubscriptionHandler(w http.ResponseWriter,
 
 	vacancyID := uint64(slug)
 
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -405,7 +405,7 @@ func (h *VacanciesHandlers) getVacancySubscribersHandler(w http.ResponseWriter, 
 		return
 	}
 
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.SessionUser)
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{

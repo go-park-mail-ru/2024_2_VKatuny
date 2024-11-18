@@ -1,16 +1,11 @@
 package delivery
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
-
-	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
-
-	"github.com/sirupsen/logrus"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
 const (
@@ -31,57 +26,49 @@ const (
 // @Failure     405
 // @Failure     500
 // @Router      /vacancies [get]
-func GetVacanciesHandler(repo vacancies.IVacanciesRepository) http.Handler { //vacanciesTable *inmemorydb.VacanciesHandler
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
+func (h *VacanciesHandlers) GetVacancies(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
 
-		funcName := "vacancies.GetVacanciesHandler"
-		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
-		if !ok {
-			fmt.Printf("%s: can't get logger from context\n", funcName)
-			return
-		}
+	fn := "VacanciesHandlers.GetVacancies"
+	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-		queryParams := r.URL.Query()
-		logger.Debugf("function: %s; Query params read: %v", funcName, queryParams)
+	queryParams := r.URL.Query()
+	h.logger.Debugf("%s; Query params read: %v", fn, queryParams)
 
-		offsetStr := queryParams.Get("offset")
-		numStr := queryParams.Get("num")
-		offset, num, err := vacanciesUsecase.ValidateRequestParams(offsetStr, numStr)
+	offsetStr := queryParams.Get("offset")
+	numStr := queryParams.Get("num")
+	offset, num, err := h.vacanciesUsecase.ValidateQueryParameters(offsetStr, numStr)
 
-		// at lest one param is incorrect or not presented
-		// using default values
-		if err != nil {
-			logger.Debugf("function: %s; got err: %s - processing with default values", funcName, err)
-			offset = defaultVacanciesOffset
-			num = defaultVacanciesNum
-		}
+	// at lest one param is incorrect or not presented
+	// using default values
+	if err != nil {
+		h.logger.Debugf("%s; got err: %s - processing with default values", fn, err)
+		offset = defaultVacanciesOffset
+		num = defaultVacanciesNum
+	}
+	h.logger.Debugf("%s; got offset %d and num %d", fn, offset, num)
 
-		logger.Debugf("function: %s; going to db for vacancies", funcName)
-		// TODO: use usecase
-		vacancies, err := repo.GetWithOffset(offset, offset+num)
-
-		if err != nil {
-			logger.Errorf("function: %s; got err while reading vacancies from db %s", funcName, err)
-			middleware.UniversalMarshal(
-				w,
-				http.StatusInternalServerError,
-				dto.JSONResponse{
-					HTTPStatus: http.StatusInternalServerError,
-					Error:      dto.MsgDataBaseError,
-				},
-			)
-			return
-		}
-
-		logger.Debugf("function: %s; got vacancies %+v", funcName, vacancies)
+	vacancies, err := h.vacanciesUsecase.GetVacanciesWithOffset(offset, num)
+	if err != nil {
+		h.logger.Errorf("%s; got err while reading vacancies from db %s", fn, err)
 		middleware.UniversalMarshal(
 			w,
-			http.StatusOK,
+			http.StatusInternalServerError,
 			dto.JSONResponse{
-				HTTPStatus: http.StatusOK,
-				Body:       vacancies,
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      err.Error(),
 			},
 		)
-	})
+		return
+	}
+
+	h.logger.Debugf("%s; got vacancies %v", fn, vacancies)
+	middleware.UniversalMarshal(
+		w,
+		http.StatusOK,
+		dto.JSONResponse{
+			HTTPStatus: http.StatusOK,
+			Body:       vacancies,
+		},
+	)
 }

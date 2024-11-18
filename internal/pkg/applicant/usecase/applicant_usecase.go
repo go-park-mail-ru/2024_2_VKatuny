@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	repoApplicant "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	repoSession "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
@@ -20,39 +18,61 @@ func CreateApplicantInputCheck(Name, LastName, Email, Password string) error {
 	return nil
 }
 
-// CreateApplicant accepts employer repository and validated form and creates new employer
-func CreateApplicant(repo repoApplicant.IApplicantRepository, sessionRepoApplicant repoSession.SessionRepository, form *dto.ApplicantInput) (*dto.ApplicantOutput, string, error) {
-	_, err := repo.GetByEmail(form.Email)
-	// if applicant != nil {
-	// 	return nil, "", fmt.Errorf(dto.MsgUserAlreadyExists)
-	// }
-	// if err != nil {
-	// 	return nil, "", fmt.Errorf(dto.MsgDataBaseError)
-	// }
-	if err.Error() != "sql: no rows in result set" {
-		return nil, "", fmt.Errorf(dto.MsgDataBaseError)
+func (u *ApplicantUsecase) Create(form *dto.JSONApplicantRegistrationForm) (*dto.JSONUser, error) {
+	fn := "ApplicantUsecase.Create"
+
+	u.logger.Debugf("%s: entering", fn)
+
+	_, err := u.applicantRepo.GetByEmail(form.Email)
+	if err != nil && err.Error() != "sql: no rows in result set" {
+		u.logger.Errorf("%s: got err %s", fn, err)
+		return nil, fmt.Errorf(dto.MsgUserAlreadyExists)
 	}
-	form.Password = utils.HashPassword(form.Password)
-	user, err := repo.Create(form)
+	u.logger.Debugf("%s: OK, such user doesn't exist", fn)
+
+	applicant := &dto.ApplicantInput{
+		FirstName: form.FirstName,
+		LastName:  form.LastName,
+		BirthDate: form.BirthDate,
+		Email:     form.Email,
+		Password:  utils.HashPassword(form.Password),
+	}
+	
+	applicantModel, err := u.applicantRepo.Create(applicant)
 	if err != nil {
-		return nil, "", fmt.Errorf(dto.MsgDataBaseError)
+		u.logger.Errorf("%s: got err %s", fn, err)
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
-	sessionID := utils.GenerateSessionToken(utils.TokenLength, dto.UserTypeApplicant)
-	err = sessionRepoApplicant.Create(user.ID, sessionID)
-	// if err != nil {
-	// 	return nil, "", fmt.Errorf(dto.MsgDataBaseError)
-	// }
-	return &dto.ApplicantOutput{
-		ID:                  user.ID,
-		FirstName:           user.FirstName,
-		LastName:            user.LastName,
-		CityName:            user.CityName,
-		BirthDate:           user.BirthDate,
-		PathToProfileAvatar: user.PathToProfileAvatar,
-		Contacts:            user.Contacts,
-		Education:           user.Education,
-		Email:               user.Email,
-		CreatedAt:           user.CreatedAt,
-		UpdatedAt:           user.UpdatedAt,
-	}, sessionID, err // TODO: return nil instead of err
+	u.logger.Debugf("%s: user created", fn)
+
+	return &dto.JSONUser{
+		ID:       applicantModel.ID,
+		UserType: dto.UserTypeApplicant,
+	}, nil
+}
+
+func (u *ApplicantUsecase) GetByID(ID uint64) (*dto.JSONApplicantOutput, error) {
+	fn := "ApplicantUsecase.GetByID"
+	u.logger.Debugf("%s: entering", fn)
+
+	applicantModel, err := u.applicantRepo.GetByID(ID)
+	if err != nil {
+		u.logger.Errorf("%s: got err %s", fn, err)
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
+	}
+	u.logger.Debugf("%s: successfully got user", fn)
+
+	return &dto.JSONApplicantOutput{
+		ID:           applicantModel.ID,
+		UserType:     dto.UserTypeApplicant,
+		FirstName:    applicantModel.FirstName,
+		LastName:     applicantModel.LastName,
+		CityName:     applicantModel.CityName,
+		BirthDate:    applicantModel.BirthDate,
+		PathToProfileAvatar: applicantModel.PathToProfileAvatar,
+		Contacts:     applicantModel.Contacts,
+		Education:    applicantModel.Education,
+		UpdatedAt:    applicantModel.UpdatedAt,
+		CreatedAt:    applicantModel.CreatedAt,
+	}, nil	
 }
