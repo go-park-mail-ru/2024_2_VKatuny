@@ -1,11 +1,9 @@
 -- Write your migrate up statements here
 
 ALTER TABLE vacancy
-    ADD fts TSVECTOR
-;
+    ADD fts TSVECTOR;
 ALTER TABLE cv
-    ADD fts TSVECTOR
-;
+    ADD fts TSVECTOR;
 
 UPDATE cv SET fts = setweight(to_tsvector('russian', "position_rus"), 'A')|| setweight(to_tsvector('english', "position_eng"), 'A') || setweight(to_tsvector('russian', cv_description), 'B') || setweight(to_tsvector('russian', working_experience), 'B');
 UPDATE vacancy SET fts = setweight(to_tsvector('russian', "position"), 'A') || setweight(to_tsvector('russian', vacancy_description), 'B');
