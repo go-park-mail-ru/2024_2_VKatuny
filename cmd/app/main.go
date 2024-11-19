@@ -2,6 +2,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -32,11 +33,13 @@ import (
 	vacancies_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
 )
 
-// @title   uArt's API
+// @title   μArt's API
 // @version 1.0
 
 // @contact.name Ifelsik
 // @contact.url  https://github.com/Ifelsik
+// @contact.name Olgmuzalev13
+// @contact.url  https://github.com/Olgmuzalev13
 
 // @host     127.0.0.1:8080
 // @BasePath /api/v1
@@ -49,7 +52,8 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 	defer dbConnection.Close()
-
+	fmt.Println("!!!!!!!", conf.Server.GetMediaDir(), "!!!!!!")
+	fmt.Println("!!!!!!!", conf.Server.GetFrontURI(), "!!!!!!")
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),

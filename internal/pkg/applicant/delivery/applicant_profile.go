@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -9,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
@@ -16,22 +16,26 @@ import (
 )
 
 type ApplicantHandlers struct {
-	logger           *logrus.Entry
-	backendURI       string
-	applicantUsecase applicant.IApplicantUsecase
-	sessionUsecase   session.ISessionUsecase
-	portfolioUsecase portfolio.IPortfolioUsecase
-	cvUsecase        cvs.ICVsUsecase
+	logger             *logrus.Entry
+	backendURI         string
+	applicantUsecase   applicant.IApplicantUsecase
+	sessionUsecase     session.ISessionUsecase
+	portfolioUsecase   portfolio.IPortfolioUsecase
+	cvUsecase          cvs.ICVsUsecase
+	fileLoadingUsecase fileloading.IFileLoadingUsecase
+	fileLoadingRepo    fileloading.IFileLoadingRepository
 }
 
-func NewApplicantProfileHandlers(app *internal.App) (*ApplicantHandlers) {
+func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 	return &ApplicantHandlers{
-		logger:           logrus.NewEntry(app.Logger),
-		backendURI:       app.BackendAddress,
-		applicantUsecase: app.Usecases.ApplicantUsecase,
-		sessionUsecase:   app.Usecases.SessionUsecase,
-		portfolioUsecase: app.Usecases.PortfolioUsecase,
-		cvUsecase:        app.Usecases.CVUsecase,
+		logger:             logrus.NewEntry(app.Logger),
+		backendURI:         app.BackendAddress,
+		applicantUsecase:   app.Usecases.ApplicantUsecase,
+		sessionUsecase:     app.Usecases.SessionUsecase,
+		portfolioUsecase:   app.Usecases.PortfolioUsecase,
+		cvUsecase:          app.Usecases.CVUsecase,
+		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
+		fileLoadingRepo:    app.Repositories.FileLoadingRepository,
 	}
 }
 
@@ -55,7 +59,7 @@ func (h *ApplicantHandlers) GetApplicantProfileHandler(w http.ResponseWriter, r 
 	fn := "ApplicantProfileHandlers.GetApplicantProfileHandler"
 
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
-	
+
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -96,16 +100,26 @@ func (h *ApplicantHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter,
 
 	applicantID := uint64(ID)
 
-	decoder := json.NewDecoder(r.Body)
-	newProfileData := new(dto.JSONUpdateApplicantProfile)
-	err = decoder.Decode(newProfileData)
-	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      "unable to unmarshal JSON",
-		})
-		return
+	newProfileData := &dto.JSONUpdateApplicantProfile{}
+	newProfileData.FirstName = r.FormValue("firstName")
+	newProfileData.LastName = r.FormValue("lastName")
+	newProfileData.City = r.FormValue("city")
+	newProfileData.BirthDate = r.FormValue("birthDate")
+	newProfileData.Contacts = r.FormValue("contacts")
+	newProfileData.Education = r.FormValue("education")
+	defer r.MultipartForm.RemoveAll()
+	file, header, err := r.FormFile("my_file")
+	if err == nil {
+		defer file.Close()
+		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		if err != nil {
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      err.Error(),
+			})
+			return
+		}
+		newProfileData.Avatar = fileAddress
 	}
 
 	err = h.applicantUsecase.UpdateApplicantProfile(applicantID, newProfileData)
@@ -161,7 +175,7 @@ func (h *ApplicantHandlers) GetApplicantCVsHandler(w http.ResponseWriter, r *htt
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"
 
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
-	
+
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/cv/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)

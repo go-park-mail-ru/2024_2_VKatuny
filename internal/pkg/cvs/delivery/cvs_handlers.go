@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -12,21 +11,27 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
+
+	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 )
 
 type CVsHandler struct {
 	logger               *logrus.Entry
 	cvsUsecase           cvs.ICVsUsecase
 	sessionApplicantRepo session.ISessionRepository
+	fileLoadingUsecase   fileloading.IFileLoadingUsecase
+	fileLoadingRepo      fileloading.IFileLoadingRepository
 }
 
 func NewCVsHandler(layers *internal.App) *CVsHandler {
 	logger := layers.Logger
 	logger.Debug("CVsHandler created")
 	return &CVsHandler{
-		logger:     &logrus.Entry{Logger: logger},
-		cvsUsecase: layers.Usecases.CVUsecase,
+		logger:               &logrus.Entry{Logger: logger},
+		cvsUsecase:           layers.Usecases.CVUsecase,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
+		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
+		fileLoadingRepo:      layers.Repositories.FileLoadingRepository,
 	}
 }
 
@@ -60,17 +65,26 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 	fn := "CVsHandler.CreateCVHandler"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	decoder := json.NewDecoder(r.Body)
-	newCV := new(dto.JSONCv)
-
-	err := decoder.Decode(newCV)
-	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      dto.MsgInvalidJSON,
-		})
-		return
+	r.ParseMultipartForm(25 << 20) // 25Mb
+	newCV := &dto.JSONCv{}
+	newCV.PositionRu = r.FormValue("positionRu")
+	newCV.PositionEn = r.FormValue("positionEn")
+	newCV.Description = r.FormValue("description")
+	newCV.JobSearchStatusName = r.FormValue("jobSearchStatusName")
+	newCV.WorkingExperience = r.FormValue("workingExperience")
+	defer r.MultipartForm.RemoveAll()
+	file, header, err := r.FormFile("my_file")
+	if err == nil {
+		defer file.Close()
+		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		if err != nil {
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      err.Error(),
+			})
+			return
+		}
+		newCV.Avatar = fileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
@@ -145,16 +159,26 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("function %s: got slug cvID: %d", fn, ID)
 	cvID := uint64(ID)
-	decoder := json.NewDecoder(r.Body)
-	newCV := new(dto.JSONCv)
-	err = decoder.Decode(newCV)
-	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      dto.MsgInvalidJSON,
-		})
-		return
+	r.ParseMultipartForm(25 << 20) // 25Mb
+	newCV := &dto.JSONCv{}
+	newCV.PositionRu = r.FormValue("positionRu")
+	newCV.PositionEn = r.FormValue("positionEn")
+	newCV.Description = r.FormValue("description")
+	newCV.JobSearchStatusName = r.FormValue("jobSearchStatusName")
+	newCV.WorkingExperience = r.FormValue("workingExperience")
+	defer r.MultipartForm.RemoveAll()
+	file, header, err := r.FormFile("my_file")
+	if err == nil {
+		defer file.Close()
+		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		if err != nil {
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      err.Error(),
+			})
+			return
+		}
+		newCV.Avatar = fileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
@@ -197,7 +221,7 @@ func (h *CVsHandler) DeleteCVHandler(w http.ResponseWriter, r *http.Request) {
 
 	fn := "CVsHandler.DeleteCVHandler"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
-	
+
 	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
