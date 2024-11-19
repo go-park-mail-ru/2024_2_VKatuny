@@ -26,6 +26,11 @@ func NewCVsUsecase(logger *logrus.Logger, repositories *internal.Repositories) *
 	}
 }
 
+const (
+	defaultVacanciesOffset = 0
+	defaultVacanciesNum    = 10
+)
+
 var ErrOffsetIsNotANumber = fmt.Errorf("query parameter offset isn't a number")
 var ErrNumIsNotANumber = fmt.Errorf("query parameter num isn't a number")
 
@@ -48,11 +53,6 @@ func (u *CVsUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, 
 	}
 	return uint64(offset), uint64(num), err
 }
-
-const (
-	defaultVacanciesOffset = 0
-	defaultVacanciesNum    = 10
-)
 
 func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr string) ([]*dto.JSONGetApplicantCV, error) {
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
