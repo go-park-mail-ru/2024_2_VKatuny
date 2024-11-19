@@ -1,23 +1,27 @@
 package internal
 
 import (
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/sirupsen/logrus"
 )
 
 type App struct {
-	Logger       *logrus.Logger
-	Repositories *Repositories
-	Usecases     *Usecases
+	Logger         *logrus.Logger
+	BackendAddress string
+	Repositories   *Repositories
+	Usecases       *Usecases
 }
 
 type Repositories struct {
-	EmployerRepository         interface{}
-	ApplicantRepository        interface{}
-	PortfolioRepository        interface{}
+	EmployerRepository         employer.IEmployerRepository
+	ApplicantRepository        applicant.IApplicantRepository
+	PortfolioRepository        portfolio.IPortfolioRepository
 	CVRepository               cvs.ICVsRepository
 	VacanciesRepository        vacancies.IVacanciesRepository
 	SessionApplicantRepository session.ISessionRepository
@@ -26,13 +30,13 @@ type Repositories struct {
 }
 
 type Usecases struct {
-	EmployerUsecase    interface{}
-	ApplicantUsecase   interface{}
-	PortfolioUsecase   interface{}
+	EmployerUsecase    employer.IEmployerUsecase
+	ApplicantUsecase   applicant.IApplicantUsecase
+	PortfolioUsecase   portfolio.IPortfolioUsecase
 	CVUsecase          cvs.ICVsUsecase
 	VacanciesUsecase   vacancies.IVacanciesUsecase
-	FileLoadingUsecase fileloading.IFileLoadingUsecase
 	SessionUsecase     session.ISessionUsecase
+	FileLoadingUsecase fileloading.IFileLoadingUsecase
 }
 
 // type Handlers struct {

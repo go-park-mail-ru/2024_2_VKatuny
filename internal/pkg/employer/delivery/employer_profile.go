@@ -6,36 +6,33 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
-	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
-type EmployerProfileHandlers struct {
+type EmployerHandlers struct {
 	logger           *logrus.Entry
-	employerUsecase  *employerUsecase.EmployerUsecase
-	vacanciesUsecase *vacanciesUsecase.VacanciesUsecase
+	backendAddress   string
+	employerUsecase  employer.IEmployerUsecase
+	vacanciesUsecase vacancies.IVacanciesUsecase
+	sessionUsecase   session.ISessionUsecase
 }
 
-func NewEmployerProfileHandlers(logger *logrus.Logger, usecases *internal.Usecases) (*EmployerProfileHandlers, error) {
-	employerUsecase, ok1 := usecases.EmployerUsecase.(*employerUsecase.EmployerUsecase)
-	//logger.Debug("err with employerUsecase ", ok1)
-	vacanciesUsecase, ok2 := usecases.VacanciesUsecase.(*vacanciesUsecase.VacanciesUsecase)
-	//logger.Debug("err with vacanciesUsecase ", ok2)
-	if !(ok1 && ok2) {
-		return nil, commonerrors.ErrUnableToCast
+func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
+	return &EmployerHandlers{
+		logger:           logrus.NewEntry(app.Logger),
+		backendAddress:   app.BackendAddress,
+		employerUsecase:  app.Usecases.EmployerUsecase,
+		vacanciesUsecase: app.Usecases.VacanciesUsecase,
+		sessionUsecase:   app.Usecases.SessionUsecase,
 	}
-	return &EmployerProfileHandlers{
-		logger:           &logrus.Entry{Logger: logger},
-		employerUsecase:  employerUsecase,
-		vacanciesUsecase: vacanciesUsecase,
-	}, nil
 }
 
-func (h *EmployerProfileHandlers) EmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *EmployerHandlers) EmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.GetEmployerProfileHandler(w, r)
@@ -49,7 +46,7 @@ func (h *EmployerProfileHandlers) EmployerProfileHandler(w http.ResponseWriter, 
 	}
 }
 
-func (h *EmployerProfileHandlers) GetEmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *EmployerHandlers) GetEmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerProfileHandler"
@@ -80,7 +77,7 @@ func (h *EmployerProfileHandlers) GetEmployerProfileHandler(w http.ResponseWrite
 	})
 }
 
-func (h *EmployerProfileHandlers) UpdateEmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *EmployerHandlers) UpdateEmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.UpdateEmployerProfileHandler"
@@ -120,7 +117,7 @@ func (h *EmployerProfileHandlers) UpdateEmployerProfileHandler(w http.ResponseWr
 	h.logger.Debugf("function %s: success", fn)
 }
 
-func (h *EmployerProfileHandlers) GetEmployerVacanciesHandler(w http.ResponseWriter, r *http.Request) {
+func (h *EmployerHandlers) GetEmployerVacanciesHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerVacanciesHandler"

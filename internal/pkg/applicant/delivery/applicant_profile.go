@@ -6,38 +6,36 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
-	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
-type ApplicantProfileHandlers struct {
+type ApplicantHandlers struct {
 	logger           *logrus.Entry
-	applicantUsecase applicantUsecase.IApplicantUsecase
-	portfolioUsecase portfolioUsecase.IPortfolioUsecase
+	backendURI       string
+	applicantUsecase applicant.IApplicantUsecase
+	sessionUsecase   session.ISessionUsecase
+	portfolioUsecase portfolio.IPortfolioUsecase
 	cvUsecase        cvs.ICVsUsecase
 }
 
-func NewApplicantProfileHandlers(logger *logrus.Logger, usecases *internal.Usecases) (*ApplicantProfileHandlers, error) {
-	ApplicantUsecase, ok1 := usecases.ApplicantUsecase.(*applicantUsecase.ApplicantUsecase)
-	PortfolioUsecase, ok2 := usecases.PortfolioUsecase.(*portfolioUsecase.PortfolioUsecase)
-	if !(ok1 && ok2) {
-		return nil, commonerrors.ErrUnableToCast
+func NewApplicantProfileHandlers(app *internal.App) (*ApplicantHandlers) {
+	return &ApplicantHandlers{
+		logger:           logrus.NewEntry(app.Logger),
+		backendURI:       app.BackendAddress,
+		applicantUsecase: app.Usecases.ApplicantUsecase,
+		sessionUsecase:   app.Usecases.SessionUsecase,
+		portfolioUsecase: app.Usecases.PortfolioUsecase,
+		cvUsecase:        app.Usecases.CVUsecase,
 	}
-	return &ApplicantProfileHandlers{
-		logger:           &logrus.Entry{Logger: logger},
-		applicantUsecase: ApplicantUsecase,
-		portfolioUsecase: PortfolioUsecase,
-		cvUsecase:        usecases.CVUsecase,
-	}, nil
 }
 
-func (h *ApplicantProfileHandlers) ApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
-	h.logger.Logger.Debug("Got request", r.URL.Path)
+func (h *ApplicantHandlers) ApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.GetApplicantProfileHandler(w, r)
@@ -51,7 +49,7 @@ func (h *ApplicantProfileHandlers) ApplicantProfileHandler(w http.ResponseWriter
 	}
 }
 
-func (h *ApplicantProfileHandlers) GetApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantProfileHandler"
@@ -83,7 +81,7 @@ func (h *ApplicantProfileHandlers) GetApplicantProfileHandler(w http.ResponseWri
 	})
 }
 
-func (h *ApplicantProfileHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.UpdateApplicantProfileHandler"
@@ -126,7 +124,7 @@ func (h *ApplicantProfileHandlers) UpdateApplicantProfileHandler(w http.Response
 	})
 }
 
-func (h *ApplicantProfileHandlers) GetApplicantPortfoliosHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetApplicantPortfoliosHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantPortfoliosHandler"
@@ -157,7 +155,7 @@ func (h *ApplicantProfileHandlers) GetApplicantPortfoliosHandler(w http.Response
 	})
 }
 
-func (h *ApplicantProfileHandlers) GetApplicantCVsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetApplicantCVsHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"

@@ -3,28 +3,19 @@ package usecase
 import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	employerRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/sirupsen/logrus"
 )
 
-type IEmployerUsecase interface {
-	GetEmployerProfile(employerID uint64) (*dto.JSONGetEmployerProfile, error)
-	UpdateEmployerProfile(employerID uint64, employerProfile *dto.JSONUpdateEmployerProfile) error
-}
-
 type EmployerUsecase struct {
-	logger             *logrus.Logger
-	employerRepository employerRepository.EmployerRepository
+	logger             *logrus.Entry
+	employerRepository employer.IEmployerRepository
 }
 
 func NewEmployerUsecase(logger *logrus.Logger, repositories *internal.Repositories) *EmployerUsecase {
-	employerRepository, ok := repositories.EmployerRepository.(employerRepository.EmployerRepository)
-	if !ok {
-		return nil
-	}
 	return &EmployerUsecase{
-		logger:             logger,
-		employerRepository: employerRepository,
+		logger:             &logrus.Entry{Logger: logger},
+		employerRepository: repositories.EmployerRepository,
 	}
 }
 

@@ -121,25 +121,73 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 		applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
 		updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, ID)
 
-	var oneVacancy dto.JSONCv
+	var oneCV dto.JSONCv
 
-	err := row.Scan(&oneVacancy.ID,
-		&oneVacancy.ApplicantID,
-		&oneVacancy.PositionRu,
-		&oneVacancy.PositionEn,
-		&oneVacancy.Description,
-		&oneVacancy.WorkingExperience,
-		&oneVacancy.Avatar,
-		&oneVacancy.CreatedAt,
-		&oneVacancy.UpdatedAt)
-	oneVacancy.JobSearchStatusName = updatedCv.JobSearchStatusName
+	err := row.Scan(&oneCV.ID,
+		&oneCV.ApplicantID,
+		&oneCV.PositionRu,
+		&oneCV.PositionEn,
+		&oneCV.Description,
+		&oneCV.WorkingExperience,
+		&oneCV.Avatar,
+		&oneCV.CreatedAt,
+		&oneCV.UpdatedAt)
+	oneCV.JobSearchStatusName = updatedCv.JobSearchStatusName
 	if err != nil {
 		return nil, err
 	}
-	return &oneVacancy, err
+	return &oneCV, err
 }
 
 func (s *PostgreSQLCVStorage) Delete(ID uint64) error {
 	_, err := s.db.Exec(`delete from cv where id = $1`, ID)
 	return err
+}
+
+func (s *PostgreSQLCVStorage) GetWithOffset(offset uint64, num uint64) ([]*dto.JSONCv, error) {
+	CVs := make([]*dto.JSONCv, 0)
+	rows, err := s.db.Query(`select cv.id, applicant_id, cv.position_rus, cv.position_eng, cv_description, job_search_status.job_search_status_name,
+		working_experience, path_to_profile_avatar, cv.created_at, cv.updated_at from cv
+		left join job_search_status on cv.job_search_status_id=job_search_status.id
+		ORDER BY created_at desc limit $1 offset $2`, num, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var CV dto.JSONCv
+		if err := rows.Scan(&CV.ID, &CV.ApplicantID, &CV.PositionRu, &CV.PositionEn, &CV.Description, &CV.JobSearchStatusName, &CV.WorkingExperience,
+			&CV.Avatar, &CV.CreatedAt, &CV.UpdatedAt); err != nil {
+			return nil, err
+		}
+		CVs = append(CVs, &CV)
+		fmt.Println(CV)
+	}
+
+	return CVs, nil
+}
+
+func (s *PostgreSQLCVStorage) SearchByPositionDescription(offset uint64, num uint64, searchStr string) ([]*dto.JSONCv, error) {
+	CVs := make([]*dto.JSONCv, 0)
+	rows, err := s.db.Query(`select cv.id, applicant_id, cv.position_rus, cv.position_eng, cv_description, job_search_status.job_search_status_name,
+		working_experience, path_to_profile_avatar, cv.created_at, cv.updated_at from cv
+		left join job_search_status on cv.job_search_status_id=job_search_status.id
+		where ts_rank_cd(fts, plainto_tsquery('russian', $1)) <> 0 order by ts_rank_cd(fts, plainto_tsquery('russian', $2)) desc limit $3 offset $4`, searchStr, searchStr, num, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var CV dto.JSONCv
+		if err := rows.Scan(&CV.ID, &CV.ApplicantID, &CV.PositionRu, &CV.PositionEn, &CV.Description, &CV.JobSearchStatusName, &CV.WorkingExperience,
+			&CV.Avatar, &CV.CreatedAt, &CV.UpdatedAt); err != nil {
+			return nil, err
+		}
+		CVs = append(CVs, &CV)
+		fmt.Println(CV)
+	}
+	fmt.Println(CVs)
+	return CVs, nil
 }

@@ -5,27 +5,19 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/sirupsen/logrus"
 )
 
-type IPortfolioUsecase interface {
-	GetApplicantPortfolios(applicantID uint64) ([]*dto.JSONGetApplicantPortfolio, error)
-}
-
 type PortfolioUsecase struct {
-	logger        *logrus.Logger
-	portfolioRepo repository.IPortfolioRepository
+	logger        *logrus.Entry
+	portfolioRepo portfolio.IPortfolioRepository
 }
 
 func NewPortfolioUsecase(logger *logrus.Logger, repositories *internal.Repositories) *PortfolioUsecase {
-	PortfolioRepository, ok := repositories.PortfolioRepository.(repository.IPortfolioRepository)
-	if !ok {
-		return nil
-	}
 	return &PortfolioUsecase{
-		logger:        logger,
-		portfolioRepo: PortfolioRepository,
+		logger:        logrus.NewEntry(logger),
+		portfolioRepo: repositories.PortfolioRepository,
 	}
 }
 

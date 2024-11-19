@@ -8,11 +8,11 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
-// GetVacanciesHandler returns list of vacancies
-// GetVacancies godoc
-// @Summary     Gets list of vacancies
-// @Description Accepts offset and number of vacancies with id >= offset. Returns vacancies
-// @Tags        Vacancies
+// GetCVsHandler returns list of CVs
+// GetCVs godoc
+// @Summary     Gets list of CVs
+// @Description Accepts offset and number of CVs with id >= offset. Returns CVs
+// @Tags        CVs
 // @Produce     json
 // @Param       offset query int true "offset"
 // @Param       num    query int true "num"
@@ -20,11 +20,11 @@ import (
 // @Failure     400
 // @Failure     405
 // @Failure     500
-// @Router      /vacancies [get]
-func (h *VacanciesHandlers) GetVacancies(w http.ResponseWriter, r *http.Request) {
+// @Router      /CVs [get]
+func (h *CVsHandler) SearchCVs(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	fn := "VacanciesHandlers.GetVacancies"
+	fn := "CvsHandlers.GetCVs"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	queryParams := r.URL.Query()
@@ -33,10 +33,10 @@ func (h *VacanciesHandlers) GetVacancies(w http.ResponseWriter, r *http.Request)
 	offsetStr := queryParams.Get("offset")
 	numStr := queryParams.Get("num")
 	searchStr := queryParams.Get("positionDescription")
-	vacancies, err := h.vacanciesUsecase.SearchVacancies(offsetStr, numStr, searchStr)
+	CVs, err := h.cvsUsecase.SearchCVs(offsetStr, numStr, searchStr)
 
 	if err != nil {
-		h.logger.Errorf("function: %s; got err while reading vacancies from db %s", fn, err)
+		h.logger.Errorf("function: %s; got err while reading CVs from db %s", fn, err)
 		middleware.UniversalMarshal(
 			w,
 			http.StatusInternalServerError,
@@ -48,13 +48,13 @@ func (h *VacanciesHandlers) GetVacancies(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	h.logger.Debugf("%s; got vacancies %v", fn, vacancies)
+	h.logger.Debugf("%s; got CVs %v", fn, CVs)
 	middleware.UniversalMarshal(
 		w,
 		http.StatusOK,
 		dto.JSONResponse{
 			HTTPStatus: http.StatusOK,
-			Body:       vacancies,
+			Body:       CVs,
 		},
 	)
 }

@@ -2,6 +2,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -26,21 +27,51 @@ func NewVacanciesUsecase(logger *logrus.Logger, repositories *internal.Repositor
 	}
 }
 
-func ValidateRequestParams(offsetStr, numStr string) (uint64, uint64, error) {
+func (u *VacanciesUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, uint64, error) {
+	fn := "VacanciesUsecase.ValidateQueryParameters"
 	var err error
 	offset, err1 := strconv.Atoi(offsetStr)
 
 	if err1 != nil {
+		u.logger.Errorf("%s: query parameter offset isn't a number: %s", fn, err1)
 		offset = 0
 		err = ErrOffsetIsNotANumber
 	}
 
 	num, err2 := strconv.Atoi(numStr)
 	if err2 != nil {
+		u.logger.Errorf("%s:query parameter num isn't a number: %s", fn, err2)
 		num = 0
 		err = ErrNumIsNotANumber // previous err will be overwritten
 	}
 	return uint64(offset), uint64(num), err
+}
+
+const (
+	defaultVacanciesOffset = 0
+	defaultVacanciesNum    = 10
+)
+
+func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr string) ([]*dto.JSONVacancy, error) {
+	fn := "VacanciesUsecase.GetVacanciesWithOffset"
+	offset, num, err := vu.ValidateQueryParameters(offsetStr, numStr)
+	if errors.Is(ErrOffsetIsNotANumber, err) {
+		offset = defaultVacanciesOffset
+	}
+	if errors.Is(ErrNumIsNotANumber, err) {
+		num = defaultVacanciesNum
+	}
+	var vacancies []*dto.JSONVacancy
+	if searchStr != "" {
+		vacancies, err = vu.vacanciesRepository.SearchByPositionDescription(offset, offset+num, searchStr)
+	} else {
+		vacancies, err = vu.vacanciesRepository.GetWithOffset(offset, offset+num)
+	}
+	if err != nil {
+		return nil, err
+	}
+	vu.logger.Debugf("%s: got %d vacancies", fn, len(vacancies))
+	return vacancies, nil
 }
 
 func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
@@ -67,7 +98,7 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 	return vacancies, nil
 }
 
-func (vu *VacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.SessionUser) (*dto.JSONVacancy, error) {
+func (vu *VacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
 	// TODO: need to validate vacancy && currentUser is not nil
 
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got creation request")
@@ -97,7 +128,7 @@ func (vu *VacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
 	return vacancy, nil
 }
 
-func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, currentUser *dto.SessionUser) (*dto.JSONVacancy, error) {
+func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got update request")
 	oldVacancy, err := vu.vacanciesRepository.GetByID(ID)
 	if err != nil {
@@ -119,7 +150,7 @@ func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, c
 	return updatedVacancy, nil
 }
 
-func (vu *VacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.SessionUser) error {
+func (vu *VacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.UserFromSession) error {
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got delete request")
 	vacancy, err := vu.vacanciesRepository.GetByID(ID)
 	if err != nil {
@@ -139,7 +170,7 @@ func (vu *VacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.SessionUse
 	return nil
 }
 
-func (vu *VacanciesUsecase) SubscribeOnVacancy(ID uint64, currentUser *dto.SessionUser) error {
+func (vu *VacanciesUsecase) SubscribeOnVacancy(ID uint64, currentUser *dto.UserFromSession) error {
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided")
 		return fmt.Errorf(dto.MsgUnauthorized)
@@ -154,7 +185,7 @@ func (vu *VacanciesUsecase) SubscribeOnVacancy(ID uint64, currentUser *dto.Sessi
 	return nil
 }
 
-func (vu *VacanciesUsecase) UnsubscribeFromVacancy(ID uint64, currentUser *dto.SessionUser) error {
+func (vu *VacanciesUsecase) UnsubscribeFromVacancy(ID uint64, currentUser *dto.UserFromSession) error {
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided, currentUser = %v", currentUser)
 		return fmt.Errorf(dto.MsgUnauthorized)
@@ -183,7 +214,7 @@ func (vu *VacanciesUsecase) GetSubscriptionInfo(ID, applicantID uint64) (*dto.JS
 	}, nil
 }
 
-func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.SessionUser) (*dto.JSONVacancySubscribers, error) {
+func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error) {
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided, currentUser = %v", currentUser)
 		return nil, fmt.Errorf(dto.MsgUnauthorized)
