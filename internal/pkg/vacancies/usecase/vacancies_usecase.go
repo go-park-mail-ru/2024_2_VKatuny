@@ -2,6 +2,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -46,14 +47,30 @@ func (u *VacanciesUsecase) ValidateQueryParameters(offsetStr, numStr string) (ui
 	return uint64(offset), uint64(num), err
 }
 
-func (u *VacanciesUsecase) GetVacanciesWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error) {
+const (
+	defaultVacanciesOffset = 0
+	defaultVacanciesNum    = 10
+)
+
+func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr string) ([]*dto.JSONVacancy, error) {
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
-	vacancies, err := u.vacanciesRepository.GetWithOffset(offset, num)
-	if err != nil {
-		u.logger.Errorf("%s: unable to get vacancies: %s", fn, err)
-		return nil, fmt.Errorf(dto.MsgDataBaseError)
+	offset, num, err := vu.ValidateQueryParameters(offsetStr, numStr)
+	if errors.Is(ErrOffsetIsNotANumber, err) {
+		offset = defaultVacanciesOffset
 	}
-	u.logger.Debugf("%s: got %d vacancies", fn, len(vacancies))
+	if errors.Is(ErrNumIsNotANumber, err) {
+		num = defaultVacanciesNum
+	}
+	var vacancies []*dto.JSONVacancy
+	if searchStr != "" {
+		vacancies, err = vu.vacanciesRepository.SearchByPositionDescription(offset, offset+num, searchStr)
+	} else {
+		vacancies, err = vu.vacanciesRepository.GetWithOffset(offset, offset+num)
+	}
+	if err != nil {
+		return nil, err
+	}
+	vu.logger.Debugf("%s: got %d vacancies", fn, len(vacancies))
 	return vacancies, nil
 }
 
