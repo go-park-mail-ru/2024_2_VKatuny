@@ -21,7 +21,16 @@ type CVsHandler struct {
 }
 
 func NewCVsHandler(layers *internal.App) *CVsHandler {
+	fn := "CVsHandler.NewCVsHandler"
+	if layers == nil {
+		logrus.Fatalf("%s: layers is nil", fn)
+		return nil
+	}
 	logger := layers.Logger
+	if layers.Usecases == nil || layers.Usecases.CVUsecase == nil {
+		logrus.Fatalf("%s: layers is nil", fn)
+		return nil
+	}
 	logger.Debug("CVsHandler created")
 	return &CVsHandler{
 		logger:     &logrus.Entry{Logger: logger},
@@ -77,7 +86,7 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return

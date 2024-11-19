@@ -41,7 +41,7 @@ mock-gen:
 		rm -rf internal/pkg/$$domain/mock; \
 		mockgen -source=internal/pkg/$$domain/$$domain.go \
 		    -destination=internal/pkg/$$domain/mock/$$domain.go \
-			-package=mocks; \
+			-package=mock; \
 	done
 	@echo "OK!"
 
