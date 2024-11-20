@@ -116,7 +116,7 @@ func (h *EmployerHandlers) UpdateEmployerProfileHandler(w http.ResponseWriter, r
 		newProfileData.Avatar = fileAddress
 	}
 
-	h.logger.Debugf("function %s: new profile data JSON parsed: %v", fn, newProfileData)
+	h.logger.Debugf("function %s: new profile data MultiPart parsed: %v", fn, newProfileData)
 
 	err = h.employerUsecase.UpdateEmployerProfile(employerID, newProfileData)
 	if err != nil {

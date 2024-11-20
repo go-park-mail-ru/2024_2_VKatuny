@@ -19,7 +19,6 @@ func NewFileLoadingStorage(dir string) *FileLoadingStorage {
 }
 
 func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) error {
-	fmt.Println(s.dir, "!!!!!!!!!!!!!!!")
 	dst, err := os.Create(s.dir + filename + header.Filename)
 	if err != nil {
 		log.Println("error creating file", err)

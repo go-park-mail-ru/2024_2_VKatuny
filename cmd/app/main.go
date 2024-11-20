@@ -2,7 +2,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -52,8 +51,6 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 	defer dbConnection.Close()
-	fmt.Println("!!!!!!!", conf.Server.GetMediaDir(), "!!!!!!")
-	fmt.Println("!!!!!!!", conf.Server.GetFrontURI(), "!!!!!!")
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
