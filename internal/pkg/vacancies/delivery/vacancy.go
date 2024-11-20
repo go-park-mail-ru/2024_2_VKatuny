@@ -20,7 +20,6 @@ type VacanciesHandlers struct {
 	sessionEmployerRepo  session.ISessionRepository
 	sessionApplicantRepo session.ISessionRepository
 	fileLoadingUsecase   fileloading.IFileLoadingUsecase
-	fileLoadingRepo      fileloading.IFileLoadingRepository
 }
 
 func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
@@ -33,13 +32,12 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 		sessionEmployerRepo:  layers.Repositories.SessionEmployerRepository,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
-		fileLoadingRepo:      layers.Repositories.FileLoadingRepository,
 	}
 }
 
 func (h *VacanciesHandlers) VacanciesRESTHandler(w http.ResponseWriter, r *http.Request) {
 	h.logger.Logger.Debugf("VacanciesHandlers.VacanciesRESTHandler got request: %s", r.URL.Path)
-	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo, FileLoadingRepository: h.fileLoadingRepo}
+	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo}
 	switch r.Method {
 	case http.MethodPost:
 		handler := middleware.RequireAuthorization(h.createVacancyHandler, repository, dto.UserTypeEmployer)

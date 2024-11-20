@@ -20,7 +20,6 @@ type CVsHandler struct {
 	cvsUsecase           cvs.ICVsUsecase
 	sessionApplicantRepo session.ISessionRepository
 	fileLoadingUsecase   fileloading.IFileLoadingUsecase
-	fileLoadingRepo      fileloading.IFileLoadingRepository
 }
 
 func NewCVsHandler(layers *internal.App) *CVsHandler {
@@ -31,7 +30,6 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 		cvsUsecase:           layers.Usecases.CVUsecase,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
-		fileLoadingRepo:      layers.Repositories.FileLoadingRepository,
 	}
 }
 

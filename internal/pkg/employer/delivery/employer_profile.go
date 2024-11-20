@@ -22,7 +22,6 @@ type EmployerHandlers struct {
 	vacanciesUsecase   vacancies.IVacanciesUsecase
 	sessionUsecase     session.ISessionUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
-	fileLoadingRepo    fileloading.IFileLoadingRepository
 }
 
 func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
@@ -33,7 +32,6 @@ func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
 		vacanciesUsecase:   app.Usecases.VacanciesUsecase,
 		sessionUsecase:     app.Usecases.SessionUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
-		fileLoadingRepo:    app.Repositories.FileLoadingRepository,
 	}
 }
 

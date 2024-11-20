@@ -23,7 +23,6 @@ type ApplicantHandlers struct {
 	portfolioUsecase   portfolio.IPortfolioUsecase
 	cvUsecase          cvs.ICVsUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
-	fileLoadingRepo    fileloading.IFileLoadingRepository
 }
 
 func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
@@ -35,7 +34,6 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 		portfolioUsecase:   app.Usecases.PortfolioUsecase,
 		cvUsecase:          app.Usecases.CVUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
-		fileLoadingRepo:    app.Repositories.FileLoadingRepository,
 	}
 }
 
