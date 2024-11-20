@@ -15,6 +15,7 @@ import (
 	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
@@ -22,11 +23,15 @@ import (
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	session_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
 	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	vacancies_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
+)
+
+var (
+	CompressManager compressmicroservice.CompressServiceClient
 )
 
 // @title   uArt's API
@@ -58,7 +63,7 @@ func main() {
 		SessionEmployerRepository:  sessionEmployerRepository,
 	}
 	usecases := &internal.Usecases{
-		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories),
+		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories, CompressManager),
 		PortfolioUsecase: portfolioUsecase.NewPortfolioUsecase(logger, repositories),
 		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
 		VacanciesUsecase: vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
