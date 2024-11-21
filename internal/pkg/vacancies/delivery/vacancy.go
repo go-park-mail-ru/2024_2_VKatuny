@@ -90,6 +90,7 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 	newVacancy.Description = r.FormValue("description")
 	newVacancy.WorkType = r.FormValue("workType")
 	newVacancy.CompanyName = r.FormValue("companyName")
+	newVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
@@ -191,6 +192,7 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 	updatedVacancy.Description = r.FormValue("description")
 	updatedVacancy.WorkType = r.FormValue("workType")
 	updatedVacancy.CompanyName = r.FormValue("companyName")
+	updatedVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
 	if err != nil {
 		h.logger.Errorf("bad input of salary: %s", err)

@@ -5,12 +5,26 @@ CREATE TABLE IF NOT EXISTS public."position_category"
     category_name text NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    fts TSVECTOR,
     CONSTRAINT position_category_primary_key PRIMARY KEY (id),
     CONSTRAINT position_category_category_name_length_check CHECK (length(category_name) <= 50) NOT VALID,
     CONSTRAINT position_category_category_name_unique UNIQUE (category_name)
 );
-CREATE INDEX position_category_fts ON position_category USING GIN(fts);
+
+ALTER TABLE company
+    ADD fts TSVECTOR;
+UPDATE company SET fts = setweight(to_tsvector('russian', "company_name"), 'A');
+CREATE INDEX company_fts ON company USING GIN(fts);
+
+CREATE OR REPLACE FUNCTION update_company_fts_function()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.fts = setweight(to_tsvector('russian', NEW."company_name"), 'A');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_company_fts_trigger before UPDATE OR INSERT ON company
+FOR EACH ROW EXECUTE PROCEDURE update_company_fts_function();
 
 alter table vacancy
     add position_category_id int;
@@ -19,8 +33,7 @@ alter table vacancy
     add FOREIGN KEY (position_category_id)
         REFERENCES public.position_category (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE SET NULL
-        NOT VALID;
+        ON DELETE SET NULL;
 insert into position_category (category_name) values ('Художник');
 insert into position_category (category_name) values ('Дизайнер');
 update vacancy  set position_category_id=2 where id=2;
