@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public."position_category"
     CONSTRAINT position_category_category_name_unique UNIQUE (category_name)
 );
 CREATE INDEX position_category_fts ON position_category USING GIN(fts);
+
 alter table vacancy
     add position_category_id int;
 
