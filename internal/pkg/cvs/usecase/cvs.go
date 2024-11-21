@@ -55,7 +55,7 @@ func (cu *CVsUsecase) CreateCV(cv *dto.JSONCv, currentUser *dto.UserFromSession)
 	cv, err := cu.cvsRepo.Create(cv)
 	if err != nil {
 		cu.logger.Errorf("while adding to db got err: %s", err)
-		return nil, err
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 	return cv, nil
 }

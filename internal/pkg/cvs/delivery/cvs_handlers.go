@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
@@ -170,21 +169,14 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
-			Error:      dto.MsgUnableToGetUserFromContext,
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnauthorized,
 		})
 		return
 	}
 
 	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, currentUser, newCV)
-	if err == commonerrors.ErrUnauthorized || err == commonerrors.ErrSessionNotFound {
-		h.logger.Errorf("function %s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
-			Error:      err.Error(),
-		})
-		return
-	} else if err != nil {
+	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -220,21 +212,14 @@ func (h *CVsHandler) DeleteCVHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
 
 	err = h.cvsUsecase.DeleteCV(cvID, currentUser)
-	if err == commonerrors.ErrUnauthorized || err == commonerrors.ErrSessionNotFound {
-		h.logger.Errorf("function %s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
-			Error:      err.Error(),
-		})
-		return
-	} else if err != nil {
+ 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,

@@ -21,8 +21,10 @@ install:
 	go mod tidy
 
 tests:
-	go test ./... -coverprofile cover.out && go tool cover -func cover.out
-	go tool cover -html cover.out -o index.html
+	go test ./... -coverprofile=coverage.out.tmp
+	cat coverage.out.tmp | grep -v 'mock' > coverage.out
+	go tool cover -func=coverage.out
+	go tool cover -html=coverage.out -o index.html
 
 clean:
 	go clean
