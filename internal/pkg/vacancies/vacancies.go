@@ -11,6 +11,7 @@ import (
 type IVacanciesRepository interface { // TODO: rename to IVacanciesRepository
 	Create(vacancy *dto.JSONVacancy) (uint64, error) // TODO: should accept DTO not a model
 	GetWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error)
+	SearchByPositionDescription(offset uint64, num uint64, searchStr string) ([]*dto.JSONVacancy, error)
 	GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONVacancy, error)
 	GetByID(ID uint64) (*dto.JSONVacancy, error)
 	Update(ID uint64, updatedVacancy *dto.JSONVacancy) (*dto.JSONVacancy, error)
@@ -27,11 +28,13 @@ type IVacanciesUsecase interface {
 	CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error)
 	GetVacancy(ID uint64) (*dto.JSONVacancy, error)
 	ValidateQueryParameters(offset, num string) (uint64, uint64, error)
-	GetVacanciesWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error)	
 	UpdateVacancy(ID uint64, updatedVacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error)
 	DeleteVacancy(ID uint64, currentUser *dto.UserFromSession) error
 	SubscribeOnVacancy(ID uint64, currentUser *dto.UserFromSession) error
 	UnsubscribeFromVacancy(ID uint64, currentUser *dto.UserFromSession) error
 	GetSubscriptionInfo(ID uint64, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error)
+
+	SearchVacancies(offsetStr, numStr, searchStr string) ([]*dto.JSONVacancy, error)
+
 	GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error)
 }

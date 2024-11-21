@@ -40,6 +40,7 @@ go.work.sum
 # config
 configs/conf.yaml
 configs/conf.yml
+db/migrations/tern.conf
 
 # html
 *.html
