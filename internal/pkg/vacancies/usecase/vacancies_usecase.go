@@ -52,7 +52,7 @@ const (
 	defaultVacanciesNum    = 10
 )
 
-func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr string) ([]*dto.JSONVacancy, error) {
+func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
 	offset, num, err := vu.ValidateQueryParameters(offsetStr, numStr)
 	if errors.Is(ErrOffsetIsNotANumber, err) {
@@ -62,10 +62,12 @@ func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr string)
 		num = defaultVacanciesNum
 	}
 	var vacancies []*dto.JSONVacancy
-	if searchStr != "" {
+	if searchStr != "" && group == "" {
 		vacancies, err = vu.vacanciesRepository.SearchByPositionDescription(offset, offset+num, searchStr)
-	} else {
+	} else if searchStr == "" {
 		vacancies, err = vu.vacanciesRepository.GetWithOffset(offset, offset+num)
+	} else {
+		vacancies, err = vu.vacanciesRepository.SearchAll(offset, offset+num, searchStr, group, searchBy)
 	}
 	if err != nil {
 		return nil, err
