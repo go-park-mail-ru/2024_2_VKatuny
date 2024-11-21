@@ -100,7 +100,7 @@ func (h *EmployerHandlers) UpdateEmployerProfileHandler(w http.ResponseWriter, r
 	newProfileData.City = r.FormValue("city")
 	newProfileData.Contacts = r.FormValue("contacts")
 	defer r.MultipartForm.RemoveAll()
-	file, header, err := r.FormFile("my_file")
+	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
 		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)

@@ -106,7 +106,7 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 	}
 	newVacancy.Salary = int32(temp)
 	defer r.MultipartForm.RemoveAll()
-	file, header, err := r.FormFile("my_file")
+	file, header, err := r.FormFile("company_avatar")
 	if err == nil {
 		defer file.Close()
 		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
@@ -205,7 +205,7 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 	}
 	updatedVacancy.Salary = int32(temp)
 	defer r.MultipartForm.RemoveAll()
-	file, header, err := r.FormFile("my_file")
+	file, header, err := r.FormFile("company_avatar")
 	if err == nil {
 		defer file.Close()
 		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)

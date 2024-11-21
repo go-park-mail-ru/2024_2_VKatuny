@@ -106,7 +106,7 @@ func (h *ApplicantHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter,
 	newProfileData.Contacts = r.FormValue("contacts")
 	newProfileData.Education = r.FormValue("education")
 	defer r.MultipartForm.RemoveAll()
-	file, header, err := r.FormFile("my_file")
+	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
 		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)

@@ -71,7 +71,7 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 	newCV.JobSearchStatusName = r.FormValue("jobSearchStatusName")
 	newCV.WorkingExperience = r.FormValue("workingExperience")
 	defer r.MultipartForm.RemoveAll()
-	file, header, err := r.FormFile("my_file")
+	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
 		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
@@ -165,7 +165,7 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 	newCV.JobSearchStatusName = r.FormValue("jobSearchStatusName")
 	newCV.WorkingExperience = r.FormValue("workingExperience")
 	defer r.MultipartForm.RemoveAll()
-	file, header, err := r.FormFile("my_file")
+	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
 		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
