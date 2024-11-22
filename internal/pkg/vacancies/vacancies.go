@@ -8,8 +8,8 @@ import (
 // Interface for Vacancies.
 // Now implemented as a in-memory db.
 // Implementation locates in ./repository
-type IVacanciesRepository interface { // TODO: rename to IVacanciesRepository
-	Create(vacancy *dto.JSONVacancy) (uint64, error) // TODO: should accept DTO not a model
+type IVacanciesRepository interface {
+	Create(vacancy *dto.JSONVacancy) (uint64, error)
 	SearchAll(offset uint64, num uint64, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error)
 	GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONVacancy, error)
 	GetByID(ID uint64) (*dto.JSONVacancy, error)
