@@ -853,3 +853,41 @@ func TestDeleteCVHandler(t *testing.T) {
 		})
 	}
 }
+
+// TODO: implement tests for SearchCVHandler
+
+// // func TestSearchCVHandler(t *testing.T) {
+// // 	t.Parallel()
+
+// 	type in struct {
+// 		offset      string
+// 		num         string
+// 		searchQuery string
+// 		searchBy    string
+// 		group       string
+// 	}
+// 	type outExpected struct {
+// 		status int
+// 		response *dto.JSONResponse
+// 	}
+// 	type usecaseMock struct {
+// 		cvsUsecase *mock.MockICVsUsecase
+// 	}
+// 	type args struct {
+// 		r *http.Request
+// 		w *httptest.ResponseRecorder
+// 	}
+// 	tests := []struct {
+// 		name    string
+// 		prepare func(in *in, out *outExpected, usecase *usecaseMock, args *args)
+// 	}{
+// 		{
+// 			name: "CVHandler.SearchCVHandler success",
+// 			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+// 				in.offset = "0"
+// 				in.num = "10"
+// 				in.positionDescription = "position"
+// 			},
+// 		},
+// 	}
+// }

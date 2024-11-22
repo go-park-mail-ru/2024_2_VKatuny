@@ -154,6 +154,21 @@ func (mr *MockIVacanciesRepositoryMockRecorder) GetWithOffset(offset, num interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWithOffset", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetWithOffset), offset, num)
 }
 
+// SearchByPositionDescription mocks base method.
+func (m *MockIVacanciesRepository) SearchByPositionDescription(offset, num uint64, searchStr string) ([]*dto.JSONVacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchByPositionDescription", offset, num, searchStr)
+	ret0, _ := ret[0].([]*dto.JSONVacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchByPositionDescription indicates an expected call of SearchByPositionDescription.
+func (mr *MockIVacanciesRepositoryMockRecorder) SearchByPositionDescription(offset, num, searchStr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByPositionDescription", reflect.TypeOf((*MockIVacanciesRepository)(nil).SearchByPositionDescription), offset, num, searchStr)
+}
+
 // Subscribe mocks base method.
 func (m *MockIVacanciesRepository) Subscribe(ID, applicantID uint64) error {
 	m.ctrl.T.Helper()
@@ -279,21 +294,6 @@ func (mr *MockIVacanciesUsecaseMockRecorder) GetVacanciesByEmployerID(employerID
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacanciesByEmployerID", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacanciesByEmployerID), employerID)
 }
 
-// GetVacanciesWithOffset mocks base method.
-func (m *MockIVacanciesUsecase) GetVacanciesWithOffset(offset, num uint64) ([]*dto.JSONVacancy, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVacanciesWithOffset", offset, num)
-	ret0, _ := ret[0].([]*dto.JSONVacancy)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetVacanciesWithOffset indicates an expected call of GetVacanciesWithOffset.
-func (mr *MockIVacanciesUsecaseMockRecorder) GetVacanciesWithOffset(offset, num interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacanciesWithOffset", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacanciesWithOffset), offset, num)
-}
-
 // GetVacancy mocks base method.
 func (m *MockIVacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
@@ -322,6 +322,21 @@ func (m *MockIVacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dt
 func (mr *MockIVacanciesUsecaseMockRecorder) GetVacancySubscribers(ID, currentUser interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacancySubscribers", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacancySubscribers), ID, currentUser)
+}
+
+// SearchVacancies mocks base method.
+func (m *MockIVacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr string) ([]*dto.JSONVacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchVacancies", offsetStr, numStr, searchStr)
+	ret0, _ := ret[0].([]*dto.JSONVacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchVacancies indicates an expected call of SearchVacancies.
+func (mr *MockIVacanciesUsecaseMockRecorder) SearchVacancies(offsetStr, numStr, searchStr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchVacancies", reflect.TypeOf((*MockIVacanciesUsecase)(nil).SearchVacancies), offsetStr, numStr, searchStr)
 }
 
 // SubscribeOnVacancy mocks base method.

@@ -93,6 +93,36 @@ func (mr *MockICVsRepositoryMockRecorder) GetCVsByApplicantID(applicantID interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCVsByApplicantID", reflect.TypeOf((*MockICVsRepository)(nil).GetCVsByApplicantID), applicantID)
 }
 
+// GetWithOffset mocks base method.
+func (m *MockICVsRepository) GetWithOffset(offset, num uint64) ([]*dto.JSONCv, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWithOffset", offset, num)
+	ret0, _ := ret[0].([]*dto.JSONCv)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWithOffset indicates an expected call of GetWithOffset.
+func (mr *MockICVsRepositoryMockRecorder) GetWithOffset(offset, num interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWithOffset", reflect.TypeOf((*MockICVsRepository)(nil).GetWithOffset), offset, num)
+}
+
+// SearchByPositionDescription mocks base method.
+func (m *MockICVsRepository) SearchByPositionDescription(offset, num uint64, searchStr string) ([]*dto.JSONCv, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchByPositionDescription", offset, num, searchStr)
+	ret0, _ := ret[0].([]*dto.JSONCv)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchByPositionDescription indicates an expected call of SearchByPositionDescription.
+func (mr *MockICVsRepositoryMockRecorder) SearchByPositionDescription(offset, num, searchStr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByPositionDescription", reflect.TypeOf((*MockICVsRepository)(nil).SearchByPositionDescription), offset, num, searchStr)
+}
+
 // Update mocks base method.
 func (m *MockICVsRepository) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
@@ -188,6 +218,21 @@ func (m *MockICVsUsecase) GetCV(ID uint64) (*dto.JSONCv, error) {
 func (mr *MockICVsUsecaseMockRecorder) GetCV(ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCV", reflect.TypeOf((*MockICVsUsecase)(nil).GetCV), ID)
+}
+
+// SearchCVs mocks base method.
+func (m *MockICVsUsecase) SearchCVs(offsetStr, numStr, searchStr string) ([]*dto.JSONGetApplicantCV, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchCVs", offsetStr, numStr, searchStr)
+	ret0, _ := ret[0].([]*dto.JSONGetApplicantCV)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchCVs indicates an expected call of SearchCVs.
+func (mr *MockICVsUsecaseMockRecorder) SearchCVs(offsetStr, numStr, searchStr interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchCVs", reflect.TypeOf((*MockICVsUsecase)(nil).SearchCVs), offsetStr, numStr, searchStr)
 }
 
 // UpdateCV mocks base method.
