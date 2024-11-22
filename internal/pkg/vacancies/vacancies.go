@@ -10,8 +10,6 @@ import (
 // Implementation locates in ./repository
 type IVacanciesRepository interface { // TODO: rename to IVacanciesRepository
 	Create(vacancy *dto.JSONVacancy) (uint64, error) // TODO: should accept DTO not a model
-	//GetWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error)
-	//SearchByPositionDescription(offset uint64, num uint64, searchStr string) ([]*dto.JSONVacancy, error)
 	SearchAll(offset uint64, num uint64, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error)
 	GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONVacancy, error)
 	GetByID(ID uint64) (*dto.JSONVacancy, error)
@@ -34,8 +32,6 @@ type IVacanciesUsecase interface {
 	SubscribeOnVacancy(ID uint64, currentUser *dto.UserFromSession) error
 	UnsubscribeFromVacancy(ID uint64, currentUser *dto.UserFromSession) error
 	GetSubscriptionInfo(ID uint64, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error)
-
 	SearchVacancies(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error)
-
 	GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error)
 }

@@ -60,56 +60,6 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 	return Vacancies, nil
 }
 
-// func (s *PostgreSQLVacanciesStorage) GetWithOffset(offset uint64, num uint64) ([]*dto.JSONVacancy, error) {
-// 	Vacancies := make([]*dto.JSONVacancy, 0)
-
-// 	rows, err := s.db.Query(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
-// 		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy
-// 		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-// 		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
-// 		ORDER BY created_at desc limit $1 offset $2`, num, offset)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-
-// 	for rows.Next() {
-// 		var Vacancy dto.JSONVacancy
-// 		if err := rows.Scan(&Vacancy.ID, &Vacancy.Location, &Vacancy.Position, &Vacancy.Description, &Vacancy.Salary, &Vacancy.EmployerID,
-// 			&Vacancy.WorkType, &Vacancy.Avatar, &Vacancy.CreatedAt, &Vacancy.UpdatedAt, &Vacancy.CompanyName); err != nil {
-// 			return nil, err
-// 		}
-// 		Vacancies = append(Vacancies, &Vacancy)
-// 		fmt.Println(Vacancy)
-// 	}
-
-// 	return Vacancies, nil
-// }
-
-// func (s *PostgreSQLVacanciesStorage) SearchByPositionDescription(offset uint64, num uint64, searchStr string) ([]*dto.JSONVacancy, error) {
-// 	Vacancies := make([]*dto.JSONVacancy, 0)
-// 	rows, err := s.db.Query(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
-// 		path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name FROM vacancy
-// 		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-// 		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
-// 		where ts_rank_cd(fts, plainto_tsquery('russian', $1)) <> 0 order by ts_rank_cd(fts, plainto_tsquery('russian', $2)) desc limit $3 offset $4`, searchStr, searchStr, num, offset)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-
-//		for rows.Next() {
-//			var Vacancy dto.JSONVacancy
-//			if err := rows.Scan(&Vacancy.ID, &Vacancy.Location, &Vacancy.Position, &Vacancy.Description, &Vacancy.Salary, &Vacancy.EmployerID,
-//				&Vacancy.WorkType, &Vacancy.Avatar, &Vacancy.CreatedAt, &Vacancy.UpdatedAt, &Vacancy.CompanyName); err != nil {
-//				return nil, err
-//			}
-//			Vacancies = append(Vacancies, &Vacancy)
-//			fmt.Println(Vacancy)
-//		}
-//		fmt.Println(Vacancies)
-//		return Vacancies, nil
-//	}
 func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
 	Vacancies := make([]*dto.JSONVacancy, 0)
 	iter := 1
@@ -147,7 +97,6 @@ func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, search
 	}
 
 	lastPart := " limit $" + strconv.Itoa(iter) + " offset $" + strconv.Itoa(iter+1)
-	//fmt.Println("!!!!!", mainPart+categoryPart+searchPart+lastPart)
 	iter += 2
 	var rows *sql.Rows
 	var err error
@@ -160,7 +109,7 @@ func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, search
 	} else if group != "" && searchStr == "" {
 		rows, err = s.db.Query(mainPart+categoryPart+searchPart+lastPart, group, num, offset)
 	}
-
+	fmt.Println("!!!!!", err)
 	if err != nil {
 		return nil, err
 	}
