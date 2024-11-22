@@ -70,16 +70,6 @@ func (s *ServerConfig) GetHostWithScheme() string {
 	return s.Scheme + "://" + s.Host
 }
 
-// GetFrontURI returns front uri. E.g http://127.0.0.1:3000
-func (s *ServerConfig) GetFrontURI() string {
-	return s.Front
-}
-
-// GetAddress returns directory with user's files
-func (s *ServerConfig) GetMediaDir() string {
-	return s.MediaDir
-}
-
 func (d *DataBaseConfig) GetDSN() string {
 	return fmt.Sprintf("user=%s dbname=%s password=%s host=%s port=%d sslmode=%s",
 		d.User,

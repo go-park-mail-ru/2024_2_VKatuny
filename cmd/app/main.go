@@ -60,7 +60,7 @@ func main() {
 		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
 		SessionApplicantRepository: sessionApplicantRepository,
 		SessionEmployerRepository:  sessionEmployerRepository,
-		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.GetMediaDir()),
+		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.Front),
 	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories),
@@ -81,7 +81,7 @@ func main() {
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
-	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.GetFrontURI())
+	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.MediaDir)
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
