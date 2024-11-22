@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package auth;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = ".auth_microservice";
+
+// protoc -I proto auth.proto --go_out=./gen/ --go-grpc_out=./gen/ --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative
+
+service Authorization {
+    rpc AuthUser(AuthRequest) returns (AuthResponse) {};
+    rpc CheckAuth(CheckAuthRequest) returns (CheckAuthResponse) {};
+    rpc DeauthUser(DeauthRequest) returns (DeauthResponse) {};
+}
+
+message SessionToken {
+    string ID = 1;
+    google.protobuf.Timestamp ExpirationDate = 2;
+}
+
+message User {
+    string UserType = 1;
+    uint64 ID = 2;
+}
+
+enum StatusCode {
+    OK = 0;
+} 
+
+message AuthRequest {
+    string RequestID = 1;
+    string UserType = 2;
+    string Email = 3;
+    string Password = 4; 
+}
+
+message AuthResponse {
+    User UserData = 1;
+    SessionToken Session = 2;
+    StatusCode Status = 3; 
+}
+
+message CheckAuthRequest {
+    string RequestID = 1;
+    SessionToken Session = 2;
+}
+
+message CheckAuthResponse {
+    StatusCode Status = 1;
+}
+
+message DeauthRequest {
+    string RequestID = 1;
+    SessionToken Session = 2;
+}
+
+message DeauthResponse {
+    StatusCode Status = 1;
+}
