@@ -4,7 +4,7 @@
 // - protoc             v5.28.3
 // source: survey.proto
 
-package compressmicroservice
+package survey
 
 import (
 	context "context"
@@ -19,139 +19,101 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CompressService_CompressAndSaveFile_FullMethodName = "/compressmicroservice.CompressService/CompressAndSaveFile"
-	CompressService_DeleteFile_FullMethodName          = "/compressmicroservice.CompressService/DeleteFile"
+	SuveyService_GetAuthorization_FullMethodName = "/survey.SuveyService/GetAuthorization"
 )
 
-// CompressServiceClient is the client API for CompressService service.
+// SuveyServiceClient is the client API for SuveyService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CompressServiceClient interface {
-	CompressAndSaveFile(ctx context.Context, in *CompressAndSaveFileInput, opts ...grpc.CallOption) (*Nothing, error)
-	DeleteFile(ctx context.Context, in *DeleteFileInput, opts ...grpc.CallOption) (*Nothing, error)
+type SuveyServiceClient interface {
+	GetAuthorization(ctx context.Context, in *GetAuthorizationInput, opts ...grpc.CallOption) (*GetAuthorizationOutput, error)
 }
 
-type compressServiceClient struct {
+type suveyServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCompressServiceClient(cc grpc.ClientConnInterface) CompressServiceClient {
-	return &compressServiceClient{cc}
+func NewSuveyServiceClient(cc grpc.ClientConnInterface) SuveyServiceClient {
+	return &suveyServiceClient{cc}
 }
 
-func (c *compressServiceClient) CompressAndSaveFile(ctx context.Context, in *CompressAndSaveFileInput, opts ...grpc.CallOption) (*Nothing, error) {
+func (c *suveyServiceClient) GetAuthorization(ctx context.Context, in *GetAuthorizationInput, opts ...grpc.CallOption) (*GetAuthorizationOutput, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Nothing)
-	err := c.cc.Invoke(ctx, CompressService_CompressAndSaveFile_FullMethodName, in, out, cOpts...)
+	out := new(GetAuthorizationOutput)
+	err := c.cc.Invoke(ctx, SuveyService_GetAuthorization_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *compressServiceClient) DeleteFile(ctx context.Context, in *DeleteFileInput, opts ...grpc.CallOption) (*Nothing, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Nothing)
-	err := c.cc.Invoke(ctx, CompressService_DeleteFile_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// CompressServiceServer is the server API for CompressService service.
-// All implementations must embed UnimplementedCompressServiceServer
+// SuveyServiceServer is the server API for SuveyService service.
+// All implementations must embed UnimplementedSuveyServiceServer
 // for forward compatibility.
-type CompressServiceServer interface {
-	CompressAndSaveFile(context.Context, *CompressAndSaveFileInput) (*Nothing, error)
-	DeleteFile(context.Context, *DeleteFileInput) (*Nothing, error)
-	mustEmbedUnimplementedCompressServiceServer()
+type SuveyServiceServer interface {
+	GetAuthorization(context.Context, *GetAuthorizationInput) (*GetAuthorizationOutput, error)
+	mustEmbedUnimplementedSuveyServiceServer()
 }
 
-// UnimplementedCompressServiceServer must be embedded to have
+// UnimplementedSuveyServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedCompressServiceServer struct{}
+type UnimplementedSuveyServiceServer struct{}
 
-func (UnimplementedCompressServiceServer) CompressAndSaveFile(context.Context, *CompressAndSaveFileInput) (*Nothing, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CompressAndSaveFile not implemented")
+func (UnimplementedSuveyServiceServer) GetAuthorization(context.Context, *GetAuthorizationInput) (*GetAuthorizationOutput, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAuthorization not implemented")
 }
-func (UnimplementedCompressServiceServer) DeleteFile(context.Context, *DeleteFileInput) (*Nothing, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteFile not implemented")
-}
-func (UnimplementedCompressServiceServer) mustEmbedUnimplementedCompressServiceServer() {}
-func (UnimplementedCompressServiceServer) testEmbeddedByValue()                         {}
+func (UnimplementedSuveyServiceServer) mustEmbedUnimplementedSuveyServiceServer() {}
+func (UnimplementedSuveyServiceServer) testEmbeddedByValue()                      {}
 
-// UnsafeCompressServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CompressServiceServer will
+// UnsafeSuveyServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SuveyServiceServer will
 // result in compilation errors.
-type UnsafeCompressServiceServer interface {
-	mustEmbedUnimplementedCompressServiceServer()
+type UnsafeSuveyServiceServer interface {
+	mustEmbedUnimplementedSuveyServiceServer()
 }
 
-func RegisterCompressServiceServer(s grpc.ServiceRegistrar, srv CompressServiceServer) {
-	// If the following call pancis, it indicates UnimplementedCompressServiceServer was
+func RegisterSuveyServiceServer(s grpc.ServiceRegistrar, srv SuveyServiceServer) {
+	// If the following call pancis, it indicates UnimplementedSuveyServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&CompressService_ServiceDesc, srv)
+	s.RegisterService(&SuveyService_ServiceDesc, srv)
 }
 
-func _CompressService_CompressAndSaveFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CompressAndSaveFileInput)
+func _SuveyService_GetAuthorization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAuthorizationInput)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CompressServiceServer).CompressAndSaveFile(ctx, in)
+		return srv.(SuveyServiceServer).GetAuthorization(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: CompressService_CompressAndSaveFile_FullMethodName,
+		FullMethod: SuveyService_GetAuthorization_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CompressServiceServer).CompressAndSaveFile(ctx, req.(*CompressAndSaveFileInput))
+		return srv.(SuveyServiceServer).GetAuthorization(ctx, req.(*GetAuthorizationInput))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CompressService_DeleteFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteFileInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CompressServiceServer).DeleteFile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CompressService_DeleteFile_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CompressServiceServer).DeleteFile(ctx, req.(*DeleteFileInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// CompressService_ServiceDesc is the grpc.ServiceDesc for CompressService service.
+// SuveyService_ServiceDesc is the grpc.ServiceDesc for SuveyService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var CompressService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "compressmicroservice.CompressService",
-	HandlerType: (*CompressServiceServer)(nil),
+var SuveyService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "survey.SuveyService",
+	HandlerType: (*SuveyServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CompressAndSaveFile",
-			Handler:    _CompressService_CompressAndSaveFile_Handler,
-		},
-		{
-			MethodName: "DeleteFile",
-			Handler:    _CompressService_DeleteFile_Handler,
+			MethodName: "GetAuthorization",
+			Handler:    _SuveyService_GetAuthorization_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
