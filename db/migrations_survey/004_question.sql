@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS public."question"
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT question_primary_key PRIMARY KEY (id),
-    CONSTRAINT question_user_id FOREIGN KEY (type_id)
+    CONSTRAINT question_type_id FOREIGN KEY (type_id)
         REFERENCES public.question_type (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE SET NULL
