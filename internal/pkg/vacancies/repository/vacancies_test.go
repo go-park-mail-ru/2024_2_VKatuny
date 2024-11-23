@@ -24,18 +24,19 @@ func TestPostgresGetVacanciesByEmployerID(t *testing.T) {
 			args: args{
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
-					 path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy 
-					 left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-					 left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
-					 where vacancy.employer_id = (.+)`).
+					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
+							company.company_name, position_category.category_name from vacancy
+							left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+							left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
+							left join position_category on vacancy.position_category_id = position_category.id
+							where vacancy.employer_id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
-							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name"}).
+							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name", "category_name"}).
 							AddRow(1, "Moscow", "Скульптор", "Требуется скульптор без опыта работы", 90000, 1,
-								"Полная занятость", "", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "Мэрия Москвы"))
+								"Полная занятость", "", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "Мэрия Москвы", "Творец"))
 				},
 			},
 			wantErr: false,
@@ -46,18 +47,19 @@ func TestPostgresGetVacanciesByEmployerID(t *testing.T) {
 			args: args{
 				ID: 0,
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
-					 path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy 
-					 left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-					 left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
-					 where vacancy.employer_id = (.+)`).
+					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
+							company.company_name, position_category.category_name from vacancy
+							left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+							left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
+							left join position_category on vacancy.position_category_id = position_category.id
+							where vacancy.employer_id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
-							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name"}).
+							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name", "category_name"}).
 							AddRow(1, nil, nil, nil, nil, nil,
-								nil, nil, nil, nil, nil))
+								nil, nil, nil, nil, nil, nil))
 				},
 			},
 			wantErr: true,
@@ -89,136 +91,6 @@ func TestPostgresGetVacanciesByEmployerID(t *testing.T) {
 	}
 }
 
-func TestPostgresGetWithOffset(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		offset uint64
-		num    uint64
-		query  func(mock sqlmock.Sqlmock, args args)
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-		err     error
-	}{
-		{
-			name: "TestOk",
-			args: args{
-				offset: 0,
-				num:    1,
-				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
-						path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy
-						left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-						left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
-						ORDER BY created_at desc limit (.+) offset (.+)`).
-						WithArgs(
-							args.offset,
-							args.num,
-						).
-						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
-							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name"}).
-							AddRow(1, "Moscow", "Скульптор", "Требуется скульптор без опыта работы", 90000, 1,
-								"Полная занятость", "", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "Мэрия Москвы"))
-				},
-			},
-			wantErr: false,
-			err:     nil,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			db, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-			}
-			defer db.Close()
-
-			tt.args.query(mock, tt.args)
-
-			s := NewVacanciesStorage(db)
-
-			if _, err := s.GetWithOffset(tt.args.num, tt.args.offset); (err != nil) != tt.wantErr {
-				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
-func TestPostgresSearchByPositionDescription(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		offset uint64
-		num    uint64
-		search string
-		query  func(mock sqlmock.Sqlmock, args args)
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-		err     error
-	}{
-		{
-			name: "TestOk",
-			args: args{
-				offset: 0,
-				num:    1,
-				search: "Скульптор",
-				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
-						path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name FROM vacancy
-						left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-						left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
-						where (.+)`).
-						WithArgs(
-							args.search,
-							args.search,
-							args.num,
-							args.offset,
-						).
-						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
-							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name"}).
-							AddRow(1, "Moscow", "Скульптор", "Требуется скульптор без опыта работы", 90000, 1,
-								"Полная занятость", "", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "Мэрия Москвы"))
-				},
-			},
-			wantErr: false,
-			err:     nil,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			db, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-			}
-			defer db.Close()
-
-			tt.args.query(mock, tt.args)
-
-			s := NewVacanciesStorage(db)
-
-			if _, err := s.SearchByPositionDescription(tt.args.offset, tt.args.num, tt.args.search); (err != nil) != tt.wantErr {
-				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
 func TestPostgresGetByID(t *testing.T) {
 	t.Parallel()
 	type args struct {
@@ -236,18 +108,19 @@ func TestPostgresGetByID(t *testing.T) {
 			args: args{
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
-						path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy 
-						left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-						left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
-						where vacancy.id = (.+)`).
+					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
+							company.company_name, position_category.category_name from vacancy
+							left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+							left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
+							left join position_category on vacancy.position_category_id = position_category.id
+							where vacancy.id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
-							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name"}).
+							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name", "category_name"}).
 							AddRow(1, "Moscow", "Скульптор", "Требуется скульптор без опыта работы", 90000, 1,
-								"Полная занятость", "", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "Мэрия Москвы"))
+								"Полная занятость", "", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "Мэрия Москвы", "Творец"))
 				},
 			},
 			wantErr: false,
@@ -258,18 +131,19 @@ func TestPostgresGetByID(t *testing.T) {
 			args: args{
 				ID: 0,
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name,
-					path_to_company_avatar, vacancy.created_at, vacancy.updated_at, company.company_name from vacancy 
-					left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
-					left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
-					where vacancy.id = (.+)`).
+					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
+							company.company_name, position_category.category_name from vacancy
+							left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+							left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
+							left join position_category on vacancy.position_category_id = position_category.id
+							where vacancy.id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
-							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name"}).
+							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name", "category_name"}).
 							AddRow(1, nil, nil, nil, nil, nil,
-								nil, nil, nil, nil, nil))
+								nil, nil, nil, nil, nil, nil))
 				},
 			},
 			wantErr: true,
@@ -291,6 +165,72 @@ func TestPostgresGetByID(t *testing.T) {
 			s := NewVacanciesStorage(db)
 
 			if _, err := s.GetByID(tt.args.ID); (err != nil) != tt.wantErr {
+				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresSearchAll(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		offset                     uint64
+		num                        uint64
+		searchStr, group, searchBy string
+		query                      func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "TestOk",
+			args: args{
+				offset:    0,
+				num:       1,
+				searchStr: "Скульптор",
+				group:     "Творец",
+				searchBy:  "position",
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select (.+)`).
+						WithArgs(
+							args.group,
+							args.searchStr,
+							args.searchStr,
+							args.num,
+							args.offset,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
+							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name", "category_name"}).
+							AddRow(1, "Moscow", "Скульптор", "Требуется скульптор без опыта работы", 90000, 1,
+								"Полная занятость", "", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "Мэрия Москвы", "Творец"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			s := NewVacanciesStorage(db)
+
+			if _, err := s.SearchAll(tt.args.offset, tt.args.num, tt.args.searchStr, tt.args.group, tt.args.searchBy); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
