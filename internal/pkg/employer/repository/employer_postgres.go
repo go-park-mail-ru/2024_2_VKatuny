@@ -199,11 +199,19 @@ func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONU
 			return nil, err
 		}
 	}
-	row = s.db.QueryRow(`update employer
+	if newEmployerData.Avatar == "" {
+		row = s.db.QueryRow(`update employer
 		set first_name = $1, last_name = $2, city_id = $3,
 		contacts = $4 where id=$5 returning id, first_name, last_name, position, company_description, 
 		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at`,
-		newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, ID)
+			newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, ID)
+	} else {
+		row = s.db.QueryRow(`update employer
+		set first_name = $1, last_name = $2, city_id = $3,
+		contacts = $4, path_to_profile_avatar=$5 where id=$6 returning id, first_name, last_name, position, company_description, 
+		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at`,
+			newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, newEmployerData.Avatar, ID)
+	}
 	var employerWithNull dto.EmployerWithNull
 	err := row.Scan(
 		&employerWithNull.ID,

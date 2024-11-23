@@ -78,6 +78,7 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr string) ([]*dto.JSO
 			PositionEn:        CVModel.PositionEn,
 			JobSearchStatus:   CVModel.JobSearchStatusName,
 			WorkingExperience: CVModel.WorkingExperience,
+			Avatar:            CVModel.Avatar,
 			CreatedAt:         CVModel.CreatedAt,
 		})
 	}
@@ -107,6 +108,7 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 			PositionEn:        CVModel.PositionEn,
 			JobSearchStatus:   CVModel.JobSearchStatusName,
 			WorkingExperience: CVModel.WorkingExperience,
+			Avatar:            CVModel.Avatar,
 			CreatedAt:         CVModel.CreatedAt,
 		})
 	}

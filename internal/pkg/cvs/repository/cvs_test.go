@@ -128,6 +128,7 @@ func TestPostgresCreate(t *testing.T) {
 							args.cv.Description,
 							args.jobSearchStatusID,
 							args.cv.WorkingExperience,
+							args.cv.Avatar,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
 							"cv_description", "working_experience", "path_to_profile_avatar", "created_at", "updated_at"}).
