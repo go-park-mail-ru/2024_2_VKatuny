@@ -17,9 +17,14 @@ type ISurveyUsecase interface {
 
 var (
 	ErrInvalidJSON = fmt.Errorf("invalid JSON")
+	ErrUnableToGetStatistics = fmt.Errorf()
 )
 
-type JSONSurveyStatistics struct{}
+type JSONSurveyStatistics struct{
+	ValAVG       int32 `json:"avgRating"`
+	QuestionText int32 `json:"questionText"`
+	QuestionID   int32 `json:"questionID"`
+}
 
 type JSONSurveyForm struct{}
 
@@ -37,7 +42,7 @@ type Question struct {
 }
 
 type Statistics struct {
-	ValAVG       int32 `json:"valAVG"`
+	ValAVG       int32 `json:"avgRating"`
 	QuestionText int32 `json:"questionText"`
 	QuestionID   int32 `json:"questionID"`
 }
