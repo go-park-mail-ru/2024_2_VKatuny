@@ -20,7 +20,7 @@ import (
 // @Success     200      {object}       dto.JSONResponse{statusCode=200,body=dto.JSONUserBody, error=""} "OK"
 // @Failure     400      {object}       nil
 // @Router      /registration/employer/ [post]
-func (h *EmployerHandlers) EmployerRegistration(w http.ResponseWriter, r *http.Request) {
+func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "EmployerHandlers.CreateEmployerHandler"

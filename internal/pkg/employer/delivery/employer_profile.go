@@ -2,14 +2,17 @@ package delivery
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
@@ -35,33 +38,24 @@ func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
 	}
 }
 
-func (h *EmployerHandlers) EmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		h.GetEmployerProfileHandler(w, r)
-	case http.MethodPut:
-		h.UpdateEmployerProfileHandler(w, r)
-	default:
-		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
-			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      dto.MsgMethodNotAllowed,
-		})
-	}
-}
-
-func (h *EmployerHandlers) GetEmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *EmployerHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerProfileHandler"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/profile/")
+	vars := mux.Vars(r)
+
+	slug := vars["id"]
+	employerID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	employerID := uint64(ID)
 	// dto - JSONGetEmployerProfile
 	employerProfile, err := h.employerUsecase.GetEmployerProfile(employerID)
 	if err != nil {
@@ -80,19 +74,23 @@ func (h *EmployerHandlers) GetEmployerProfileHandler(w http.ResponseWriter, r *h
 	})
 }
 
-func (h *EmployerHandlers) UpdateEmployerProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.UpdateEmployerProfileHandler"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/profile/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	employerID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	employerID := uint64(ID)
 
 	newProfileData := &dto.JSONUpdateEmployerProfile{}
 	newProfileData.FirstName = r.FormValue("firstName")
@@ -128,19 +126,24 @@ func (h *EmployerHandlers) UpdateEmployerProfileHandler(w http.ResponseWriter, r
 	h.logger.Debugf("function %s: success", fn)
 }
 
-func (h *EmployerHandlers) GetEmployerVacanciesHandler(w http.ResponseWriter, r *http.Request) {
+func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerVacanciesHandler"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/employer/vacancies/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	employerID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	employerID := uint64(ID)
+	
 	vacancies, err := h.vacanciesUsecase.GetVacanciesByEmployerID(employerID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)

@@ -8,7 +8,7 @@ var (
 )
 
 var (
-	ErrUnableToCast = fmt.Errorf("unable to cast type") 
+	ErrUnableToCast = fmt.Errorf("unable to cast type")
 	ErrInvalidJSON  = fmt.Errorf("invalid JSON, can't unmarshal")
 	ErrUnauthorized = fmt.Errorf("unauthorized")
 )
@@ -17,4 +17,10 @@ var (
 var (
 	ErrSessionAlreadyExists = fmt.Errorf("session already exists")
 	ErrSessionNotFound      = fmt.Errorf("session not found")
+)
+
+// Errors to front
+var (
+	ErrFrontBadSlug          = fmt.Errorf("bad slug")
+	ErrFrontUnableToCastSlug = fmt.Errorf("unable to cast slug")
 )

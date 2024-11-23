@@ -6,11 +6,13 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,57 +37,7 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 	}
 }
 
-func (h *VacanciesHandlers) VacanciesRESTHandler(w http.ResponseWriter, r *http.Request) {
-	h.logger.Logger.Debugf("VacanciesHandlers.VacanciesRESTHandler got request: %s", r.URL.Path)
-	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo}
-	switch r.Method {
-	case http.MethodPost:
-		handler := middleware.RequireAuthorization(h.createVacancyHandler, repository, dto.UserTypeEmployer)
-		handler(w, r)
-	case http.MethodGet:
-		h.getVacancyHandler(w, r)
-	case http.MethodPut:
-		handler := middleware.RequireAuthorization(h.updateVacancyHandler, repository, dto.UserTypeEmployer)
-		handler(w, r)
-	case http.MethodDelete:
-		handler := middleware.RequireAuthorization(h.deleteVacancyHandler, repository, dto.UserTypeEmployer)
-		handler(w, r)
-	default:
-		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
-			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      dto.MsgMethodNotAllowed,
-		})
-	}
-}
-
-func (h *VacanciesHandlers) VacanciesSubscribeRESTHandler(w http.ResponseWriter, r *http.Request) {
-	h.logger.Logger.Debugf("VacanciesHandlers.VacanciesSubscribeRESTHandler got request: %s", r.URL.Path)
-	repository := &internal.Repositories{SessionApplicantRepository: h.sessionApplicantRepo}
-	switch r.Method {
-	case http.MethodPost:
-		handler := middleware.RequireAuthorization(h.subscribeVacancyHandler, repository, dto.UserTypeApplicant)
-		handler(w, r)
-	case http.MethodGet:
-		handler := middleware.RequireAuthorization(h.getVacancySubscriptionHandler, repository, dto.UserTypeApplicant)
-		handler(w, r)
-	case http.MethodDelete:
-		handler := middleware.RequireAuthorization(h.unsubscribeVacancyHandler, repository, dto.UserTypeApplicant)
-		handler(w, r)
-	default:
-		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
-			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      dto.MsgMethodNotAllowed,
-		})
-	}
-}
-
-func (h *VacanciesHandlers) GetVacancySubscribersHandler(w http.ResponseWriter, r *http.Request) {
-	repository := &internal.Repositories{SessionEmployerRepository: h.sessionEmployerRepo}
-	handler := middleware.RequireAuthorization(h.getVacancySubscribersHandler, repository, dto.UserTypeEmployer)
-	handler(w, r)
-}
-
-func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newVacancy := &dto.JSONVacancy{}
 	newVacancy.Position = r.FormValue("position")
@@ -147,18 +99,25 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 	})
 }
 
-func (h *VacanciesHandlers) getVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	fn := "VacanciesHandlers.GetVacancy"
 
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("while cutting slug got: %s", err)
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	vacancyID := uint64(slug)
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
 	vacancy, err := h.vacanciesUsecase.GetVacancy(vacancyID)
 	if err != nil {
@@ -168,6 +127,7 @@ func (h *VacanciesHandlers) getVacancyHandler(w http.ResponseWriter, r *http.Req
 		})
 		return
 	}
+	h.logger.Debugf("%s: got vacancy: %v", fn, vacancy)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -175,18 +135,24 @@ func (h *VacanciesHandlers) getVacancyHandler(w http.ResponseWriter, r *http.Req
 	})
 }
 
-func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	fn := "VacanciesHandlers.UpdateVacancy"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("while cutting slug got: %s", err)
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	vacancyID := uint64(slug)
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	updatedVacancy := &dto.JSONVacancy{}
@@ -245,18 +211,24 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 	})
 }
 
-func (h *VacanciesHandlers) deleteVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	fn := "VacanciesHandlers.DeleteVacancy"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("while cutting slug got: %s", err)
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	vacancyID := uint64(slug)
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
@@ -282,18 +254,24 @@ func (h *VacanciesHandlers) deleteVacancyHandler(w http.ResponseWriter, r *http.
 	})
 }
 
-func (h *VacanciesHandlers) subscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	fn := "VacanciesHandlers.SubscribeVacancy"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("while cutting slug got: %s", err)
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	vacancyID := uint64(slug)
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
@@ -321,18 +299,24 @@ func (h *VacanciesHandlers) subscribeVacancyHandler(w http.ResponseWriter, r *ht
 	})
 }
 
-func (h *VacanciesHandlers) unsubscribeVacancyHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) UnsubscribeVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	fn := "VacanciesHandlers.UnsubscribeVacancy"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("while cutting slug got: %s", err)
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	vacancyID := uint64(slug)
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
@@ -360,18 +344,24 @@ func (h *VacanciesHandlers) unsubscribeVacancyHandler(w http.ResponseWriter, r *
 	})
 }
 
-func (h *VacanciesHandlers) getVacancySubscriptionHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	fn := "VacanciesHandlers.GetVacancySubscription"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscription/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("while cutting slug got: %s", err)
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	vacancyID := uint64(slug)
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
@@ -399,16 +389,24 @@ func (h *VacanciesHandlers) getVacancySubscriptionHandler(w http.ResponseWriter,
 	})
 }
 
-func (h *VacanciesHandlers) getVacancySubscribersHandler(w http.ResponseWriter, r *http.Request) {
+func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	fn := "VacanciesHandlers.GetVacancySubscribers"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	slug, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/vacancy/subscribers/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("while cutting slug got: %s", err)
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
@@ -419,8 +417,6 @@ func (h *VacanciesHandlers) getVacancySubscribersHandler(w http.ResponseWriter, 
 		})
 		return
 	}
-
-	vacancyID := uint64(slug)
 
 	subscribers, err := h.vacanciesUsecase.GetVacancySubscribers(vacancyID, currentUser)
 	if err != nil {

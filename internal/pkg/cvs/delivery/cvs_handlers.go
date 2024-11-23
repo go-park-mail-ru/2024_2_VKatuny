@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
@@ -10,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
@@ -33,31 +35,7 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 	}
 }
 
-func (h *CVsHandler) CVsRESTHandler(w http.ResponseWriter, r *http.Request) {
-	h.logger.Logger.Debugf("CVsHandler.CVsRESTHandler got request: %s", r.URL.Path)
-	repositories := &internal.Repositories{SessionApplicantRepository: h.sessionApplicantRepo}
-	switch r.Method {
-	case http.MethodPost:
-		handler := middleware.RequireAuthorization(h.CreateCVHandler, repositories, dto.UserTypeApplicant)
-		handler(w, r)
-	case http.MethodGet:
-		h.GetCVsHandler(w, r)
-	case http.MethodPut:
-		handler := middleware.RequireAuthorization(h.UpdateCVHandler, repositories, dto.UserTypeApplicant)
-		handler(w, r)
-	case http.MethodDelete:
-		handler := middleware.RequireAuthorization(h.DeleteCVHandler, repositories, dto.UserTypeApplicant)
-		handler(w, r)
-	default:
-		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
-			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      dto.MsgMethodNotAllowed,
-		})
-		r.Body.Close()
-	}
-}
-
-func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.CreateCVHandler"
@@ -112,20 +90,24 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *CVsHandler) GetCVsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.GetCVsHandler"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	cvID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-	h.logger.Debugf("function %s: got slug cvID: %d", fn, ID)
-
-	cvID := uint64(ID)
+	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
 
 	CV, err := h.cvsUsecase.GetCV(cvID)
 	if err != nil {
@@ -144,19 +126,25 @@ func (h *CVsHandler) GetCVsHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.UpdateCVHandler"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	cvID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-	h.logger.Debugf("function %s: got slug cvID: %d", fn, ID)
-	cvID := uint64(ID)
+	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
+
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
 	newCV.PositionRu = r.FormValue("positionRu")
@@ -214,20 +202,24 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *CVsHandler) DeleteCVHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.DeleteCVHandler"
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	cvID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-	h.logger.Debugf("function %s: got slug cvID: %d", fn, ID)
-
-	cvID := uint64(ID)
+	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {

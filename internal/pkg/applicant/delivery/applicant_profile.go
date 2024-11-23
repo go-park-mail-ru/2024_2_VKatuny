@@ -2,16 +2,19 @@ package delivery
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,34 +40,25 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 	}
 }
 
-func (h *ApplicantHandlers) ApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		h.GetApplicantProfileHandler(w, r)
-	case http.MethodPut:
-		h.UpdateApplicantProfileHandler(w, r)
-	default:
-		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
-			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      http.StatusText(http.StatusMethodNotAllowed),
-		})
-	}
-}
-
-func (h *ApplicantHandlers) GetApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantProfileHandler"
 
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
+	vars := mux.Vars(r)
+
+	slug := vars["id"]
+	applicantID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	applicantID := uint64(ID)
 	// dto - JSONGetApplicantProfile
 	applicantProfile, err := h.applicantUsecase.GetApplicantProfile(applicantID)
 	if err != nil {
@@ -83,20 +77,25 @@ func (h *ApplicantHandlers) GetApplicantProfileHandler(w http.ResponseWriter, r 
 	})
 }
 
-func (h *ApplicantHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.UpdateApplicantProfileHandler"
 
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/profile/")
+	vars := mux.Vars(r)
+
+	slug := vars["id"]
+	applicantID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-
-	applicantID := uint64(ID)
 
 	newProfileData := &dto.JSONUpdateApplicantProfile{}
 	newProfileData.FirstName = r.FormValue("firstName")
@@ -136,20 +135,26 @@ func (h *ApplicantHandlers) UpdateApplicantProfileHandler(w http.ResponseWriter,
 	})
 }
 
-func (h *ApplicantHandlers) GetApplicantPortfoliosHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetPortfolios(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantPortfoliosHandler"
 
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/portfolio/")
+	vars := mux.Vars(r)
+
+	slug := vars["id"]
+	applicantID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
 
-	applicantID := uint64(ID)
 	portfolios, err := h.portfolioUsecase.GetApplicantPortfolios(applicantID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
@@ -167,20 +172,26 @@ func (h *ApplicantHandlers) GetApplicantPortfoliosHandler(w http.ResponseWriter,
 	})
 }
 
-func (h *ApplicantHandlers) GetApplicantCVsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *ApplicantHandlers) GetCVs(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"
 
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/applicant/cv/")
+	vars := mux.Vars(r)
+
+	slug := vars["id"]
+	applicantID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
 
-	applicantID := uint64(ID)
 	// *dto.JSONGetApplicantCV
 	CVs, err := h.cvUsecase.GetApplicantCVs(applicantID)
 	if err != nil {
