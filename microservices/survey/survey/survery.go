@@ -5,7 +5,7 @@ import "fmt"
 // Interface for Compress.
 type ISurveryRepository interface {
 	GetStatistic() ([]*Statistics, error)
-	GetQuestionByType() ([]*Question, error)
+	GetQuestionByType(Type string) ([]*dto.Question, error)
 	CreateAnswerAuthorised(QuestionAnswer *QuestionAnswer) error
 }
 

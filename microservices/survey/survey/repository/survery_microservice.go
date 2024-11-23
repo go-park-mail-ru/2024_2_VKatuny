@@ -39,11 +39,12 @@ func (sr *PostgreSQLSurveyRepository) GetStatistic() ([]*dto.Statistics, error) 
 	return statisticsOutput, nil
 }
 
-func (sr *PostgreSQLSurveyRepository) GetQuestionByType() ([]*dto.Question, error) {
+func (sr *PostgreSQLSurveyRepository) GetQuestionByType(Type string) ([]*dto.Question, error) {
 	Questions := make([]*dto.Question, 0)
 	rows, err := sr.db.Query(`select question.id, question.question_text, question_type.question_type_name, question.position from question
 	left join question_type on question_type.id = question.type_id
-	order by position ASC`)
+	where question_type.question_type_name = $1
+	order by position ASC`, Type)
 	if err != nil {
 		return nil, err
 	}

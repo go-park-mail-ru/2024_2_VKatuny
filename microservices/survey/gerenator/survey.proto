@@ -1,5 +1,5 @@
 syntax = "proto3";
-package compressmicroservice;
+package survey;
 
 // import "common/common.proto";
 // import "google/protobuf/empty.proto";
@@ -7,22 +7,17 @@ package compressmicroservice;
 // import "google/protobuf/duration.proto";
 
 // protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
-option go_package = "./;compressmicroservice";
+option go_package = "./;survey";
 
-message Nothing {
+
+message GetAuthorizationOutput {
+  bool authorized = 1;
 }
 
-message CompressAndSaveFileInput {
-  string fileName = 1;
-  string fileType = 2;
-  bytes file = 3;
+message GetAuthorizationInput {
+  string token = 1;
 }
 
-message DeleteFileInput {
-  string fileName = 1;
-}
-
-service CompressService {
-	rpc CompressAndSaveFile (CompressAndSaveFileInput) returns (Nothing) {}
-	rpc DeleteFile (DeleteFileInput) returns (Nothing) {}
+service SuveyService {
+	rpc GetAuthorization (GetAuthorizationInput) returns (GetAuthorizationOutput) {}
 }
