@@ -18,11 +18,12 @@ type Config struct {
 
 // ServerConfig is a struct of server config block in .yaml
 type ServerConfig struct {
-	Scheme   string `yaml:"scheme"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Front    string `yaml:"frontURI"`
-	MediaDir string `yaml:"mediadir"`
+	Scheme                string `yaml:"scheme"`
+	Host                  string `yaml:"host"`
+	Port                  int    `yaml:"port"`
+	Front                 string `yaml:"frontURI"`
+	MediaDir              string `yaml:"mediadir"`
+	MicroserviceSurveyURI string `yaml:"survey_microservice"`
 }
 
 type DataBaseConfig struct {

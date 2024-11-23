@@ -6,6 +6,7 @@ server:
   port: 8080
   frontURI: "http://172.28.166.156:8080/"
   mediadir: "media/"
+  survey_microservice: "http://127.0.0.1:8090"
 
 database:
   host: "127.0.0.1"
