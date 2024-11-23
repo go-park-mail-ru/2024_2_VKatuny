@@ -4,10 +4,7 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
-	"sync"
-
-	"github.com/go-park-mail-ru/lectures/8-microservices/4_grpc/Survey"
+	getsess "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -25,7 +22,7 @@ func NewSuveyService() *SurveyManager {
 	}
 }
 
-func (sm *SurveyManager) GetAuthorization(GetAuthorizationInput) returns (GetAuthorizationOutput) {
-	authorized := GetAuthorizationOutput{}
+func (sm *SurveyManager) GetAuthorization(in *GetAuthorizationInput) returns (*GetAuthorizationOutput) {
+	authorized := &GetAuthorizationOutput{authorized: getsess.GetUserIdBySession(in.Token)}
 	return authorized
 }

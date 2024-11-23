@@ -11,11 +11,11 @@ option go_package = "./;survey";
 
 
 message GetAuthorizationOutput {
-  bool authorized = 1;
+  bool Authorized = 1;
 }
 
 message GetAuthorizationInput {
-  string token = 1;
+  string Token = 1;
 }
 
 service SuveyService {
