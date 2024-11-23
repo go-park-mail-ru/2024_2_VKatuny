@@ -12,8 +12,9 @@ import (
 
 // Config is a struct of .yaml config file
 type Config struct {
-	Server   *ServerConfig   `yaml:"server"`
-	DataBase *DataBaseConfig `yaml:"database"`
+	Server         *ServerConfig   `yaml:"server"`
+	DataBase       *DataBaseConfig `yaml:"database"`
+	SurveyDataBase *DataBaseConfig `yaml:"survey_database"`
 }
 
 // ServerConfig is a struct of server config block in .yaml
