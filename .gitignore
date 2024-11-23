@@ -40,5 +40,6 @@ go.work.sum
 configs/conf.yaml
 configs/conf.yml
 db/migrations/tern.conf
+db/migrations_survey/tern.conf
 # html
 index.html
