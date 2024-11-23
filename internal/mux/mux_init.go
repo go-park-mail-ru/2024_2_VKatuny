@@ -81,5 +81,8 @@ func Init(app *internal.App) *mux.Router {
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscribers", vacanciesHandlers.GetVacancySubscribers).
 		Methods(http.MethodGet)
 
+	router.NotFoundHandler = http.HandlerFunc(NotFoundHandler)
+	router.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowedHandler)
+
 	return router
 }

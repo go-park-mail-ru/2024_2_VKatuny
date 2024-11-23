@@ -23,4 +23,6 @@ var (
 var (
 	ErrFrontBadSlug          = fmt.Errorf("bad slug")
 	ErrFrontUnableToCastSlug = fmt.Errorf("unable to cast slug")
+	ErrFrontMethodNotAllowed = fmt.Errorf("method not allowed")
+	ErrFrontServiceNotFound  = fmt.Errorf("service not found")
 )
