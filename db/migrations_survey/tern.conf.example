@@ -1,0 +1,13 @@
+[database]
+# host supports TCP addresses and Unix domain sockets
+# host = /private/tmp
+host = 192.168.77.130
+port = 5432
+database = postgres
+user = postgres
+schema = public
+password = passIMO
+
+[data]
+prefix = foo
+app_user = joe
