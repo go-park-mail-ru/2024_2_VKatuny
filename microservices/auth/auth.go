@@ -28,7 +28,7 @@ type User struct {
 }
 
 var (
-	BadUserType = fmt.Errorf("Bad user type")
-	NoUserExist = fmt.Errorf("There is no such user")
-	NoSessionExist = fmt.Errorf("There is no such session")
+	ErrBadUserType = fmt.Errorf("bad user type")
+	ErrNoUserExist = fmt.Errorf("there is no such user")
+	ErrNoSessionExist = fmt.Errorf("there is no such session")
 )

@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"crypto/rand"
+	"database/sql"
 	"math/big"
 	"time"
 
@@ -25,10 +26,12 @@ type AuthorizationDelivery struct {
 	sessionTTL time.Duration
 }
 
-func NewAuthorization() *AuthorizationDelivery {
+func NewAuthorization(dbConn *sql.DB, log *logrus.Logger) *AuthorizationDelivery {
 	return &AuthorizationDelivery{
-		// TODO: Implement this
-
+		authRepo:    NewAuthorizationRepository(dbConn),
+		logger :     &logrus.Entry{Logger: log},
+		tokenLength: 32,
+		sessionTTL:  24 * time.Hour,
 	}
 }
 

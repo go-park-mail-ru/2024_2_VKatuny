@@ -31,13 +31,13 @@ func (r *AuthorizationRepository) GetUser(userType, email string) (*User, error)
 			FROM employer
 			WHERE email = $1`, email)
 	default:
-		return nil, BadUserType
+		return nil, ErrBadUserType
 	}
 
 	user := new(User)
 	err := row.Scan(&user.ID, &user.PasswordHash)
 	if err == sql.ErrNoRows {
-		return nil, NoUserExist
+		return nil, ErrNoUserExist
 	} else if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (r *AuthorizationRepository) GetUserIdBySession(sessionToken string) (uint6
 	var userID uint64
 	err := row.Scan(&userID)
 	if err == sql.ErrNoRows {
-		return 0, NoUserExist
+		return 0, ErrNoUserExist
 	} else if err != nil {
 		return 0, err
 	}
