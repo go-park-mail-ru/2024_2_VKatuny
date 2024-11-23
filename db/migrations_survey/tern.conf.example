@@ -1,0 +1,13 @@
+[database]
+# host supports TCP addresses and Unix domain sockets
+# host = /private/tmp
+host = 14.8.13.37
+port = 8009
+database = dev-ms-vk-vkatuny
+user = dev-ms-vk-vkatuny
+schema = public
+password = sgasfag
+
+[data]
+prefix = foo
+app_user = joe
