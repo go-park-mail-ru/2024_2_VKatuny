@@ -85,8 +85,8 @@ func main() {
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
-	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
 	err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
+	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
 	if err != nil {
 		logger.Fatal(err)
 	}

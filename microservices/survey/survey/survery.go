@@ -1,11 +1,12 @@
 package survey
 
 import "fmt"
+
 // Interface for Compress.
 type ISurveryRepository interface {
-	GetStatistic() ([]*dto.Statistics, error)
-	GetQuestionByType() (*[]dto.Question, error)
-	CreateAnswerAuthorised(QuestionAnswer *dto.QuestionAnswer) error
+	GetStatistic() ([]*Statistics, error)
+	GetQuestionByType() ([]*Question, error)
+	CreateAnswerAuthorised(QuestionAnswer *QuestionAnswer) error
 }
 
 type ISurveyUsecase interface {
@@ -15,31 +16,30 @@ type ISurveyUsecase interface {
 }
 
 var (
-  ErrInvalidJSON = fmt.Errorf("invalid JSON")
+	ErrInvalidJSON = fmt.Errorf("invalid JSON")
 )
 
 type JSONSurveyStatistics struct{}
 
 type JSONSurveyForm struct{}
 
-
 type QuestionAnswer struct {
-	QuestionID int32 `json:"questionID"`
-	Toker          string `json:"toker"`
-	Value           int32 `json:"value"`
+	QuestionID int32  `json:"questionID"`
+	Token      string `json:"token"`
+	Value      int32  `json:"value"`
 }
 
 type Question struct {
-	ID int32 `json:"ID"`
-	QuestionText          string `json:"question_text"`
-	TypeText           string `json:"typeText"`
-	Position int32 `json:"position"`
+	ID           int32  `json:"ID"`
+	QuestionText string `json:"question_text"`
+	TypeText     string `json:"typeText"`
+	Position     int32  `json:"position"`
 }
 
 type Statistics struct {
-	ValAVG          int32 `json:"valAVG"`
-	QuestionText           int32 `json:"questionText"`
-	QuestionID           int32 `json:"questionID"`
+	ValAVG       int32 `json:"valAVG"`
+	QuestionText int32 `json:"questionText"`
+	QuestionID   int32 `json:"questionID"`
 }
 
 type JSONResponse struct {

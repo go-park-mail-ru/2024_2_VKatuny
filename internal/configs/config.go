@@ -12,17 +12,19 @@ import (
 
 // Config is a struct of .yaml config file
 type Config struct {
-	Server   *ServerConfig   `yaml:"server"`
-	DataBase *DataBaseConfig `yaml:"database"`
+	Server         *ServerConfig   `yaml:"server"`
+	DataBase       *DataBaseConfig `yaml:"database"`
+	SurveyDataBase *DataBaseConfig `yaml:"survey_database"`
 }
 
 // ServerConfig is a struct of server config block in .yaml
 type ServerConfig struct {
-	Scheme   string `yaml:"scheme"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Front    string `yaml:"frontURI"`
-	MediaDir string `yaml:"mediadir"`
+	Scheme                string `yaml:"scheme"`
+	Host                  string `yaml:"host"`
+	Port                  int    `yaml:"port"`
+	Front                 string `yaml:"frontURI"`
+	MediaDir              string `yaml:"mediadir"`
+	MicroserviceSurveyURI string `yaml:"survey_microservice"`
 }
 
 type DataBaseConfig struct {
