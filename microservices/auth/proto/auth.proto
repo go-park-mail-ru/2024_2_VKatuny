@@ -26,6 +26,14 @@ message User {
 
 enum StatusCode {
     OK = 0;
+    UnableToGenerateToken = 1;
+    UnableToGetUser = 2;
+    InvalidCredentials = 3;
+    UnableToCreateSession = 4;
+    NoSessionExist = 5;
+    WringLoginOrPassword = 6;
+    UnableToDeleteSession = 7;
+    EmptyRequest = 8;
 } 
 
 message AuthRequest {
@@ -47,7 +55,8 @@ message CheckAuthRequest {
 }
 
 message CheckAuthResponse {
-    StatusCode Status = 1;
+    User UserData = 1;
+    StatusCode Status = 2;
 }
 
 message DeauthRequest {
