@@ -2,30 +2,27 @@ package delivery
 
 import (
 	"encoding/json"
-	"fmt"
-	"net/http"
 
-	"context"
+	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/microservices/survey/survey"
 
-	compress "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/sirupsen/logrus"
 )
 
 type SurveyHandlers struct {
-	logger *logrus.Entry
+	logger        *logrus.Entry
 	surveyUsecase survey.ISurveyUsecase
-	getParams map[string]string
+	getParams     map[string]string
 }
 
 func NewSurveyHandlers(logger *logrus.Logger) *SurveyHandlers {
 	return &SurveyHandlers{
 		logger: logrus.NewEntry(logger),
 		getParams: map[string]string{
-			"csat": "------",  // TODO: set get parameters
+			"csat": "------", // TODO: set get parameters
 		},
 	}
 }
@@ -54,7 +51,7 @@ func (h *SurveyHandlers) GetStatistics(w http.ResponseWriter, r *http.Request) {
 
 	middleware.UniversalMarshal(w, http.StatusOK, survey.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body: statistics,
+		Body:       statistics,
 	})
 }
 
@@ -72,13 +69,14 @@ func (h *SurveyHandlers) AddSurveyAnswer(w http.ResponseWriter, r *http.Request)
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, survey.JSONResponse{
 			HTTPStatus: http.StatusBadRequest,
-			Error:      survey.ErrInvalidJSON,
+			Error:      survey.ErrInvalidJSON.Error(),
 		})
 		return
 	}
 	h.logger.Debugf("%s: survey form parsed: %v", fn, surveyForm)
-	
+
 	// TODO: get session
+	var SessionID string
 
 	err = h.surveyUsecase.AddAnswer(surveyForm, SessionID)
 	if err != nil {
@@ -107,7 +105,7 @@ func (h *SurveyHandlers) GetSurveyForm(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	h.logger.Debugf("%s: query params: %v", fn, queryParams)
 
-	formType := queryParams.Get(h.getParams["csat"]) 
+	formType := queryParams.Get(h.getParams["csat"])
 	form, err := h.surveyUsecase.GetForm(formType)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
@@ -121,36 +119,6 @@ func (h *SurveyHandlers) GetSurveyForm(w http.ResponseWriter, r *http.Request) {
 
 	middleware.UniversalMarshal(w, http.StatusOK, survey.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body: form,
+		Body:       form,
 	})
-}
-
-
-
-
-
-type CompressManager struct {
-	//compressedDir string
-	compress.UnsafeCompressServiceServer
-	compressUsecase compressinterfaces.ICompressUsecase
-}
-
-func NewCompressManager(compressUsecase compressinterfaces.ICompressUsecase) *CompressManager {
-	return &CompressManager{
-		//compressedDir: "media/compressed/",
-	}
-}
-
-func (cm *CompressManager) CompressAndSaveFile(ctx context.Context, in *compress.CompressAndSaveFileInput) (*compress.Nothing, error) {
-	funcName := "CompressService.CompressAndSaveFile"
-	fmt.Println(funcName)
-	err := cm.compressUsecase.CompressAndSaveFile(in.FileName)
-	return &compress.Nothing{}, err
-}
-
-func (cm *CompressManager) DeleteFile(ctx context.Context, in *compress.DeleteFileInput) (*compress.Nothing, error) {
-	funcName := "CompressService.DeleteFile"
-	fmt.Println(funcName)
-	err := cm.compressUsecase.DeleteFile(in.FileName)
-	return &compress.Nothing{}, err
 }
