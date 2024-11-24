@@ -2,6 +2,7 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -34,9 +35,11 @@ func NewSessionUsecase(logger *logrus.Logger, repositories *internal.Repositorie
 }
 
 // TODO: should return user
-func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, error) {
+func (u *sessionUsecase) Login(ctx context.Context, user *dto.JSONLoginForm) (*dto.UserWithSession, error) {
 	fn := "sessionUsecase.Login"
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
 	u.logger.Debugf("%s: entering", fn)
+
 	
 	if user == nil {
 		u.logger.Errorf("%s: user is nil", fn)
@@ -107,8 +110,11 @@ func (u *sessionUsecase) Login(user *dto.JSONLoginForm) (*dto.UserWithSession, e
 	return nil, fmt.Errorf(dto.MsgBadUserType)
 }
 
-func (u *sessionUsecase) Logout(userType string, sessionID string) (*dto.JSONUser, error) {
+func (u *sessionUsecase) Logout(ctx context.Context, userType string, sessionID string) (*dto.JSONUser, error) {
 	fn := "sessionUsecase.Logout"
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
+	u.logger.Debugf("%s: entering", fn)
+
 	switch userType {
 	case dto.UserTypeApplicant:
 		applicantID, err := u.sessionRepoApplicant.GetUserIdBySession(sessionID)
@@ -150,7 +156,11 @@ func (u *sessionUsecase) Logout(userType string, sessionID string) (*dto.JSONUse
 	return nil, fmt.Errorf(dto.MsgBadUserType)
 }
 
-func (u *sessionUsecase) CheckAuthorization(userType, sessionID string) (uint64, error) {
+func (u *sessionUsecase) CheckAuthorization(ctx context.Context, userType, sessionID string) (uint64, error) {
+	fn := "sessionUsecase.CheckAuthorization"
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
+	u.logger.Debugf("%s: entering", fn)
+
 	if sessionID == "" {
 		return 0, fmt.Errorf(dto.MsgBadCookie)
 	}
@@ -170,88 +180,3 @@ func (u *sessionUsecase) CheckAuthorization(userType, sessionID string) (uint64,
 	return 0, fmt.Errorf(dto.MsgBadUserType)
 }
 
-// func GetApplicantByEmail(repoApplicant applicantRepo.IApplicantRepository, email string) (*dto.ApplicantOutput, error) {
-// 	user, err := repoApplicant.GetByEmail(email)
-// 	if err != nil {
-// 		return nil, fmt.Errorf(dto.MsgDataBaseError)
-// 	}
-// 	return &dto.ApplicantOutput{
-// 		ID:                  user.ID,
-// 		FirstName:           user.FirstName,
-// 		LastName:            user.LastName,
-// 		CityName:            user.CityName,
-// 		BirthDate:           user.BirthDate,
-// 		PathToProfileAvatar: user.PathToProfileAvatar,
-// 		Contacts:            user.Contacts,
-// 		Education:           user.Education,
-// 		Email:               user.Email,
-// 		CreatedAt:           user.CreatedAt,
-// 		UpdatedAt:           user.UpdatedAt,
-// 	}, nil
-// }
-
-// func GetEmployerByEmail(repoEmployer employerRepo.EmployerRepository, email string) (*dto.EmployerOutput, error) {
-// 	user, err := repoEmployer.GetByEmail(email)
-// 	if err != nil {
-// 		return nil, fmt.Errorf(dto.MsgDataBaseError)
-// 	}
-// 	return &dto.EmployerOutput{
-// 		ID:                  user.ID,
-// 		FirstName:           user.FirstName,
-// 		LastName:            user.LastName,
-// 		CityName:            user.CityName,
-// 		Position:            user.Position,
-// 		CompanyName:         user.CompanyName,
-// 		CompanyDescription:  user.CompanyDescription,
-// 		CompanyWebsite:      user.CompanyWebsite,
-// 		PathToProfileAvatar: user.PathToProfileAvatar,
-// 		Contacts:            user.Contacts,
-// 		Email:               user.Email,
-// 		PasswordHash:        user.PasswordHash,
-// 		CreatedAt:           user.CreatedAt,
-// 		UpdatedAt:           user.UpdatedAt,
-// 	}, nil
-// }
-
-// func GetApplicantByID(repoApplicant applicantRepo.IApplicantRepository, id uint64) (*dto.ApplicantOutput, error) {
-// 	user, err := repoApplicant.GetByID(id)
-// 	if err != nil {
-// 		return nil, fmt.Errorf(dto.MsgDataBaseError)
-// 	}
-// 	return &dto.ApplicantOutput{
-// 		ID:                  user.ID,
-// 		FirstName:           user.FirstName,
-// 		LastName:            user.LastName,
-// 		CityName:            user.CityName,
-// 		BirthDate:           user.BirthDate,
-// 		PathToProfileAvatar: user.PathToProfileAvatar,
-// 		Contacts:            user.Contacts,
-// 		Education:           user.Education,
-// 		Email:               user.Email,
-// 		CreatedAt:           user.CreatedAt,
-// 		UpdatedAt:           user.UpdatedAt,
-// 	}, nil
-// }
-
-// func GetEmployerByID(repoEmployer employerRepo.EmployerRepository, id uint64) (*dto.EmployerOutput, error) {
-// 	user, err := repoEmployer.GetByID(id)
-// 	if err != nil {
-// 		return nil, fmt.Errorf(dto.MsgDataBaseError)
-// 	}
-// 	return &dto.EmployerOutput{
-// 		ID:                  user.ID,
-// 		FirstName:           user.FirstName,
-// 		LastName:            user.LastName,
-// 		CityName:            user.CityName,
-// 		Position:            user.Position,
-// 		CompanyName:         user.CompanyName,
-// 		CompanyDescription:  user.CompanyDescription,
-// 		CompanyWebsite:      user.CompanyWebsite,
-// 		PathToProfileAvatar: user.PathToProfileAvatar,
-// 		Contacts:            user.Contacts,
-// 		Email:               user.Email,
-// 		PasswordHash:        user.PasswordHash,
-// 		CreatedAt:           user.CreatedAt,
-// 		UpdatedAt:           user.UpdatedAt,
-// 	}, nil
-// }

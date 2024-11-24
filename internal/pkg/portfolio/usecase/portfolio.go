@@ -1,11 +1,13 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,8 +23,10 @@ func NewPortfolioUsecase(logger *logrus.Logger, repositories *internal.Repositor
 	}
 }
 
-func (pu *PortfolioUsecase) GetApplicantPortfolios(applicantID uint64) ([]*dto.JSONGetApplicantPortfolio, error) {
+func (pu *PortfolioUsecase) GetApplicantPortfolios(ctx context.Context, applicantID uint64) ([]*dto.JSONGetApplicantPortfolio, error) {
 	fn := "PortfolioUsecase.GetApplicantPortfolio"
+	pu.logger = utils.SetLoggerRequestID(ctx, pu.logger)
+
 
 	pu.logger.Debugf("function: %s; applicant id: %d. Trying to get applicant portfolio", fn, applicantID)
 	portfoliosModel, err := pu.portfolioRepo.GetPortfoliosByApplicantID(applicantID)

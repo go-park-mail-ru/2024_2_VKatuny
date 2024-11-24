@@ -60,7 +60,7 @@ func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// dto - JSONGetApplicantProfile
-	applicantProfile, err := h.applicantUsecase.GetApplicantProfile(applicantID)
+	applicantProfile, err := h.applicantUsecase.GetApplicantProfile(r.Context(), applicantID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -120,7 +120,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 		newProfileData.Avatar = fileAddress
 	}
 
-	err = h.applicantUsecase.UpdateApplicantProfile(applicantID, newProfileData)
+	err = h.applicantUsecase.UpdateApplicantProfile(r.Context(), applicantID, newProfileData)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -157,7 +157,7 @@ func (h *ApplicantHandlers) GetPortfolios(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	portfolios, err := h.portfolioUsecase.GetApplicantPortfolios(applicantID)
+	portfolios, err := h.portfolioUsecase.GetApplicantPortfolios(r.Context(),applicantID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{

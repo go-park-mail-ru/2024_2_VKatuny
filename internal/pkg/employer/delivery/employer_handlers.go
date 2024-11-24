@@ -56,7 +56,7 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 		Email:    employerRegistrationForm.Email,
 		Password: employerRegistrationForm.Password,
 	}
-	employerWithSession, err := h.sessionUsecase.Login(employerLogin)
+	employerWithSession, err := h.sessionUsecase.Login(r.Context(),employerLogin)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{

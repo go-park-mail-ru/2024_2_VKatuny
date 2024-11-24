@@ -62,7 +62,7 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.sessionUsecase.CheckAuthorization(userType, session.Value)
+	userID, err := h.sessionUsecase.CheckAuthorization(r.Context(),userType, session.Value)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -104,7 +104,7 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: login form parsed: %v", fn, loginForm)
 
-	userWithSession, err := h.sessionUsecase.Login(loginForm)
+	userWithSession, err := h.sessionUsecase.Login(r.Context(),loginForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -156,7 +156,7 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: got user type: %s", fn, userType)
 
-	user, err := h.sessionUsecase.Logout(userType, session.Value)
+	user, err := h.sessionUsecase.Logout(r.Context(), userType, session.Value)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
