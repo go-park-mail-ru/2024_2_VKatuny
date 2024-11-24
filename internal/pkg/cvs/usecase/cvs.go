@@ -63,6 +63,9 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy st
 	if errors.Is(ErrNumIsNotANumber, err) {
 		num = defaultVacanciesNum
 	}
+	if searchStr == "" && searchBy != "" {
+		searchBy = ""
+	}
 	var CVsModel []*dto.JSONCv
 
 	CVsModel, err = cu.cvsRepo.SearchAll(offset, offset+num, searchStr, group, searchBy)

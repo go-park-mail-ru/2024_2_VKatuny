@@ -62,8 +62,7 @@ func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group,
 		num = defaultVacanciesNum
 	}
 	if searchStr == "" && searchBy != "" {
-		vu.logger.Errorf("function %s: unable to get vacancies: %s", fn, err)
-		return nil, fmt.Errorf(dto.MsgDataBaseError)
+		searchBy = ""
 	}
 	var vacancies []*dto.JSONVacancy
 	vacancies, err = vu.vacanciesRepository.SearchAll(offset, offset+num, searchStr, group, searchBy)

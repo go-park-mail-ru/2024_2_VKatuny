@@ -173,7 +173,7 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 		if err != nil {
 			return nil, err
 		}
-	}
+	} 
 	fmt.Println(updatedCv)
 	if updatedCv.Avatar != "" {
 		if updatedCv.PositionCategoryName == "" {
