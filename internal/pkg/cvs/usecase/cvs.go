@@ -54,7 +54,7 @@ func (u *CVsUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, 
 	return uint64(offset), uint64(num), err
 }
 
-func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr string) ([]*dto.JSONGetApplicantCV, error) {
+func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONGetApplicantCV, error) {
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
 	offset, num, err := cu.ValidateQueryParameters(offsetStr, numStr)
 	if errors.Is(ErrOffsetIsNotANumber, err) {
@@ -64,11 +64,8 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr string) ([]*dto.JSO
 		num = defaultVacanciesNum
 	}
 	var CVsModel []*dto.JSONCv
-	if searchStr != "" {
-		CVsModel, err = cu.cvsRepo.SearchByPositionDescription(offset, offset+num, searchStr)
-	} else {
-		CVsModel, err = cu.cvsRepo.GetWithOffset(offset, offset+num)
-	}
+
+	CVsModel, err = cu.cvsRepo.SearchAll(offset, offset+num, searchStr, group, searchBy)
 	var CVs []*dto.JSONGetApplicantCV
 	for _, CVModel := range CVsModel {
 		CVs = append(CVs, &dto.JSONGetApplicantCV{

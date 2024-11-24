@@ -54,6 +54,15 @@ alter table cv
         NOT VALID;
 insert into cv (applicant_id, position_rus, position_eng, job_search_status_id, cv_description, working_experience, position_category_id)
 values (1, 'Художник', 'Painter', 1,  'Первоклассный художник', '10 лет опыта работы', 1);
+
+ALTER TABLE applicant
+    ADD compressed_image text;
+ALTER TABLE employer
+    ADD compressed_image text;
+ALTER TABLE cv
+    ADD compressed_image text;
+ALTER TABLE vacancy
+    ADD compressed_image text;
 ---- create above / drop below ----
 
 -- Write your migrate down statements here. If this migration is irreversible

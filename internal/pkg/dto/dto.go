@@ -298,16 +298,31 @@ type JSONGetApplicantCV struct {
 }
 
 type JSONCv struct {
-	ID                  uint64 `json:"id"`
-	ApplicantID         uint64 `json:"applicant"`
-	PositionRu          string `json:"positionRu"`
-	PositionEn          string `json:"positionEn"`
-	Description         string `json:"description,omitempty"`
-	JobSearchStatusName string `json:"jobSearchStatus"`
-	WorkingExperience   string `json:"workingExperience"`
-	Avatar              string `json:"avatar"`
-	CreatedAt           string `json:"createdAt"`
-	UpdatedAt           string `json:"updatedAt"`
+	ID                   uint64 `json:"id"`
+	ApplicantID          uint64 `json:"applicant"`
+	PositionRu           string `json:"positionRu"`
+	PositionEn           string `json:"positionEn"`
+	Description          string `json:"description,omitempty"`
+	JobSearchStatusName  string `json:"jobSearchStatus"`
+	WorkingExperience    string `json:"workingExperience"`
+	Avatar               string `json:"avatar"`
+	PositionCategoryName string `json:"positionCategoryName"`
+	CreatedAt            string `json:"createdAt"`
+	UpdatedAt            string `json:"updatedAt"`
+}
+
+type JSONCvWithNull struct {
+	ID                   uint64         `json:"id"`
+	ApplicantID          uint64         `json:"applicant"`
+	PositionRu           string         `json:"positionRu"`
+	PositionEn           string         `json:"positionEn"`
+	Description          string         `json:"description,omitempty"`
+	JobSearchStatusName  string         `json:"jobSearchStatus"`
+	WorkingExperience    string         `json:"workingExperience"`
+	Avatar               string         `json:"avatar"`
+	PositionCategoryName sql.NullString `json:"positionCategoryName"`
+	CreatedAt            string         `json:"createdAt"`
+	UpdatedAt            string         `json:"updatedAt"`
 }
 
 type JSONVacancyWithNull struct {
