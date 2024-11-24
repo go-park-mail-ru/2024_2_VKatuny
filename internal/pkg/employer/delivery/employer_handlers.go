@@ -17,8 +17,9 @@ import (
 // @Tags        Registration
 // @Accept      json
 // @Produce     json
-// @Success     200      {object}       dto.JSONResponse{statusCode=200,body=dto.JSONUserBody, error=""} "OK"
-// @Failure     400      {object}       nil
+// @Param       example body     dto.JSONEmployerRegistrationForm true "Example"
+// @Success     200 {object} dto.JSONUser
+// @Failure     400 {object} dto.JSONResponse
 // @Router      /registration/employer/ [post]
 func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()

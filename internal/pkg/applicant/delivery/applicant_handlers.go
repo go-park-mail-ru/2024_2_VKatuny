@@ -9,17 +9,16 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
-// CreateWorkerHandler creates applicant in db
-// CreateWorker godoc
+// CreateApplicantHandler creates applicant in db
+// CreateApplicant godoc
 // @Summary     Creates a new user as a applicant
 // @Description -
 // @Tags        Registration
 // @Accept      json
 // @Produce     json
-// @Param       email    body string true "User's email"
-// @Param       password body string true "User's password"
-// @Success     200 {object} inmemorydb.UserInput
-// @Failure     http.StatusBadRequest {object} nil
+// @Param       example body     dto.JSONApplicantRegistrationForm true "Example"
+// @Success     200 {object} dto.JSONUser
+// @Failure     400 {object} dto.JSONResponse
 // @Router      /registration/applicant/ [post]
 func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()

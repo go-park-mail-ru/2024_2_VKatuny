@@ -10,108 +10,37 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Ifelsik",
-            "url": "https://github.com/Ifelsik"
+            "name": "Olgmuzalev13",
+            "url": "https://github.com/Olgmuzalev13"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/authorized": {
-            "post": {
-                "description": "Gets cookie from user and checks authentication",
-                "tags": [
-                    "AuthStatus"
-                ],
-                "summary": "Checks user's authorization",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID (Cookie)",
-                        "name": "session_id",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    }
-                }
-            }
-        },
-        "/login/": {
-            "post": {
-                "description": "-",
-                "consumes": [
+        "/CVs": {
+            "get": {
+                "description": "Accepts offset and number of CVs with id \u003e= offset. Returns CVs",
+                "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Login"
+                    "CVs"
                 ],
-                "summary": "Realises authentication",
+                "summary": "Gets list of CVs",
                 "parameters": [
                     {
-                        "description": "User's email",
-                        "name": "email",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
                     },
                     {
-                        "description": "User's password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/logout/": {
-            "post": {
-                "description": "-",
-                "tags": [
-                    "Logout"
-                ],
-                "summary": "Realises deauthentication",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID (Cookie)",
-                        "name": "session_id",
-                        "in": "header",
+                        "type": "integer",
+                        "description": "num",
+                        "name": "num",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -122,8 +51,89 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request"
                     },
-                    "401": {
-                        "description": "Unauthorized"
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/applicant/profile/{id}": {
+            "get": {
+                "description": "Get applicant profile by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Applicant"
+                ],
+                "summary": "Get applicant profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Applicant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONGetApplicantProfile"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registration/applicant/": {
+            "post": {
+                "description": "-",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Registration"
+                ],
+                "summary": "Creates a new user as a applicant",
+                "parameters": [
+                    {
+                        "description": "Example",
+                        "name": "example",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONApplicantRegistrationForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONResponse"
+                        }
                     }
                 }
             }
@@ -143,21 +153,12 @@ const docTemplate = `{
                 "summary": "Creates a new user as a employer",
                 "parameters": [
                     {
-                        "description": "User's email",
-                        "name": "email",
+                        "description": "Example",
+                        "name": "example",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "User's password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.JSONEmployerRegistrationForm"
                         }
                     }
                 ],
@@ -165,57 +166,14 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/BD.UserInput"
+                            "$ref": "#/definitions/dto.JSONUser"
                         }
                     },
                     "400": {
-                        "description": "Bad Request"
-                    }
-                }
-            }
-        },
-        "/registration/worker/": {
-            "post": {
-                "description": "-",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Registration"
-                ],
-                "summary": "Creates a new user as a worker",
-                "parameters": [
-                    {
-                        "description": "User's email",
-                        "name": "email",
-                        "in": "body",
-                        "required": true,
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/dto.JSONResponse"
                         }
-                    },
-                    {
-                        "description": "User's password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/BD.UserInput"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request"
                     }
                 }
             }
@@ -248,55 +206,119 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"status\": 200, \"vacancies\": [{\"id\": 1, \"position\": \"Продавец\", \"description\": \"Описание\", \"salary\": \"100\", \"employer\": \"Магазин\", \"location\": \"Tokyo\", \"createdAt\": \"2024.09.30 13:47:45\"}]}",
-                        "schema": {
-                            "type": "object"
-                        }
+                        "description": "OK"
                     },
                     "400": {
-                        "description": "{\"status\": 400, \"error\": \"num isn't number\"}",
-                        "schema": {
-                            "$ref": "#/definitions/handler.badResponse"
-                        }
+                        "description": "Bad Request"
                     },
                     "405": {
-                        "description": "{\"status\": 405, \"error\": \"http request method isn't a GET\"}",
-                        "schema": {
-                            "$ref": "#/definitions/handler.badResponse"
-                        }
+                        "description": "Method Not Allowed"
                     },
                     "500": {
-                        "description": "{\"status\": 500, \"error\": \"encoding error\"}",
-                        "schema": {
-                            "$ref": "#/definitions/handler.badResponse"
-                        }
+                        "description": "Internal Server Error"
                     }
                 }
             }
         }
     },
     "definitions": {
-        "BD.UserInput": {
+        "dto.JSONApplicantRegistrationForm": {
             "type": "object",
             "properties": {
-                "login": {
+                "birthDate": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.JSONEmployerRegistrationForm": {
+            "type": "object",
+            "properties": {
+                "companyDescription": {
+                    "type": "string"
+                },
+                "companyName": {
+                    "type": "string"
+                },
+                "companyWebsite": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
                     "type": "string"
                 },
                 "password": {
                     "type": "string"
                 },
-                "userType": {
+                "position": {
                     "type": "string"
                 }
             }
         },
-        "handler.badResponse": {
+        "dto.JSONGetApplicantProfile": {
             "type": "object",
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "birthDate": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "contacts": {
+                    "type": "string"
+                },
+                "education": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastName": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.JSONResponse": {
+            "type": "object",
+            "properties": {
+                "body": {},
                 "error": {
                     "type": "string"
                 },
-                "status": {
+                "statusCode": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.JSONUser": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "userType": {
                     "type": "string"
                 }
             }
@@ -307,10 +329,10 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "127.0.0.1:8000",
+	Host:             "127.0.0.1:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "uArt's API",
+	Title:            "μArt's API",
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

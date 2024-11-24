@@ -40,6 +40,16 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 	}
 }
 
+// GetProfile godoc
+// @Summary Get applicant profile
+// @Description Get applicant profile by ID
+// @Tags Applicant
+// @Accept json
+// @Produce json
+// @Param id path string true "Applicant ID"
+// @Success 200 {object} dto.JSONGetApplicantProfile
+// @Failure 500 {object} dto.JSONResponse
+// @Router /applicant/profile/{id} [get]
 func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

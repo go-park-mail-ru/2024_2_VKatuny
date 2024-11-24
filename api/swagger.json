@@ -1,58 +1,247 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "uArt's API",
+        "title": "μArt's API",
         "contact": {
-            "name": "Ifelsik",
-            "url": "https://github.com/Ifelsik"
+            "name": "Olgmuzalev13",
+            "url": "https://github.com/Olgmuzalev13"
         },
         "version": "1.0"
     },
-    "host": "127.0.0.1:8000",
+    "host": "127.0.0.1:8080",
     "basePath": "/api/v1",
     "paths": {
-        "/registration/employer": {
-            "post": {
-                "summary": "Регистрация пользователя",
+        "/CVs": {
+            "get": {
+                "description": "Accepts offset and number of CVs with id \u003e= offset. Returns CVs",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CVs"
+                ],
+                "summary": "Gets list of CVs",
                 "parameters": [
                     {
-                        "in": "body",
-                        "name": "Входные данные при регистрации пользователя",
-                        "schema": {
-                            "$ref": "#/definitions/EmployerRegistatrationForm"
-                        }
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "num",
+                        "name": "num",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/applicant/profile/{id}": {
+            "get": {
+                "description": "Get applicant profile by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Applicant"
+                ],
+                "summary": "Get applicant profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Applicant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONGetApplicantProfile"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registration/applicant/": {
+            "post": {
+                "description": "-",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Registration"
+                ],
+                "summary": "Creates a new user as a applicant",
+                "parameters": [
+                    {
+                        "description": "Example",
+                        "name": "example",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONApplicantRegistrationForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/registration/employer/": {
+            "post": {
+                "description": "-",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Registration"
+                ],
+                "summary": "Creates a new user as a employer",
+                "parameters": [
+                    {
+                        "description": "Example",
+                        "name": "example",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONEmployerRegistrationForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.JSONResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/vacancies": {
+            "get": {
+                "description": "Accepts offset and number of vacancies with id \u003e= offset. Returns vacancies",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vacancies"
+                ],
+                "summary": "Gets list of vacancies",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "num",
+                        "name": "num",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "405": {
+                        "description": "Method Not Allowed"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }
         }
     },
     "definitions": {
-        "Response": {
-            "statusCode": "integer",
-            "body": "object",
-            "error": "string"
-        },
-        "EmployerRegistatrationForm": {
+        "dto.JSONApplicantRegistrationForm": {
             "type": "object",
             "properties": {
+                "birthDate": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
                 "firstName": {
                     "type": "string"
                 },
                 "lastName": {
                     "type": "string"
                 },
-                "position": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.JSONEmployerRegistrationForm": {
+            "type": "object",
+            "properties": {
+                "companyDescription": {
                     "type": "string"
                 },
                 "companyName": {
-                    "type": "string"
-                },
-                "companyDescription": {
                     "type": "string"
                 },
                 "companyWebsite": {
@@ -61,7 +250,68 @@
                 "email": {
                     "type": "string"
                 },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
                 "password": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.JSONGetApplicantProfile": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "birthDate": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "contacts": {
+                    "type": "string"
+                },
+                "education": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastName": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.JSONResponse": {
+            "type": "object",
+            "properties": {
+                "body": {},
+                "error": {
+                    "type": "string"
+                },
+                "statusCode": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.JSONUser": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "userType": {
                     "type": "string"
                 }
             }

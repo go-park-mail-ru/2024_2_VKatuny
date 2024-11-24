@@ -1,160 +1,182 @@
 basePath: /api/v1
 definitions:
-  BD.UserInput:
+  dto.JSONApplicantRegistrationForm:
     properties:
-      login:
+      birthDate:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
         type: string
       password:
         type: string
+    type: object
+  dto.JSONEmployerRegistrationForm:
+    properties:
+      companyDescription:
+        type: string
+      companyName:
+        type: string
+      companyWebsite:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      password:
+        type: string
+      position:
+        type: string
+    type: object
+  dto.JSONGetApplicantProfile:
+    properties:
+      avatar:
+        type: string
+      birthDate:
+        type: string
+      city:
+        type: string
+      contacts:
+        type: string
+      education:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+    type: object
+  dto.JSONResponse:
+    properties:
+      body: {}
+      error:
+        type: string
+      statusCode:
+        type: integer
+    type: object
+  dto.JSONUser:
+    properties:
+      id:
+        type: integer
       userType:
         type: string
     type: object
-  handler.badResponse:
-    properties:
-      error:
-        type: string
-      status:
-        type: string
-    type: object
-host: 127.0.0.1:8000
+host: 127.0.0.1:8080
 info:
   contact:
-    name: Ifelsik
-    url: https://github.com/Ifelsik
-  title: uArt's API
+    name: Olgmuzalev13
+    url: https://github.com/Olgmuzalev13
+  title: μArt's API
   version: "1.0"
 paths:
-  /authorized:
-    post:
-      description: Gets cookie from user and checks authentication
+  /CVs:
+    get:
+      description: Accepts offset and number of CVs with id >= offset. Returns CVs
       parameters:
-      - description: Session ID (Cookie)
-        in: header
-        name: session_id
+      - description: offset
+        in: query
+        name: offset
         required: true
-        type: string
+        type: integer
+      - description: num
+        in: query
+        name: num
+        required: true
+        type: integer
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-        "401":
-          description: Unauthorized
-      summary: Checks user's authorization
+        "400":
+          description: Bad Request
+        "405":
+          description: Method Not Allowed
+        "500":
+          description: Internal Server Error
+      summary: Gets list of CVs
       tags:
-      - AuthStatus
-  /login/:
+      - CVs
+  /applicant/profile/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get applicant profile by ID
+      parameters:
+      - description: Applicant ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.JSONGetApplicantProfile'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.JSONResponse'
+      summary: Get applicant profile
+      tags:
+      - Applicant
+  /registration/applicant/:
     post:
       consumes:
       - application/json
       description: '-'
       parameters:
-      - description: User's email
+      - description: Example
         in: body
-        name: email
+        name: example
         required: true
         schema:
-          type: string
-      - description: User's password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/dto.JSONApplicantRegistrationForm'
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/dto.JSONUser'
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Realises authentication
+            $ref: '#/definitions/dto.JSONResponse'
+      summary: Creates a new user as a applicant
       tags:
-      - Login
-  /logout/:
-    post:
-      description: '-'
-      parameters:
-      - description: Session ID (Cookie)
-        in: header
-        name: session_id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-      summary: Realises deauthentication
-      tags:
-      - Logout
+      - Registration
   /registration/employer/:
     post:
       consumes:
       - application/json
       description: '-'
       parameters:
-      - description: User's email
+      - description: Example
         in: body
-        name: email
+        name: example
         required: true
         schema:
-          type: string
-      - description: User's password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/dto.JSONEmployerRegistrationForm'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/BD.UserInput'
+            $ref: '#/definitions/dto.JSONUser'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.JSONResponse'
       summary: Creates a new user as a employer
-      tags:
-      - Registration
-  /registration/worker/:
-    post:
-      consumes:
-      - application/json
-      description: '-'
-      parameters:
-      - description: User's email
-        in: body
-        name: email
-        required: true
-        schema:
-          type: string
-      - description: User's password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/BD.UserInput'
-        "400":
-          description: Bad Request
-      summary: Creates a new user as a worker
       tags:
       - Registration
   /vacancies:
@@ -176,23 +198,13 @@ paths:
       - application/json
       responses:
         "200":
-          description: '{"status": 200, "vacancies": [{"id": 1, "position": "Продавец",
-            "description": "Описание", "salary": "100", "employer": "Магазин", "location":
-            "Tokyo", "createdAt": "2024.09.30 13:47:45"}]}'
-          schema:
-            type: object
+          description: OK
         "400":
-          description: '{"status": 400, "error": "num isn''t number"}'
-          schema:
-            $ref: '#/definitions/handler.badResponse'
+          description: Bad Request
         "405":
-          description: '{"status": 405, "error": "http request method isn''t a GET"}'
-          schema:
-            $ref: '#/definitions/handler.badResponse'
+          description: Method Not Allowed
         "500":
-          description: '{"status": 500, "error": "encoding error"}'
-          schema:
-            $ref: '#/definitions/handler.badResponse'
+          description: Internal Server Error
       summary: Gets list of vacancies
       tags:
       - Vacancies
