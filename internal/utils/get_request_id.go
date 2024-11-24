@@ -1,16 +1,16 @@
 package utils
 
 import (
-	"net/http"
+	"context"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/sirupsen/logrus"
 )
 
-func SetRequestIDInLoggerFromRequest(r *http.Request, logger *logrus.Entry) *logrus.Entry {
-	requestID, ok := r.Context().Value(dto.RequestIDContextKey).(string)
+func SetLoggerRequestID(ctx context.Context, logger *logrus.Entry) *logrus.Entry {
+	requestID, ok := ctx.Value(dto.RequestIDContextKey).(string)
 	if ok {
 		return logger.WithField("request_id", requestID)
-	} 
+	}
 	return logger
 }

@@ -1,6 +1,7 @@
 package employer
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -20,10 +21,10 @@ type IEmployerRepository interface {
 }
 
 type IEmployerUsecase interface {
-	Create(form *dto.JSONEmployerRegistrationForm) (*dto.JSONUser, error)
-	GetByID(id uint64) (*dto.JSONEmployer, error) 
-	GetEmployerProfile(employerID uint64) (*dto.JSONGetEmployerProfile, error)
-	UpdateEmployerProfile(employerID uint64, employerProfile *dto.JSONUpdateEmployerProfile) error
+	Create(ctx context.Context, form *dto.JSONEmployerRegistrationForm) (*dto.JSONUser, error)
+	GetByID(ctx context.Context, id uint64) (*dto.JSONEmployer, error) 
+	GetEmployerProfile(ctx context.Context, employerID uint64) (*dto.JSONGetEmployerProfile, error)
+	UpdateEmployerProfile(ctx context.Context, employerID uint64, employerProfile *dto.JSONUpdateEmployerProfile) error
 }
 
 var (

@@ -25,7 +25,8 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 	defer r.Body.Close()
 
 	fn := "ApplicantRegistration"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	applicantRegistrationForm := new(dto.JSONApplicantRegistrationForm)
 

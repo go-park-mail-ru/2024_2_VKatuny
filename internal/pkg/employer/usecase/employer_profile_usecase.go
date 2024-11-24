@@ -1,9 +1,12 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,14 +22,18 @@ func NewEmployerUsecase(logger *logrus.Logger, repositories *internal.Repositori
 	}
 }
 
-func (eu *EmployerUsecase) GetEmployerProfile(employerID uint64) (*dto.JSONGetEmployerProfile, error) {
+func (eu *EmployerUsecase) GetEmployerProfile(ctx context.Context, employerID uint64) (*dto.JSONGetEmployerProfile, error) {
 	fn := "EmployerUsecase.GetEmployerProfile"
+
+	eu.logger = utils.SetLoggerRequestID(ctx, eu.logger)
+	eu.logger.Debugf("%s: entering", fn)
+
 	employerModel, err := eu.employerRepository.GetByID(employerID)
 	if err != nil {
-		eu.logger.Debugf("function: %s; unable to get employer profile: %s", fn, err)
+		eu.logger.Debugf("%s: unable to get employer profile: %s", fn, err)
 		return nil, err
 	}
-	eu.logger.Debugf("function: %s; got employer profile: %v", fn, employerModel)
+	eu.logger.Debugf("%s: got employer profile: %v", fn, employerModel)
 	return &dto.JSONGetEmployerProfile{
 		ID:                 employerModel.ID,
 		FirstName:          employerModel.FirstName,
@@ -41,8 +48,12 @@ func (eu *EmployerUsecase) GetEmployerProfile(employerID uint64) (*dto.JSONGetEm
 	}, nil
 }
 
-func (eu *EmployerUsecase) UpdateEmployerProfile(employerID uint64, employerProfile *dto.JSONUpdateEmployerProfile) error {
+func (eu *EmployerUsecase) UpdateEmployerProfile(ctx context.Context, employerID uint64, employerProfile *dto.JSONUpdateEmployerProfile) error {
 	fn := "EmployerUsecase.UpdateEmployerProfile"
+
+	eu.logger = utils.SetLoggerRequestID(ctx, eu.logger)
+	eu.logger.Debugf("%s: entering", fn)
+
 	_, err := eu.employerRepository.Update(employerID, employerProfile)
 	if err != nil {
 		eu.logger.Errorf("function: %s; unable to update employer profile: %s", fn, err)

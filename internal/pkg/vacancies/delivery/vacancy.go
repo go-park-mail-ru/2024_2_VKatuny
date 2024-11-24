@@ -38,6 +38,10 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 }
 
 func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request) {
+	fn := "VacanciesHandlers.CreateVacancy"
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
+
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newVacancy := &dto.JSONVacancy{}
 	newVacancy.Position = r.FormValue("position")
@@ -47,7 +51,6 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	newVacancy.CompanyName = r.FormValue("companyName")
 	newVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
 	if err != nil {
 		h.logger.Errorf("bad input of salary: %s", err)
@@ -104,7 +107,8 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 	fn := "VacanciesHandlers.GetVacancy"
 
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -113,7 +117,7 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -139,7 +143,8 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 	defer r.Body.Close()
 
 	fn := "VacanciesHandlers.UpdateVacancy"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -148,7 +153,7 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -215,7 +220,8 @@ func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request
 	defer r.Body.Close()
 
 	fn := "VacanciesHandlers.DeleteVacancy"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -224,7 +230,7 @@ func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -258,7 +264,8 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 	defer r.Body.Close()
 
 	fn := "VacanciesHandlers.SubscribeVacancy"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -267,7 +274,7 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -303,7 +310,8 @@ func (h *VacanciesHandlers) UnsubscribeVacancy(w http.ResponseWriter, r *http.Re
 	defer r.Body.Close()
 
 	fn := "VacanciesHandlers.UnsubscribeVacancy"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -312,7 +320,7 @@ func (h *VacanciesHandlers) UnsubscribeVacancy(w http.ResponseWriter, r *http.Re
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -348,7 +356,8 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 	defer r.Body.Close()
 
 	fn := "VacanciesHandlers.GetVacancySubscription"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -357,7 +366,7 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -393,7 +402,8 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 	defer r.Body.Close()
 
 	fn := "VacanciesHandlers.GetVacancySubscribers"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -402,7 +412,7 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}

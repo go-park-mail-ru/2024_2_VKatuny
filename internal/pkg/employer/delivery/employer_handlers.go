@@ -24,7 +24,7 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 	defer r.Body.Close()
 
 	fn := "EmployerHandlers.CreateEmployerHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 
 	employerRegistrationForm := new(dto.JSONEmployerRegistrationForm)
 	err := json.NewDecoder(r.Body).Decode(employerRegistrationForm)
@@ -40,7 +40,7 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 
 	// TODO: implement usecase for validate registration data
 
-	employer, err := h.employerUsecase.Create(employerRegistrationForm)
+	employer, err := h.employerUsecase.Create(r.Context(), employerRegistrationForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -73,8 +73,8 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       &dto.JSONUser{
-			ID: employer.ID,
+		Body: &dto.JSONUser{
+			ID:       employer.ID,
 			UserType: dto.UserTypeEmployer,
 		},
 	})

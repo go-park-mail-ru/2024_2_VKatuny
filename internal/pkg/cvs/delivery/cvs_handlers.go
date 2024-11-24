@@ -39,7 +39,8 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.CreateCVHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
@@ -75,14 +76,14 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 
 	wroteCV, err := h.cvsUsecase.CreateCV(newCV, currentUser)
 	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
 			Error:      err.Error(),
 		})
 		return
 	}
-	h.logger.Debugf("function %s: success, got created cv: %v", fn, wroteCV)
+	h.logger.Debugf("%s: success, got created cv: %v", fn, wroteCV)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -94,24 +95,25 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.GetCVsHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
 	cvID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
-	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
+	h.logger.Debugf("%s: got slug cvID: %d", fn, cvID)
 
 	CV, err := h.cvsUsecase.GetCV(cvID)
 	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
 			Error:      err.Error(),
@@ -119,7 +121,7 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Debugf("function %s: success, got cv: %v", fn, CV)
+	h.logger.Debugf("%s: success, got cv: %v", fn, CV)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       CV,
@@ -130,7 +132,8 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.UpdateCVHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -139,7 +142,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -206,7 +209,8 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.DeleteCVHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -215,7 +219,7 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}

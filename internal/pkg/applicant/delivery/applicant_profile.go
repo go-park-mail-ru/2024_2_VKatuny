@@ -44,8 +44,8 @@ func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantProfileHandlers.GetApplicantProfileHandler"
-
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	vars := mux.Vars(r)
 
@@ -55,7 +55,7 @@ func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -82,7 +82,8 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 
 	fn := "ApplicantProfileHandlers.UpdateApplicantProfileHandler"
 
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	vars := mux.Vars(r)
 
@@ -92,7 +93,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -140,7 +141,8 @@ func (h *ApplicantHandlers) GetPortfolios(w http.ResponseWriter, r *http.Request
 
 	fn := "ApplicantProfileHandlers.GetApplicantPortfoliosHandler"
 
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	vars := mux.Vars(r)
 
@@ -150,7 +152,7 @@ func (h *ApplicantHandlers) GetPortfolios(w http.ResponseWriter, r *http.Request
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -177,7 +179,8 @@ func (h *ApplicantHandlers) GetCVs(w http.ResponseWriter, r *http.Request) {
 
 	fn := "ApplicantProfileHandlers.GetApplicantCVsHandler"
 
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	vars := mux.Vars(r)
 
@@ -187,7 +190,7 @@ func (h *ApplicantHandlers) GetCVs(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}

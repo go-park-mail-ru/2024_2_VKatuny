@@ -25,7 +25,8 @@ func (h *VacanciesHandlers) GetVacancies(w http.ResponseWriter, r *http.Request)
 	defer r.Body.Close()
 
 	fn := "VacanciesHandlers.GetVacancies"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	queryParams := r.URL.Query()
 	h.logger.Debugf("%s; Query params read: %v", fn, queryParams)

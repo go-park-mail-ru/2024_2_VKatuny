@@ -42,7 +42,7 @@ func (h *EmployerHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerProfileHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 
 	vars := mux.Vars(r)
 
@@ -52,12 +52,12 @@ func (h *EmployerHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
 	// dto - JSONGetEmployerProfile
-	employerProfile, err := h.employerUsecase.GetEmployerProfile(employerID)
+	employerProfile, err := h.employerUsecase.GetEmployerProfile(r.Context(), employerID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -78,7 +78,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.UpdateEmployerProfileHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -87,7 +87,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
@@ -114,7 +114,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 
 	h.logger.Debugf("function %s: new profile data MultiPart parsed: %v", fn, newProfileData)
 
-	err = h.employerUsecase.UpdateEmployerProfile(employerID, newProfileData)
+	err = h.employerUsecase.UpdateEmployerProfile(r.Context(), employerID, newProfileData)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -130,7 +130,7 @@ func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.R
 	defer r.Body.Close()
 
 	fn := "EmployerProfileHandlers.GetEmployerVacanciesHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 
 	vars := mux.Vars(r)
 	slug := vars["id"]
@@ -139,11 +139,11 @@ func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.R
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
-			Error: commonerrors.ErrFrontUnableToCastSlug.Error(),
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
 	}
-	
+
 	vacancies, err := h.vacanciesUsecase.GetVacanciesByEmployerID(employerID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
