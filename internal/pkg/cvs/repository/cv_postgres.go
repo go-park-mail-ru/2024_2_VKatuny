@@ -57,10 +57,10 @@ func (s *PostgreSQLCVStorage) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
 		}
 	}
 	var oneCv dto.JSONCv
-	row = s.db.QueryRow(`insert into cv (applicant_id, position_rus, position_eng, cv_description, job_search_status_id, working_experience)
-		VALUES ($1, $2, $3, $4, $5, $6) returning id, applicant_id, position_rus, position_eng,
+	row = s.db.QueryRow(`insert into cv (applicant_id, position_rus, position_eng, cv_description, job_search_status_id, working_experience, path_to_profile_avatar)
+		VALUES ($1, $2, $3, $4, $5, $6, $7) returning id, applicant_id, position_rus, position_eng,
 		cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
-		cv.ApplicantID, cv.PositionRu, cv.PositionEn, cv.Description, JobSearchStatusID, cv.WorkingExperience)
+		cv.ApplicantID, cv.PositionRu, cv.PositionEn, cv.Description, JobSearchStatusID, cv.WorkingExperience, cv.Avatar)
 	err := row.Scan(&oneCv.ID,
 		&oneCv.ApplicantID,
 		&oneCv.PositionRu,
@@ -115,12 +115,19 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 			return nil, err
 		}
 	}
-	row = s.db.QueryRow(`update cv
+	if updatedCv.Avatar != "" {
+		row = s.db.QueryRow(`update cv
 		set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
 		job_search_status_id = $5, working_experience = $6, path_to_profile_avatar=$7 where id=$8 returning id, 
 		applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
-		updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, ID)
-
+			updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, ID)
+	} else {
+		row = s.db.QueryRow(`update cv
+		set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
+		job_search_status_id = $5, working_experience = $6 where id=$7 returning id, 
+		applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
+			updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, ID)
+	}
 	var oneCV dto.JSONCv
 
 	err := row.Scan(&oneCV.ID,
