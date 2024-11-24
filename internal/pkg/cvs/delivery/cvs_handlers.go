@@ -35,6 +35,23 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 	}
 }
 
+// @Summary Create CV
+// @Description Create new CV
+// @Tags CV
+// @Accept  multipart/form-data
+// @Produce  json
+// @Param   profile_avatar     formData  file     true  "Profile avatar"
+// @Param   positionRu         formData  string   true  "Position in Russian"
+// @Param   positionEn         formData  string   true  "Position in English"
+// @Param   description        formData  string   true  "Description"
+// @Param   jobSearchStatusName formData  string   true  "Job search status name"
+// @Param   workingExperience   formData  string   true  "Working experience"
+// @Param   group              formData  string   true  "Group"
+// @Success 200 {object} dto.JSONResponse{body=dto.JSONCv}
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/cv [POST]
 func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -92,6 +109,18 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetCV godoc
+// @Summary     Gets CV by id
+// @Description Gets CV by id
+// @Tags        CV
+// @Accept      json
+// @Produce     json
+// @Param       id   path      uint64  true  "CV ID"
+// @Success     200  {object}  dto.JSONGetApplicantCV
+// @Failure     400  {object}  dto.JSONResponse
+// @Failure     405  {object}  dto.JSONResponse
+// @Failure     500  {object}  dto.JSONResponse
+// @Router      /api/v1/cv/{id} [get]
 func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -129,6 +158,28 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Tags CV
+// @Summary Update CV
+// @Security ApiKeyAuth
+// @Description Update CV
+// @Accept  json
+// @Produce  json
+// @Param   id   path     uint64     true  "CV ID"
+// @Param   positionRu     formData   string     true  "Position in Russian"
+// @Param   positionEn     formData   string     true  "Position in English"
+// @Param   description     formData   string     true  "Description"
+// @Param   jobSearchStatusName     formData   string     true  "Job search status name"
+// @Param   workingExperience     formData   string     true  "Working experience"
+// @Param   group     formData   string     true  "Group"
+// @Param   profile_avatar     formData   file     true  "Profile avatar"
+// @Success 200 {object} dto.JSONResponse{body=[]dto.JSONCv}
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 401 {object} dto.JSONResponse
+// @Failure 403 {object} dto.JSONResponse
+// @Failure 404 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router      /api/v1/cv/{id} [put]
 func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -207,6 +258,19 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Tags CV
+// @Summary Delete cv
+// @Description Delete cv
+// @Accept json
+// @Produce json
+// @Param id path uint64 true "id of cv"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 401 {object} dto.JSONResponse
+// @Failure 404 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/cv/{id} [delete]
 func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

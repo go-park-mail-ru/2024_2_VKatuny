@@ -13,13 +13,13 @@ import (
 // CreateApplicant godoc
 // @Summary     Creates a new user as a applicant
 // @Description -
-// @Tags        Registration
+// @Tags        Applicant
 // @Accept      json
 // @Produce     json
 // @Param       example body     dto.JSONApplicantRegistrationForm true "Example"
-// @Success     200 {object} dto.JSONUser
+// @Success     200 {object} dto.JSONResponse{body=dto.JSONUser}
 // @Failure     400 {object} dto.JSONResponse
-// @Router      /registration/applicant/ [post]
+// @Router      /api/v1/applicant/registration [post]
 func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -58,7 +58,7 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		Email:    applicantRegistrationForm.Email,
 		Password: applicantRegistrationForm.Password,
 	}
-	userWithSession, err := h.sessionUsecase.Login(r.Context(),loginForm)
+	userWithSession, err := h.sessionUsecase.Login(r.Context(), loginForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{

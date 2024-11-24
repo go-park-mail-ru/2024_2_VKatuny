@@ -32,6 +32,16 @@ func NewSessionHandlers(app *internal.App) *SessionHandlers {
 	}
 }
 
+// IsAuthorized godoc
+// @Summary Check if the user is authorized
+// @Description Validates the session cookie and user authorization
+// @Tags Session
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.JSONResponse{body=dto.JSONUser}
+// @Failure 401 {object} dto.JSONResponse{error=string}
+// @Failure 405 {object} dto.JSONResponse{error=string}
+// @Router /api/v1/authorized [get]
 func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -48,10 +58,8 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	// TODO: session ID should be a field. Usable method in other PR
 	h.logger.Debugf("%s: got cookie: %s", fn, session.Value)
 
-	// TODO: remake this. It should be a session usecase not utils
 	userType, err := utils.CheckToken(session.Value)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
@@ -62,7 +70,7 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.sessionUsecase.CheckAuthorization(r.Context(),userType, session.Value)
+	userID, err := h.sessionUsecase.CheckAuthorization(r.Context(), userType, session.Value)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -71,7 +79,6 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	// TODO: userID should be a field
 	h.logger.Debugf("%s: got userID: %d", fn, userID)
 
 	user := &dto.JSONUser{
@@ -85,6 +92,16 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary Log in
+// @Description Validates the user credentials and returns a session id
+// @Tags Session
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.JSONResponse{body=dto.JSONUser}
+// @Failure 401 {object} dto.JSONResponse{error=string}
+// @Failure 405 {object} dto.JSONResponse{error=string}
+// @Failure 400 {object} dto.JSONResponse{error=string}
+// @Router /api/v1/login [post]
 func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -104,7 +121,7 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: login form parsed: %v", fn, loginForm)
 
-	userWithSession, err := h.sessionUsecase.Login(r.Context(),loginForm)
+	userWithSession, err := h.sessionUsecase.Login(r.Context(), loginForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -127,6 +144,15 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary Log out
+// @Description Deletes the user session and logs them out
+// @Tags Session
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.JSONResponse{body=dto.JSONUser}
+// @Failure 405 {object} dto.JSONResponse{error=string}
+// @Failure 500 {object} dto.JSONResponse{error=string}
+// @Router /api/v1/logout [post]
 func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

@@ -37,6 +37,16 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 	}
 }
 
+// @Summary CreateVacancy
+// @Description Create new vacancy
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   newVacancy body     dto.JSONVacancy true "New vacancy"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Router /api/v1/vacancy [post]
 func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	fn := "VacanciesHandlers.CreateVacancy"
 	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
@@ -102,6 +112,17 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// @Summary GetVacancy
+// @Description Get vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id} [get]
 func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -139,6 +160,25 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary UpdateVacancy
+// @Description Update vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Param   position formData string true "Vacancy position"
+// @Param   location formData string true "Vacancy location"
+// @Param   description formData string true "Vacancy description"
+// @Param   workType formData string true "Vacancy workType"
+// @Param   companyName formData string true "Company name"
+// @Param   group formData string true "Vacancy group"
+// @Param   salary formData int32 true "Vacancy salary"
+// @Param   company_avatar formData file true "Company avatar"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id} [put]
 func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -216,6 +256,18 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 	})
 }
 
+
+// @Summary DeleteVacancy
+// @Description Delete vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id} [delete]
 func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -260,6 +312,17 @@ func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// @Summary Subscribe on vacancy
+// @Description Subscribe on vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id}/subscription [post]
 func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -306,6 +369,17 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+// @Summary Unsubscribe from vacancy
+// @Description Unsubscribe from vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id}/subscription [delete]
 func (h *VacanciesHandlers) UnsubscribeVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -352,6 +426,17 @@ func (h *VacanciesHandlers) UnsubscribeVacancy(w http.ResponseWriter, r *http.Re
 	})
 }
 
+// @Summary Get subscription status on vacancy
+// @Description Get subscription status on vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONVacancySubscriptionStatus
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id}/subscription [get]
 func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -398,6 +483,17 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 	})
 }
 
+// @Summary Get vacancy subscribers
+// @Description Get vacancy subscribers by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONVacancySubscribers
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id}/subscribers [get]
 func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
