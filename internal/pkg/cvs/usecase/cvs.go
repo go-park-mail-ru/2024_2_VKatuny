@@ -69,14 +69,16 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy st
 	var CVs []*dto.JSONGetApplicantCV
 	for _, CVModel := range CVsModel {
 		CVs = append(CVs, &dto.JSONGetApplicantCV{
-			ID:                CVModel.ID,
-			ApplicantID:       CVModel.ApplicantID,
-			PositionRu:        CVModel.PositionRu,
-			PositionEn:        CVModel.PositionEn,
-			JobSearchStatus:   CVModel.JobSearchStatusName,
-			WorkingExperience: CVModel.WorkingExperience,
-			Avatar:            CVModel.Avatar,
-			CreatedAt:         CVModel.CreatedAt,
+			ID:                   CVModel.ID,
+			ApplicantID:          CVModel.ApplicantID,
+			PositionRu:           CVModel.PositionRu,
+			PositionEn:           CVModel.PositionEn,
+			JobSearchStatus:      CVModel.JobSearchStatusName,
+			WorkingExperience:    CVModel.WorkingExperience,
+			PositionCategoryName: CVModel.PositionCategoryName,
+			Avatar:               CVModel.Avatar,
+			CreatedAt:            CVModel.CreatedAt,
+			UpdatedAt:            CVModel.UpdatedAt,
 		})
 	}
 	if err != nil {
@@ -99,14 +101,16 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 	CVs := make([]*dto.JSONGetApplicantCV, 0, len(CVsModel))
 	for _, CVModel := range CVsModel {
 		CVs = append(CVs, &dto.JSONGetApplicantCV{
-			ID:                CVModel.ID,
-			ApplicantID:       CVModel.ApplicantID,
-			PositionRu:        CVModel.PositionRu,
-			PositionEn:        CVModel.PositionEn,
-			JobSearchStatus:   CVModel.JobSearchStatusName,
-			WorkingExperience: CVModel.WorkingExperience,
-			Avatar:            CVModel.Avatar,
-			CreatedAt:         CVModel.CreatedAt,
+			ID:                   CVModel.ID,
+			ApplicantID:          CVModel.ApplicantID,
+			PositionRu:           CVModel.PositionRu,
+			PositionEn:           CVModel.PositionEn,
+			JobSearchStatus:      CVModel.JobSearchStatusName,
+			WorkingExperience:    CVModel.WorkingExperience,
+			PositionCategoryName: CVModel.PositionCategoryName,
+			Avatar:               CVModel.Avatar,
+			CreatedAt:            CVModel.CreatedAt,
+			UpdatedAt:            CVModel.UpdatedAt,
 		})
 	}
 
