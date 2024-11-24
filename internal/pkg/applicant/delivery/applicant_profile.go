@@ -49,7 +49,7 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 // @Param id path string true "Applicant ID"
 // @Success 200 {object} dto.JSONGetApplicantProfile
 // @Failure 500 {object} dto.JSONResponse
-// @Router /applicant/profile/{id} [get]
+// @Router /api/v1/applicant/{id}/profile [get]
 func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -87,6 +87,17 @@ func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Tags Applicant
+// @Summary Update applicant profile
+// @Description Update applicant profile
+// @Accept json
+// @Produce json
+// @Param id path uint64 true "ID of applicant"
+// @Param input body dto.JSONUpdateApplicantProfile true "Profile to update"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/applicant/{id}/profile [put]
 func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -146,6 +157,16 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// GetPortfolios godoc
+// @Summary Get applicant portfolios
+// @Description Get portfolios of an applicant by ID
+// @Tags Applicant
+// @Accept json
+// @Produce json
+// @Param id path string true "Applicant ID"
+// @Success 200 {object} dto.JSONResponse "portfolios"
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/applicant/{id}/portfolios [get]
 func (h *ApplicantHandlers) GetPortfolios(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -167,7 +188,7 @@ func (h *ApplicantHandlers) GetPortfolios(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	portfolios, err := h.portfolioUsecase.GetApplicantPortfolios(r.Context(),applicantID)
+	portfolios, err := h.portfolioUsecase.GetApplicantPortfolios(r.Context(), applicantID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -184,6 +205,16 @@ func (h *ApplicantHandlers) GetPortfolios(w http.ResponseWriter, r *http.Request
 	})
 }
 
+// GetCVs godoc
+// @Summary Get applicant CVs
+// @Description Get CVs of an applicant by ID
+// @Tags Applicant
+// @Accept json
+// @Produce json
+// @Param id path string true "Applicant ID"
+// @Success 200 {object} dto.JSONResponse "CVs"
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/applicant/{id}/cv [get]
 func (h *ApplicantHandlers) GetCVs(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
