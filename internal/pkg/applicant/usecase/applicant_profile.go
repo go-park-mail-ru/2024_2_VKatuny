@@ -47,6 +47,7 @@ func (au *ApplicantUsecase) GetApplicantProfile(userID uint64) (*dto.JSONGetAppl
 		BirthDate: applicantModel.BirthDate,
 		Contacts:  applicantModel.Contacts,
 		Education: applicantModel.Education,
+		Avatar:    applicantModel.PathToProfileAvatar,
 	}, nil
 }
 

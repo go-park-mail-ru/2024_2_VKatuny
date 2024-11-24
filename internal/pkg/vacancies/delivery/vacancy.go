@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
@@ -18,6 +19,7 @@ type VacanciesHandlers struct {
 	vacanciesUsecase     vacancies.IVacanciesUsecase
 	sessionEmployerRepo  session.ISessionRepository
 	sessionApplicantRepo session.ISessionRepository
+	fileLoadingUsecase   fileloading.IFileLoadingUsecase
 }
 
 func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
@@ -29,6 +31,7 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 		vacanciesUsecase:     layers.Usecases.VacanciesUsecase,
 		sessionEmployerRepo:  layers.Repositories.SessionEmployerRepository,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
+		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
 	}
 }
 
@@ -90,6 +93,7 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 	newVacancy.Description = r.FormValue("description")
 	newVacancy.WorkType = r.FormValue("workType")
 	newVacancy.CompanyName = r.FormValue("companyName")
+	newVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
 	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
 
@@ -103,10 +107,10 @@ func (h *VacanciesHandlers) createVacancyHandler(w http.ResponseWriter, r *http.
 	}
 	newVacancy.Salary = int32(temp)
 	defer r.MultipartForm.RemoveAll()
-	file, header, err := r.FormFile("my_file")
+	file, header, err := r.FormFile("company_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := utils.WriteFile("media/", file, header)
+		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -191,6 +195,7 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 	updatedVacancy.Description = r.FormValue("description")
 	updatedVacancy.WorkType = r.FormValue("workType")
 	updatedVacancy.CompanyName = r.FormValue("companyName")
+	updatedVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
 	if err != nil {
 		h.logger.Errorf("bad input of salary: %s", err)
@@ -202,10 +207,10 @@ func (h *VacanciesHandlers) updateVacancyHandler(w http.ResponseWriter, r *http.
 	}
 	updatedVacancy.Salary = int32(temp)
 	defer r.MultipartForm.RemoveAll()
-	file, header, err := r.FormFile("my_file")
+	file, header, err := r.FormFile("company_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := utils.WriteFile("media/", file, header)
+		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,

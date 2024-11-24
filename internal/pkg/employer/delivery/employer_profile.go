@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -12,23 +11,27 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
+
+	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 )
 
 type EmployerHandlers struct {
-	logger           *logrus.Entry
-	backendAddress   string
-	employerUsecase  employer.IEmployerUsecase
-	vacanciesUsecase vacancies.IVacanciesUsecase
-	sessionUsecase   session.ISessionUsecase
+	logger             *logrus.Entry
+	backendAddress     string
+	employerUsecase    employer.IEmployerUsecase
+	vacanciesUsecase   vacancies.IVacanciesUsecase
+	sessionUsecase     session.ISessionUsecase
+	fileLoadingUsecase fileloading.IFileLoadingUsecase
 }
 
 func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
 	return &EmployerHandlers{
-		logger:           logrus.NewEntry(app.Logger),
-		backendAddress:   app.BackendAddress,
-		employerUsecase:  app.Usecases.EmployerUsecase,
-		vacanciesUsecase: app.Usecases.VacanciesUsecase,
-		sessionUsecase:   app.Usecases.SessionUsecase,
+		logger:             logrus.NewEntry(app.Logger),
+		backendAddress:     app.BackendAddress,
+		employerUsecase:    app.Usecases.EmployerUsecase,
+		vacanciesUsecase:   app.Usecases.VacanciesUsecase,
+		sessionUsecase:     app.Usecases.SessionUsecase,
+		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
 	}
 }
 
@@ -91,19 +94,27 @@ func (h *EmployerHandlers) UpdateEmployerProfileHandler(w http.ResponseWriter, r
 
 	employerID := uint64(ID)
 
-	decoder := json.NewDecoder(r.Body)
-	newProfileData := new(dto.JSONUpdateEmployerProfile)
-	err = decoder.Decode(newProfileData)
-	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-			HTTPStatus: http.StatusBadRequest,
-			Error:      dto.MsgInvalidJSON,
-		})
-		return
+	newProfileData := &dto.JSONUpdateEmployerProfile{}
+	newProfileData.FirstName = r.FormValue("firstName")
+	newProfileData.LastName = r.FormValue("lastName")
+	newProfileData.City = r.FormValue("city")
+	newProfileData.Contacts = r.FormValue("contacts")
+	defer r.MultipartForm.RemoveAll()
+	file, header, err := r.FormFile("profile_avatar")
+	if err == nil {
+		defer file.Close()
+		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		if err != nil {
+			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
+				HTTPStatus: http.StatusBadRequest,
+				Error:      err.Error(),
+			})
+			return
+		}
+		newProfileData.Avatar = fileAddress
 	}
 
-	h.logger.Debugf("function %s: new profile data JSON parsed: %v", fn, newProfileData)
+	h.logger.Debugf("function %s: new profile data MultiPart parsed: %v", fn, newProfileData)
 
 	err = h.employerUsecase.UpdateEmployerProfile(employerID, newProfileData)
 	if err != nil {

@@ -32,8 +32,10 @@ func (h *VacanciesHandlers) GetVacancies(w http.ResponseWriter, r *http.Request)
 
 	offsetStr := queryParams.Get("offset")
 	numStr := queryParams.Get("num")
-	searchStr := queryParams.Get("positionDescription")
-	vacancies, err := h.vacanciesUsecase.SearchVacancies(offsetStr, numStr, searchStr)
+	searchStr := queryParams.Get("searchQuery")
+	group := queryParams.Get("group")
+	searchBy := queryParams.Get("searchBy")
+	vacancies, err := h.vacanciesUsecase.SearchVacancies(offsetStr, numStr, searchStr, group, searchBy)
 
 	if err != nil {
 		h.logger.Errorf("function: %s; got err while reading vacancies from db %s", fn, err)

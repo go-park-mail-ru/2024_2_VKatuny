@@ -12,17 +12,16 @@ import (
 	applicant_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
 	cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
-	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
-	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
+	file_loading_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/repository"
+	file_loading_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/usecase"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
-	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
-	session_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
-	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
+
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
@@ -34,11 +33,13 @@ var (
 	CompressManager compressmicroservice.CompressServiceClient
 )
 
-// @title   uArt's API
+// @title   μArt's API
 // @version 1.0
 
 // @contact.name Ifelsik
 // @contact.url  https://github.com/Ifelsik
+// @contact.name Olgmuzalev13
+// @contact.url  https://github.com/Olgmuzalev13
 
 // @host     127.0.0.1:8080
 // @BasePath /api/v1
@@ -51,7 +52,6 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 	defer dbConnection.Close()
-
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
@@ -61,14 +61,12 @@ func main() {
 		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
 		SessionApplicantRepository: sessionApplicantRepository,
 		SessionEmployerRepository:  sessionEmployerRepository,
+		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.Front),
 	}
 	usecases := &internal.Usecases{
-		ApplicantUsecase: applicantUsecase.NewApplicantUsecase(logger, repositories, CompressManager),
-		PortfolioUsecase: portfolioUsecase.NewPortfolioUsecase(logger, repositories),
-		CVUsecase:        cvUsecase.NewCVsUsecase(logger, repositories),
-		VacanciesUsecase: vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
-		EmployerUsecase:  employerUsecase.NewEmployerUsecase(logger, repositories),
-		SessionUsecase:   session_usecase.NewSessionUsecase(logger, repositories),
+
+		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories, CompressManager),
+		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
 	}
 	app := &internal.App{
 		Logger:       logger,
@@ -80,7 +78,7 @@ func main() {
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
-	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.GetFrontURI())
+	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.MediaDir)
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
