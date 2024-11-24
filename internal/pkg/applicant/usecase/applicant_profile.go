@@ -14,10 +14,10 @@ import (
 type ApplicantUsecase struct {
 	logger          *logrus.Logger
 	applicantRepo   applicant.IApplicantRepository
-	compressManager microservicesinterface.ICompress
+	compressManager microservicesinterface.ICompressServer
 }
 
-func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories, CompressManager microservicesinterface.ICompress) *ApplicantUsecase {
+func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories, CompressManager microservicesinterface.ICompressServer) *ApplicantUsecase {
 	return &ApplicantUsecase{
 		logger:          logger,
 		applicantRepo:   repositories.ApplicantRepository,

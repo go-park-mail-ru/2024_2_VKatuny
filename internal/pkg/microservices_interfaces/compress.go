@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ICompress interface {
+type ICompressServer interface {
 	CompressAndSaveFile(ctx context.Context, in *compressmicroservice.CompressAndSaveFileInput, opts ...grpc.CallOption) (*compressmicroservice.Nothing, error)
 	DeleteFile(ctx context.Context, in *compressmicroservice.DeleteFileInput, opts ...grpc.CallOption) (*compressmicroservice.Nothing, error)
 }
