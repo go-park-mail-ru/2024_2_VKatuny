@@ -54,7 +54,7 @@ func (u *CVsUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, 
 	return uint64(offset), uint64(num), err
 }
 
-func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr string) ([]*dto.JSONGetApplicantCV, error) {
+func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONGetApplicantCV, error) {
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
 	offset, num, err := cu.ValidateQueryParameters(offsetStr, numStr)
 	if errors.Is(ErrOffsetIsNotANumber, err) {
@@ -63,23 +63,25 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr string) ([]*dto.JSO
 	if errors.Is(ErrNumIsNotANumber, err) {
 		num = defaultVacanciesNum
 	}
-	var CVsModel []*dto.JSONCv
-	if searchStr != "" {
-		CVsModel, err = cu.cvsRepo.SearchByPositionDescription(offset, offset+num, searchStr)
-	} else {
-		CVsModel, err = cu.cvsRepo.GetWithOffset(offset, offset+num)
+	if searchStr == "" && searchBy != "" {
+		searchBy = ""
 	}
+	var CVsModel []*dto.JSONCv
+
+	CVsModel, err = cu.cvsRepo.SearchAll(offset, offset+num, searchStr, group, searchBy)
 	var CVs []*dto.JSONGetApplicantCV
 	for _, CVModel := range CVsModel {
 		CVs = append(CVs, &dto.JSONGetApplicantCV{
-			ID:                CVModel.ID,
-			ApplicantID:       CVModel.ApplicantID,
-			PositionRu:        CVModel.PositionRu,
-			PositionEn:        CVModel.PositionEn,
-			JobSearchStatus:   CVModel.JobSearchStatusName,
-			WorkingExperience: CVModel.WorkingExperience,
-			Avatar:            CVModel.Avatar,
-			CreatedAt:         CVModel.CreatedAt,
+			ID:                   CVModel.ID,
+			ApplicantID:          CVModel.ApplicantID,
+			PositionRu:           CVModel.PositionRu,
+			PositionEn:           CVModel.PositionEn,
+			JobSearchStatus:      CVModel.JobSearchStatusName,
+			WorkingExperience:    CVModel.WorkingExperience,
+			PositionCategoryName: CVModel.PositionCategoryName,
+			Avatar:               CVModel.Avatar,
+			CreatedAt:            CVModel.CreatedAt,
+			UpdatedAt:            CVModel.UpdatedAt,
 		})
 	}
 	if err != nil {
@@ -102,14 +104,16 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 	CVs := make([]*dto.JSONGetApplicantCV, 0, len(CVsModel))
 	for _, CVModel := range CVsModel {
 		CVs = append(CVs, &dto.JSONGetApplicantCV{
-			ID:                CVModel.ID,
-			ApplicantID:       CVModel.ApplicantID,
-			PositionRu:        CVModel.PositionRu,
-			PositionEn:        CVModel.PositionEn,
-			JobSearchStatus:   CVModel.JobSearchStatusName,
-			WorkingExperience: CVModel.WorkingExperience,
-			Avatar:            CVModel.Avatar,
-			CreatedAt:         CVModel.CreatedAt,
+			ID:                   CVModel.ID,
+			ApplicantID:          CVModel.ApplicantID,
+			PositionRu:           CVModel.PositionRu,
+			PositionEn:           CVModel.PositionEn,
+			JobSearchStatus:      CVModel.JobSearchStatusName,
+			WorkingExperience:    CVModel.WorkingExperience,
+			PositionCategoryName: CVModel.PositionCategoryName,
+			Avatar:               CVModel.Avatar,
+			CreatedAt:            CVModel.CreatedAt,
+			UpdatedAt:            CVModel.UpdatedAt,
 		})
 	}
 
