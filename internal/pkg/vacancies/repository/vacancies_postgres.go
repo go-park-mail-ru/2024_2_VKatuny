@@ -81,7 +81,7 @@ func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, search
 			searchPart += " where "
 		}
 		if searchBy == "company" {
-			searchPart += "vacancy.id in (select company.id from company where ts_rank_cd(company.fts, plainto_tsquery('russian', $" + strconv.Itoa(iter) + ")) <> 0)"
+			searchPart += "vacancy.id in (select company.id from company where ts_rank_cd(company.fts, plainto_tsquery('russian', $" + strconv.Itoa(iter) + ")) <> 0)  order by ts_rank_cd(vacancy.fts, plainto_tsquery('russian', $" + strconv.Itoa(iter+1) + ")) desc "
 		} else {
 			weights := "'{0, 0, 1, 1}'"
 			if searchBy == "position" {
