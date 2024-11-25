@@ -97,18 +97,10 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	// userID, err := h.sessionUsecase.CheckAuthorization(r.Context(), userType, session.Value)
-	// if err != nil {
-	// 	h.logger.Errorf("%s: got err %s", fn, err)
-	// 	middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusUnauthorized,
-	// 		Error:      dto.MsgNoUserWithSession,
-	// 	})
-	// 	return
-	// }
-	// h.logger.Debugf("%s: got userID: %d", fn, userID)
-
+	
 	userData := grpc_response.UserData
+
+	h.logger.Debugf("%s: got userID: %d", fn, userData.ID)
 	user := &dto.JSONUser{
 		ID:       userData.ID,
 		UserType: userData.UserType,
@@ -169,15 +161,6 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	// userWithSession, err := h.sessionUsecase.Login(r.Context(), loginForm)
-	// if err != nil {
-	// 	h.logger.Errorf("%s: got err %s", fn, err)
-	// 	middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusUnauthorized,
-	// 		Error:      err.Error(), // TODO: formalize error
-	// 	})
-	// 	return
-	// }
 
 	h.logger.Debugf("%s: user login successful: %v", fn, grpc_response)
 
@@ -250,15 +233,7 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	// user, err := h.sessionUsecase.Logout(r.Context(), userType, session.Value)
-	// if err != nil {
-	// 	h.logger.Errorf("%s: got err %s", fn, err)
-	// 	middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-	// 		HTTPStatus: http.StatusInternalServerError,
-	// 		Error:      dto.MsgNoUserWithSession,
-	// 	})
-	// 	return
-	// }
+
 	h.logger.Debugf("%s: removed from session and got user: %v", fn, grpc_response)
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
