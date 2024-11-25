@@ -1,6 +1,8 @@
 package portfolio
 
 import (
+	"context"
+
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 )
@@ -12,5 +14,5 @@ type IPortfolioRepository interface {
 }
 
 type IPortfolioUsecase interface {
-	GetApplicantPortfolios(applicantID uint64) ([]*dto.JSONGetApplicantPortfolio, error)
+	GetApplicantPortfolios(ctx context.Context, applicantID uint64) ([]*dto.JSONGetApplicantPortfolio, error)
 }

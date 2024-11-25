@@ -9,23 +9,23 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
-// CreateWorkerHandler creates applicant in db
-// CreateWorker godoc
+// CreateApplicantHandler creates applicant in db
+// CreateApplicant godoc
 // @Summary     Creates a new user as a applicant
 // @Description -
-// @Tags        Registration
+// @Tags        Applicant
 // @Accept      json
 // @Produce     json
-// @Param       email    body string true "User's email"
-// @Param       password body string true "User's password"
-// @Success     200 {object} inmemorydb.UserInput
-// @Failure     http.StatusBadRequest {object} nil
-// @Router      /registration/applicant/ [post]
+// @Param       example body     dto.JSONApplicantRegistrationForm true "Example"
+// @Success     200 {object} dto.JSONResponse{body=dto.JSONUser}
+// @Failure     400 {object} dto.JSONResponse
+// @Router      /api/v1/applicant/registration [post]
 func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "ApplicantRegistration"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	applicantRegistrationForm := new(dto.JSONApplicantRegistrationForm)
 
@@ -42,7 +42,7 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 
 	// TODO: add json validation with govalidator
 
-	applicant, err := h.applicantUsecase.Create(applicantRegistrationForm)
+	applicant, err := h.applicantUsecase.Create(r.Context(), applicantRegistrationForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -58,7 +58,7 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		Email:    applicantRegistrationForm.Email,
 		Password: applicantRegistrationForm.Password,
 	}
-	userWithSession, err := h.sessionUsecase.Login(loginForm)
+	userWithSession, err := h.sessionUsecase.Login(r.Context(), loginForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{

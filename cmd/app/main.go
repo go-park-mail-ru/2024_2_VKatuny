@@ -81,7 +81,7 @@ func main() {
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
-	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.MediaDir)
+	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.Front)
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
