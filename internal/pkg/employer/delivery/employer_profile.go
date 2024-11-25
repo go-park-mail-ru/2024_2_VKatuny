@@ -9,13 +9,13 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
+	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 )
 
 type EmployerHandlers struct {
@@ -23,8 +23,8 @@ type EmployerHandlers struct {
 	backendAddress     string
 	employerUsecase    employer.IEmployerUsecase
 	vacanciesUsecase   vacancies.IVacanciesUsecase
-	sessionUsecase     session.ISessionUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
+	authGRPC           auth_grpc.AuthorizationClient
 }
 
 func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
@@ -33,8 +33,8 @@ func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
 		backendAddress:     app.BackendAddress,
 		employerUsecase:    app.Usecases.EmployerUsecase,
 		vacanciesUsecase:   app.Usecases.VacanciesUsecase,
-		sessionUsecase:     app.Usecases.SessionUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
+		authGRPC:           app.Microservices.Auth,
 	}
 }
 
