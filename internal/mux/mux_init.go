@@ -18,7 +18,7 @@ import (
 
 func Init(app *internal.App) *mux.Router {
 	router := mux.NewRouter()
-	
+
 	sessionHandlers := session_delivery.NewSessionHandlers(app)
 	router.HandleFunc("/api/v1/login", sessionHandlers.Login).
 		Methods(http.MethodPost)
@@ -40,7 +40,6 @@ func Init(app *internal.App) *mux.Router {
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/cv", applicantHandlers.GetCVs).
 		Methods(http.MethodGet)
 
-	
 	employerHandlers := employer_delivery.NewEmployerHandlers(app)
 	router.HandleFunc("/api/v1/employer/registration", employerHandlers.Registration).
 		Methods(http.MethodPost)
@@ -88,7 +87,7 @@ func Init(app *internal.App) *mux.Router {
 	unsubscribe := middleware.RequireAuthorization(vacanciesHandlers.UnsubscribeVacancy, app.Repositories, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", unsubscribe).
 		Methods(http.MethodDelete)
-	subscription := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscription, app.Repositories, dto.UserTypeEmployer)
+	subscription := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscription, app.Repositories, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", subscription).
 		Methods(http.MethodGet)
 	subscribers := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscribers, app.Repositories, dto.UserTypeEmployer)

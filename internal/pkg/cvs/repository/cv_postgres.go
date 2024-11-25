@@ -47,6 +47,7 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*dto.JS
 			return nil, err
 		}
 		oneCVOk := dto.JSONCv{
+			ID:                   oneCV.ID,
 			ApplicantID:          oneCV.ApplicantID,
 			PositionRu:           oneCV.PositionRu,
 			PositionEn:           oneCV.PositionEn,
@@ -121,7 +122,8 @@ func (s *PostgreSQLCVStorage) GetByID(ID uint64) (*dto.JSONCv, error) {
 		left join job_search_status on job_search_status.id = cv.job_search_status_id left join position_category on cv.position_category_id = position_category.id where cv.id = $1`, ID)
 	var oneCV dto.JSONCvWithNull
 
-	err := row.Scan(&oneCV.ID,
+	err := row.Scan(
+		&oneCV.ID,
 		&oneCV.ApplicantID,
 		&oneCV.PositionRu,
 		&oneCV.PositionEn,
@@ -134,6 +136,7 @@ func (s *PostgreSQLCVStorage) GetByID(ID uint64) (*dto.JSONCv, error) {
 		&oneCV.UpdatedAt)
 
 	oneCVOk := dto.JSONCv{
+		ID:                   oneCV.ID,
 		ApplicantID:          oneCV.ApplicantID,
 		PositionRu:           oneCV.PositionRu,
 		PositionEn:           oneCV.PositionEn,
@@ -173,7 +176,7 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 		if err != nil {
 			return nil, err
 		}
-	} 
+	}
 	fmt.Println(updatedCv)
 	if updatedCv.Avatar != "" {
 		if updatedCv.PositionCategoryName == "" {
@@ -207,7 +210,8 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 
 	var oneCVOk dto.JSONCv
 
-	err := row.Scan(&oneCVOk.ID,
+	err := row.Scan(
+		&oneCVOk.ID,
 		&oneCVOk.ApplicantID,
 		&oneCVOk.PositionRu,
 		&oneCVOk.PositionEn,
@@ -287,7 +291,8 @@ func (s *PostgreSQLCVStorage) SearchAll(offset uint64, num uint64, searchStr, gr
 	defer rows.Close()
 	for rows.Next() {
 		var oneCV dto.JSONCvWithNull
-		if err := rows.Scan(&oneCV.ID,
+		if err := rows.Scan(
+			&oneCV.ID,
 			&oneCV.ApplicantID,
 			&oneCV.PositionRu,
 			&oneCV.PositionEn,
@@ -301,6 +306,7 @@ func (s *PostgreSQLCVStorage) SearchAll(offset uint64, num uint64, searchStr, gr
 			return nil, err
 		}
 		oneCVOk := dto.JSONCv{
+			ID:                   oneCV.ID,
 			ApplicantID:          oneCV.ApplicantID,
 			PositionRu:           oneCV.PositionRu,
 			PositionEn:           oneCV.PositionEn,
