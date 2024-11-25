@@ -23,21 +23,27 @@ type AuthorizationDelivery struct {
 	logger   *logrus.Entry
 
 	tokenLength uint
-	sessionTTL time.Duration
+	sessionTTL  time.Duration
 }
 
-func NewAuthorization(dbConn *sql.DB, log *logrus.Logger) *AuthorizationDelivery {
+func NewAuthorization(dbConn *sql.DB, logger *logrus.Logger) *AuthorizationDelivery {
+	fn := "NewAuthorizationDelivery"
+	if dbConn == nil {
+		logger.Fatal("db connection is nil")
+	}
+	logger.Infof("%s: initializing", fn)
 	return &AuthorizationDelivery{
-		authRepo:    NewAuthorizationRepository(dbConn),
-		logger :     &logrus.Entry{Logger: log},
+		authRepo:    NewAuthorizationRepository(logger, dbConn),
+		logger:      &logrus.Entry{Logger: logger},
 		tokenLength: 32,
 		sessionTTL:  24 * time.Hour,
 	}
 }
 
-func (a *AuthorizationDelivery) Auth(ctx context.Context, req *gen.AuthRequest) (*gen.AuthResponse, error) {
+func (a *AuthorizationDelivery) AuthUser(ctx context.Context, req *gen.AuthRequest) (*gen.AuthResponse, error) {
 	fn := "AuthDelivery.Auth"
-	
+
+	a.logger.Debugf("%s: got request: %s", fn, req)
 	response := new(gen.AuthResponse)
 
 	if req == nil {
@@ -48,7 +54,6 @@ func (a *AuthorizationDelivery) Auth(ctx context.Context, req *gen.AuthRequest) 
 
 	requestID := req.RequestID
 	a.logger.Debugf("%s: got request with ID - %s", fn, requestID)
-	
 
 	token, err := generateToken(a.tokenLength, req.UserType)
 	if err != nil {
@@ -57,7 +62,7 @@ func (a *AuthorizationDelivery) Auth(ctx context.Context, req *gen.AuthRequest) 
 		return response, status.Error(codes.Internal, "failed to generate token")
 	}
 	a.logger.Debugf("%s: generated token: %s", fn, token)
-	
+
 	userInfo, err := a.authRepo.GetUser(req.UserType, req.Email)
 	if err != nil {
 		a.logger.Errorf("%s: got err %s", fn, err)
@@ -76,8 +81,7 @@ func (a *AuthorizationDelivery) Auth(ctx context.Context, req *gen.AuthRequest) 
 		return response, status.Error(codes.InvalidArgument, "wrong login or password")
 	}
 
-	passwordHash := utils.HashPassword(req.Password)
-	if !utils.EqualHashedPasswords(userInfo.PasswordHash, passwordHash) {
+	if !utils.EqualHashedPasswords(userInfo.PasswordHash, req.Password) {
 		a.logger.Errorf("%s: password comparison failed", fn)
 		response.Status = gen.StatusCode_InvalidCredentials
 		return response, status.Error(codes.InvalidArgument, "wrong login or password")
@@ -92,12 +96,12 @@ func (a *AuthorizationDelivery) Auth(ctx context.Context, req *gen.AuthRequest) 
 
 	response.Status = gen.StatusCode_OK
 	response.Session = &gen.SessionToken{
-		ID: token,
+		ID:             token,
 		ExpirationDate: timestamppb.New(time.Now().Add(a.sessionTTL)),
 	}
 	response.UserData = &gen.User{
 		UserType: userInfo.UserType,
-		ID: userInfo.ID,
+		ID:       userInfo.ID,
 	}
 	return response, nil
 }
@@ -111,9 +115,9 @@ func (a *AuthorizationDelivery) CheckAuth(ctx context.Context, req *gen.CheckAut
 
 	requestID := req.RequestID
 	a.logger.Debugf("%s: got request with ID - %s", fn, requestID)
-	
+
 	response := new(gen.CheckAuthResponse)
-	
+
 	sessionID := req.Session.ID
 
 	userID, err := a.authRepo.GetUserIdBySession(sessionID)
@@ -128,12 +132,12 @@ func (a *AuthorizationDelivery) CheckAuth(ctx context.Context, req *gen.CheckAut
 	response.Status = gen.StatusCode_OK
 	response.UserData = &gen.User{
 		UserType: userType,
-		ID: userID,
+		ID:       userID,
 	}
 	return response, nil
 }
 
-func (a *AuthorizationDelivery) Deauth(ctx context.Context, req *gen.DeauthRequest) (*gen.DeauthResponse, error) {
+func (a *AuthorizationDelivery) DeauthUser(ctx context.Context, req *gen.DeauthRequest) (*gen.DeauthResponse, error) {
 	fn := "AuthDelivery.Deauth"
 
 	response := new(gen.DeauthResponse)

@@ -28,5 +28,8 @@ api:
 	swag init --generalInfo ./cmd/app/main.go --output api/
 	node ./api/server.js
 
+auth-microservice:
+	go run ./cmd/auth/main.go
+
 run:
 	go run $(SRC_DIR)/main.go

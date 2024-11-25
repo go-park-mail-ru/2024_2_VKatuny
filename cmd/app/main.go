@@ -2,12 +2,14 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"google.golang.org/grpc"
 
 	applicant_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
@@ -24,6 +26,8 @@ import (
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 	session_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
 	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
+
+	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 
@@ -43,7 +47,7 @@ import (
 // @host     127.0.0.1:8080
 // @BasePath /api/v1
 func main() {
-	conf, _ := configs.ReadConfig("./configs/conf.yml")
+	conf := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
 
 	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN())
@@ -51,6 +55,16 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 	defer dbConnection.Close()
+
+	ConnAuthGRPC, err := grpc.Dial(
+		"127.0.0.1:8091",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+	defer ConnAuthGRPC.Close()
+
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
@@ -71,10 +85,14 @@ func main() {
 		SessionUsecase:     session_usecase.NewSessionUsecase(logger, repositories),
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
 	}
+	microservices := &internal.Microservices{
+		Auth: grpc_auth.NewAuthorizationClient(ConnAuthGRPC),
+	}
 	app := &internal.App{
-		Logger:       logger,
-		Repositories: repositories,
-		Usecases:     usecases,
+		Logger:        logger,
+		Repositories:  repositories,
+		Usecases:      usecases,
+		Microservices: microservices,
 	}
 
 	Mux := mux.Init(app)

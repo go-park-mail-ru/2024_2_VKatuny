@@ -4,26 +4,31 @@ import (
 	"database/sql"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/sirupsen/logrus"
 )
 
 type AuthorizationRepository struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *logrus.Entry
 }
 
-func NewAuthorizationRepository(db *sql.DB) *AuthorizationRepository {
+func NewAuthorizationRepository(logger *logrus.Logger, db *sql.DB) *AuthorizationRepository {
 	return &AuthorizationRepository{
-		db: db,
+		logger: logrus.NewEntry(logger),
+		db:     db,
 	}
 }
 
 // TODO: передавать request_id через контекст
 func (r *AuthorizationRepository) GetUser(userType, email string) (*User, error) {
+	fn := "AuthorizationRepository.GetUser"
+	r.logger.Debugf("%s: trying to gey user with user type: %s, email: %s", fn, userType, email)
 	var row *sql.Row
 	switch userType {
 	case dto.UserTypeApplicant:
 		row = r.db.QueryRow(
 			`SELECT id, password_hash
-			 FROM employer
+			 FROM applicant
 			 WHERE email = $1`, email)
 	case dto.UserTypeEmployer:
 		row = r.db.QueryRow(
@@ -44,6 +49,7 @@ func (r *AuthorizationRepository) GetUser(userType, email string) (*User, error)
 
 	user.Email = email
 	user.UserType = userType
+	r.logger.Debugf("%s: got user: %v", fn, user)
 	return user, nil
 }
 

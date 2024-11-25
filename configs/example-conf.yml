@@ -16,3 +16,10 @@ database:
   db_name: "postgres"
   ssl_mode: "disable"
   # conn_timeout: 60s
+
+auth_microservice:
+  server:
+    scheme: "http"
+    host: "127.0.0.1"
+    port: 8091
+  # database:

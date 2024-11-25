@@ -1,4 +1,4 @@
-package auth
+package main
 
 import (
 	"net"
@@ -7,29 +7,31 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth"
-	grpc_server "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
+	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	"google.golang.org/grpc"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func main() {
-	conf, _ := configs.ReadConfig("./configs/conf.yml")
+	conf := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
-	
+
 	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN())
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 	defer dbConnection.Close()
 
-	lister, err := net.Listen("tcp", ":8091")
+	lister, err := net.Listen("tcp", conf.AuthMicroservice.Server.GetAddress())
 	if err != nil {
 		logger.Fatalf("failed to listen port: %s", err)
 	}
 
 	server := grpc.NewServer()
 
-	grpc_server.RegisterAuthorizationServer(server, auth.NewAuthorization(dbConnection, logger))
+	grpc_auth.RegisterAuthorizationServer(server, auth.NewAuthorization(dbConnection, logger))
 
-	logger.Info("Starting gRPC server on port 8091")
+	logger.Infof("Starting gRPC server on %s", conf.AuthMicroservice.Server.GetAddress())
 	server.Serve(lister)
 }
