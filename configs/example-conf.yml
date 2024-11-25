@@ -1,0 +1,18 @@
+# configurations
+
+server:
+  scheme: "http"
+  host: "0.0.0.0"
+  port: 8080
+  frontURI: "http://172.28.166.156:8080/"
+  mediadir: "media/"
+
+database:
+  host: "127.0.0.1"
+  port: 8008
+  user: "postgres"
+  password: "most_secure_password"
+  schema: "public"
+  db_name: "postgres"
+  ssl_mode: "disable"
+  # conn_timeout: 60s
