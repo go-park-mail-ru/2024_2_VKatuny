@@ -4,18 +4,21 @@ import (
 	"database/sql"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
 )
 
 type AuthorizationRepository struct {
 	db     *sql.DB
+	redis  redis.Conn
 	logger *logrus.Entry
 }
 
-func NewAuthorizationRepository(logger *logrus.Logger, db *sql.DB) *AuthorizationRepository {
+func NewAuthorizationRepository(logger *logrus.Logger, db *sql.DB, redisConn redis.Conn) *AuthorizationRepository {
 	return &AuthorizationRepository{
 		logger: logrus.NewEntry(logger),
 		db:     db,
+		redis:  redisConn,
 	}
 }
 
@@ -54,32 +57,34 @@ func (r *AuthorizationRepository) GetUser(userType, email string) (*User, error)
 }
 
 func (r *AuthorizationRepository) CreateSession(userID uint64, sessionToken string) error {
-	// Temporary all sessions will write into applicant_session
-	// Так как у нас тип пользователя кодируется 1 символом строки, то нет смысла использовать 2 таблицы сессий
-	_, err := r.db.Exec(
-		`INSERT INTO applicant_session (applicant_id, session_token)
-		 VALUES ($1, $2)`, userID, sessionToken)
-	return err
+	fn := "AuthorizationRepository.CreateSession"
+	_, err := r.redis.Do("SET", sessionToken, userID, "EX", sessionTTL)
+	if err != nil {
+		r.logger.Errorf("%s: redis got err: %s", fn, err)
+		return err
+	}
+	r.logger.Debugf("%s: created session: %s for user: %d", fn, sessionToken, userID)
+	return nil
 }
 
 func (r *AuthorizationRepository) GetUserIdBySession(sessionToken string) (uint64, error) {
-	row := r.db.QueryRow(
-		`SELECT applicant_id
-		 FROM applicant_session
-		 WHERE session_token = $1`, sessionToken)
-	var userID uint64
-	err := row.Scan(&userID)
-	if err == sql.ErrNoRows {
-		return 0, ErrNoUserExist
-	} else if err != nil {
+	fn := "AuthorizationRepository.GetUserIdBySession"
+	userID, err := redis.Uint64(r.redis.Do("GET", sessionToken))
+	if err != nil {
+		r.logger.Errorf("%s: redis got err: %s", fn, err)
 		return 0, err
 	}
+	r.logger.Debugf("%s: got user %d from session:  %s", fn, userID, sessionToken)
 	return userID, nil
 }
 
 func (r *AuthorizationRepository) DeleteSession(sessionToken string) error {
-	_, err := r.db.Exec(
-		`DELETE FROM applicant_session
-		 WHERE session_token = $1`, sessionToken)
-	return err
+	fn := "AuthorizationRepository.DeleteSession"
+	_, err := r.redis.Do("DEL", sessionToken)
+	if err != nil {
+		r.logger.Errorf("%s: redis got err: %s", fn, err)
+		return err
+	}
+	r.logger.Debugf("%s: session deleted successfully: %s", fn, sessionToken)
+	return nil
 }

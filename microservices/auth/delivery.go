@@ -10,6 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	gen "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
+	"github.com/gomodule/redigo/redis"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,14 +27,17 @@ type AuthorizationDelivery struct {
 	sessionTTL  time.Duration
 }
 
-func NewAuthorization(dbConn *sql.DB, logger *logrus.Logger) *AuthorizationDelivery {
+func NewAuthorization(dbConn *sql.DB, redisConn redis.Conn, logger *logrus.Logger) *AuthorizationDelivery {
 	fn := "NewAuthorizationDelivery"
 	if dbConn == nil {
 		logger.Fatal("db connection is nil")
 	}
+	if redisConn == nil {
+		logger.Fatal("redis connection is nil")
+	}
 	logger.Infof("%s: initializing", fn)
 	return &AuthorizationDelivery{
-		authRepo:    NewAuthorizationRepository(logger, dbConn),
+		authRepo:    NewAuthorizationRepository(logger, dbConn, redisConn),
 		logger:      &logrus.Entry{Logger: logger},
 		tokenLength: 32,
 		sessionTTL:  24 * time.Hour,
