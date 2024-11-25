@@ -10,6 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	applicant_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
@@ -56,14 +57,15 @@ func main() {
 	}
 	defer dbConnection.Close()
 
-	ConnAuthGRPC, err := grpc.Dial(
-		"127.0.0.1:8091",
-		grpc.WithInsecure(),
+	connAuthGRPC, err := grpc.NewClient(
+		conf.AuthMicroservice.Server.GetAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		log.Fatalf("cant connect to grpc")
 	}
-	defer ConnAuthGRPC.Close()
+	defer connAuthGRPC.Close()
+	logger.Infof("gRPC client started at %s", conf.AuthMicroservice.Server.GetAddress())
 
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
 	repositories := &internal.Repositories{
@@ -86,7 +88,7 @@ func main() {
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
 	}
 	microservices := &internal.Microservices{
-		Auth: grpc_auth.NewAuthorizationClient(ConnAuthGRPC),
+		Auth: grpc_auth.NewAuthorizationClient(connAuthGRPC),
 	}
 	app := &internal.App{
 		Logger:        logger,
