@@ -166,7 +166,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 // @Param id path string true "Applicant ID"
 // @Success 200 {object} dto.JSONResponse "portfolios"
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/applicant/{id}/portfolios [get]
+// @Router /api/v1/applicant/{id}/portfolio [get]
 func (h *ApplicantHandlers) GetPortfolios(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

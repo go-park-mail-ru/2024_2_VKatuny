@@ -44,7 +44,7 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 // @Param   positionRu         formData  string   true  "Position in Russian"
 // @Param   positionEn         formData  string   true  "Position in English"
 // @Param   description        formData  string   true  "Description"
-// @Param   jobSearchStatusName formData  string   true  "Job search status name"
+// @Param   jobSearchStatus formData  string   true  "Job search status name"
 // @Param   workingExperience   formData  string   true  "Working experience"
 // @Param   group              formData  string   true  "Group"
 // @Success 200 {object} dto.JSONResponse{body=dto.JSONCv}
@@ -64,7 +64,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	newCV.PositionRu = r.FormValue("positionRu")
 	newCV.PositionEn = r.FormValue("positionEn")
 	newCV.Description = r.FormValue("description")
-	newCV.JobSearchStatusName = r.FormValue("jobSearchStatusName")
+	newCV.JobSearchStatusName = r.FormValue("jobSearchStatus")
 	newCV.WorkingExperience = r.FormValue("workingExperience")
 	newCV.PositionCategoryName = r.FormValue("group")
 	defer r.MultipartForm.RemoveAll()
@@ -168,7 +168,7 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 // @Param   positionRu     formData   string     true  "Position in Russian"
 // @Param   positionEn     formData   string     true  "Position in English"
 // @Param   description     formData   string     true  "Description"
-// @Param   jobSearchStatusName     formData   string     true  "Job search status name"
+// @Param   jobSearchStatus     formData   string     true  "Job search status name"
 // @Param   workingExperience     formData   string     true  "Working experience"
 // @Param   group     formData   string     true  "Group"
 // @Param   profile_avatar     formData   file     true  "Profile avatar"
@@ -205,7 +205,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	newCV.PositionRu = r.FormValue("positionRu")
 	newCV.PositionEn = r.FormValue("positionEn")
 	newCV.Description = r.FormValue("description")
-	newCV.JobSearchStatusName = r.FormValue("jobSearchStatusName")
+	newCV.JobSearchStatusName = r.FormValue("jobSearchStatus")
 	newCV.WorkingExperience = r.FormValue("workingExperience")
 	newCV.PositionCategoryName = r.FormValue("group")
 	defer r.MultipartForm.RemoveAll()
