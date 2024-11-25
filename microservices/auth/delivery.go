@@ -35,7 +35,7 @@ func NewAuthorization(dbConn *sql.DB, redisConn redis.Conn, logger *logrus.Logge
 	if redisConn == nil {
 		logger.Fatal("redis connection is nil")
 	}
-	logger.Infof("%s: initializing", fn)
+	logger.Debugf("%s: initializing", fn)
 	return &AuthorizationDelivery{
 		authRepo:    NewAuthorizationRepository(logger, dbConn, redisConn),
 		logger:      &logrus.Entry{Logger: logger},

@@ -28,6 +28,9 @@ api:
 	swag init --generalInfo ./cmd/app/main.go --output api/
 	node ./api/server.js
 
+redis-start:
+	redis-server .\configs\redis.conf
+
 auth-microservice:
 	go run ./cmd/auth/main.go
 

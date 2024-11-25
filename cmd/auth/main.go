@@ -22,17 +22,19 @@ func main() {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
+	logger.Info("Successfully connected to postgres")
 	defer pgSQLConn.Close()
 
-	redisConn, err := redis.Dial("tcp", "127.0.0.1:6379")
+	redisConn, err := redis.Dial("tcp", conf.AuthMicroservice.Database.GetDSN())
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
 	defer redisConn.Close()
-	
-	if _, err := redisConn.Do("AUTH", "pass1234"); err != nil {
+
+	if _, err := redisConn.Do("AUTH", conf.AuthMicroservice.Database.Password); err != nil {
 		logger.Fatal(err.Error())
 	}
+	logger.Info("Successfully connected to redis")
 
 	lister, err := net.Listen("tcp", conf.AuthMicroservice.Server.GetAddress())
 	if err != nil {

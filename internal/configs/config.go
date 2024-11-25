@@ -38,13 +38,20 @@ type DataBaseConfig struct {
 }
 
 type AuthMicroservice struct {
-	Server *Microservice `yaml:"server"`
+	Server   *Microservice `yaml:"server"`
+	Database *Redis        `yaml:"database"`
 }
 
 type Microservice struct {
 	Scheme string `yaml:"scheme"`
 	Host   string `yaml:"host"`
 	Port   int    `yaml:"port"`
+}
+
+type Redis struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	Password string `yaml:"password"`
 }
 
 // ReadConfig reads file with configuration.
@@ -93,4 +100,8 @@ func (d *DataBaseConfig) GetDSN() string {
 
 func (m *Microservice) GetAddress() string {
 	return m.Host + ":" + strconv.Itoa(m.Port)
+}
+
+func (r *Redis) GetDSN() string {
+	return r.Host + ":" + strconv.Itoa(r.Port)
 }

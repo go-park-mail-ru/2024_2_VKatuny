@@ -22,4 +22,8 @@ auth_microservice:
     scheme: "http"
     host: "127.0.0.1"
     port: 8091
-  # database:
+  database:
+    host: "127.0.0.1"
+    port: 6379
+    password: "most_secure_password"
+
