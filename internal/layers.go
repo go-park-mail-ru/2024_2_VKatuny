@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
+	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
@@ -25,15 +26,17 @@ type Repositories struct {
 	VacanciesRepository        vacancies.IVacanciesRepository
 	SessionApplicantRepository session.ISessionRepository
 	SessionEmployerRepository  session.ISessionRepository
+	FileLoadingRepository      fileloading.IFileLoadingRepository
 }
 
 type Usecases struct {
-	EmployerUsecase  employer.IEmployerUsecase
-	ApplicantUsecase applicant.IApplicantUsecase
-	PortfolioUsecase portfolio.IPortfolioUsecase
-	CVUsecase        cvs.ICVsUsecase
-	VacanciesUsecase vacancies.IVacanciesUsecase
-	SessionUsecase   session.ISessionUsecase
+	EmployerUsecase    employer.IEmployerUsecase
+	ApplicantUsecase   applicant.IApplicantUsecase
+	PortfolioUsecase   portfolio.IPortfolioUsecase
+	CVUsecase          cvs.ICVsUsecase
+	VacanciesUsecase   vacancies.IVacanciesUsecase
+	SessionUsecase     session.ISessionUsecase
+	FileLoadingUsecase fileloading.IFileLoadingUsecase
 }
 
 // type Handlers struct {

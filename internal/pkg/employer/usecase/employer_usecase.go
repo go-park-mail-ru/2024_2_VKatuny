@@ -2,31 +2,18 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
-	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
-// CreateEmployerInputCheck accepts registartion form and checks it
-func CreateEmployerInputCheck(form *dto.EmployerInput) error {
-	if len(form.FirstName) > 50 || len(form.LastName) > 50 || len(form.Position) > 50 ||
-		len(form.CompanyName) > 50 || strings.Index(form.Email, "@") < 0 || len(form.Password) > 50 {
-		return fmt.Errorf("employer's fields aren't valid %s %s %s %s %s",
-			form.FirstName,
-			form.LastName,
-			form.Position,
-			form.CompanyName,
-			form.Email,
-		)
-	}
-	return nil
-}
-
 // CreateEmployer accepts employer repository and validated form and creates new employer
-func (u *EmployerUsecase) Create(form *dto.JSONEmployerRegistrationForm) (*dto.JSONUser, error) {
+func (u *EmployerUsecase) Create(ctx context.Context, form *dto.JSONEmployerRegistrationForm) (*dto.JSONUser, error) {
 	fn := "EmployerUsecase.Create"
+
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
 	u.logger.Debugf("%s: entering", fn)
 
 	_, err := u.employerRepository.GetByEmail(form.Email)
@@ -60,8 +47,11 @@ func (u *EmployerUsecase) Create(form *dto.JSONEmployerRegistrationForm) (*dto.J
 	}, nil
 }
 
-func (u *EmployerUsecase) GetByID(ID uint64) (*dto.JSONEmployer, error) {
+func (u *EmployerUsecase) GetByID(ctx context.Context, ID uint64) (*dto.JSONEmployer, error) {
 	fn := "EmployerUsecase.GetByID"
+
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
+	u.logger.Debugf("%s: entering", fn)
 
 	employerModel, err := u.employerRepository.GetByID(ID)
 	if err != nil {

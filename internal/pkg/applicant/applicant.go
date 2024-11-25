@@ -1,6 +1,7 @@
 package applicant
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -19,10 +20,14 @@ type IApplicantRepository interface { // TODO: rename to IApplicantRepository
 }
 
 type IApplicantUsecase interface {
-	Create(applicant *dto.JSONApplicantRegistrationForm) (*dto.JSONUser, error)
-	GetByID(ID uint64) (*dto.JSONApplicantOutput, error)
-	GetApplicantProfile(userID uint64) (*dto.JSONGetApplicantProfile, error)
-	UpdateApplicantProfile(applicantID uint64, newProfileData *dto.JSONUpdateApplicantProfile) error
+	Create(ctx context.Context, applicant *dto.JSONApplicantRegistrationForm) (*dto.JSONUser, error)
+	GetByID(ctx context.Context, ID uint64) (*dto.JSONApplicantOutput, error)
+	GetApplicantProfile(ctx context.Context, userID uint64) (*dto.JSONGetApplicantProfile, error)
+	UpdateApplicantProfile(
+		ctx context.Context,
+		applicantID uint64,
+		newProfileData *dto.JSONUpdateApplicantProfile,
+	) error
 }
 
 var (
