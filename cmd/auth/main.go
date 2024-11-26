@@ -31,7 +31,7 @@ func main() {
 	}
 	defer redisConn.Close()
 
-	if _, err := redisConn.Do("AUTH", conf.AuthMicroservice.Database.Password); err != nil {
+	if _, err := redisConn.Do("AUTH", conf.AuthMicroservice.Database.User, conf.AuthMicroservice.Database.Password); err != nil {
 		logger.Fatal(err.Error())
 	}
 	logger.Info("Successfully connected to redis")

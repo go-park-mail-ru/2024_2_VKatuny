@@ -6,6 +6,8 @@ server:
   port: 8080
   frontURI: "http://172.28.166.156:8080/"
   mediadir: "media/"
+  auth_host: auth_microservice
+  auth_port: 8000
 
 database:
   host: "127.0.0.1"
@@ -25,5 +27,6 @@ auth_microservice:
   database:
     host: "127.0.0.1"
     port: 6379
-    password: "most_secure_password"
+    user: user
+    password: 1234123412341234
 

@@ -1,0 +1,70 @@
+services:
+  auth_microservice:
+    build:
+      context: ../
+      dockerfile: ./build/services/auth/Dockerfile
+    restart: always
+    volumes:
+      - ../configs/:/build/configs
+    depends_on:
+      db_postgresql:
+        condition: service_started
+        restart: true
+      redis:
+        condition: service_started
+        restart: true
+
+  main_service:
+    build:
+      context: ../
+      dockerfile: ./build/services/app/Dockerfile
+    ports:
+      - "8082:8001"
+    restart: always
+    volumes:
+      - ../configs/:/build/configs
+    depends_on:
+      db_postgresql:
+        condition: service_started
+        restart: true
+      auth_microservice:
+        condition: service_started
+        restart: true
+
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
+    volumes:
+      - /var/lib/redis_data:/data
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+        echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+        echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+        echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+        redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    restart: always
+    
+
+  db_postgresql:
+    build:
+      context: ../
+      dockerfile: ./build/db/Dockerfile
+    ports:
+      - "127.0.0.1:8083:5432"
+    restart: always
+    shm_size: 256mb
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_SCHEMA: ${POSTGRES_SCHEMA}
+    volumes:
+      - /var/lib/postgres/container_data:/var/lib/postgresql

@@ -58,7 +58,7 @@ func main() {
 	defer dbConnection.Close()
 
 	connAuthGRPC, err := grpc.NewClient(
-		conf.AuthMicroservice.Server.GetAddress(),
+		conf.Server.GetAuthServiceLocation(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
