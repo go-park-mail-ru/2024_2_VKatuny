@@ -17,7 +17,7 @@ import (
 	cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
+	//"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	file_loading_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/repository"
 	file_loading_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/usecase"
@@ -38,12 +38,6 @@ import (
 
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
 	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
-	session_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
-	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
-)
-
-var (
-	CompressManager compressmicroservice.CompressServiceClient
 )
 
 // @title   μArt's API
@@ -76,6 +70,16 @@ func main() {
 	defer connAuthGRPC.Close()
 	logger.Infof("gRPC client started at %s", conf.AuthMicroservice.Server.GetAddress())
 
+	connCompressGRPC, err := grpc.NewClient(
+		conf.CompressMicroservice.Server.GetAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+	defer connAuthGRPC.Close()
+	logger.Infof("Compress gRPC client started at %s", conf.CompressMicroservice.Server.GetAddress())
+
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
@@ -88,7 +92,7 @@ func main() {
 		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.Front),
 	}
 	usecases := &internal.Usecases{
-		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories, CompressManager),
+		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories),
 		PortfolioUsecase:   portfolioUsecase.NewPortfolioUsecase(logger, repositories),
 		CVUsecase:          cvUsecase.NewCVsUsecase(logger, repositories),
 		VacanciesUsecase:   vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
@@ -97,7 +101,8 @@ func main() {
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
 	}
 	microservices := &internal.Microservices{
-		Auth: grpc_auth.NewAuthorizationClient(connAuthGRPC),
+		Auth:     grpc_auth.NewAuthorizationClient(connAuthGRPC),
+		Compress: compressmicroservice.NewCompressServiceClient(connCompressGRPC),
 	}
 	app := &internal.App{
 		Logger:        logger,

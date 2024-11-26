@@ -4,28 +4,29 @@ import (
 	"log"
 	"net"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/configs"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	compressdelivery "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/compress/delivery"
 	compressrepository "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/compress/repository"
 	compressusecase "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/compress/usecase"
 	compress_api "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 
 	"google.golang.org/grpc"
 )
 
 func main() {
-	conf, _ := configs.ReadConfig("./configs/conf.yml")
+	conf := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
-	lis, err := net.Listen("tcp", ":8091")
+
+	lis, err := net.Listen("tcp", conf.CompressMicroservice.Server.GetAddress())
 	if err != nil {
 		log.Fatalln("can't listen port", err)
 	}
-	repository := compressrepository.NewCompressRepository(conf.Server.CompressedMediaDir)
+	repository := compressrepository.NewCompressRepository(conf.CompressMicroservice.CompressedMediaDir)
 	usecase := compressusecase.NewCompressUsecase(repository)
 	server := grpc.NewServer()
 	compress_api.RegisterCompressServiceServer(server, compressdelivery.NewCompressManager(usecase))
 
-	logger.Info("Compress starting server at :8091")
+	logger.Infof("Compress starting server at %s", conf.CompressMicroservice.Server.GetAddress())
 	server.Serve(lis)
 }

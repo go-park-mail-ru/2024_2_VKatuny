@@ -42,12 +42,7 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 	h.logger.Debugf("%s: json decoded: %v", fn, applicantRegistrationForm)
 
 	// TODO: add json validation with govalidator
-<<<<<<< HEAD
-	applicant, err := h.applicantUsecase.Create(applicantRegistrationForm)
-=======
-
 	applicant, err := h.applicantUsecase.Create(r.Context(), applicantRegistrationForm)
->>>>>>> dev
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{

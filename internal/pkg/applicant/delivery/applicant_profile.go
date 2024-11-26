@@ -1,6 +1,8 @@
 package delivery
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,6 +15,7 @@ import (
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
@@ -27,6 +30,7 @@ type ApplicantHandlers struct {
 	cvUsecase          cvs.ICVsUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
 	authGRPC           auth_grpc.AuthorizationClient
+	CompressGRPC       compressmicroservice.CompressServiceClient
 }
 
 func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
@@ -141,7 +145,21 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 		}
 		newProfileData.Avatar = fileAddress
 	}
-
+	h.CompressGRPC.DeleteFile(
+		context.Background(),
+		&compressmicroservice.DeleteFileInput{
+			FileName: "filename",
+		},
+	)
+	fmt.Println("compress")
+	_, err = h.CompressGRPC.CompressAndSaveFile(
+		context.Background(),
+		&compressmicroservice.CompressAndSaveFileInput{
+			FileName: "filename",
+			FileType: "filetype",
+			File:     []byte{},
+		},
+	)
 	err = h.applicantUsecase.UpdateApplicantProfile(r.Context(), applicantID, newProfileData)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)

@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	authClient "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,7 +43,8 @@ type Usecases struct {
 }
 
 type Microservices struct {
-	Auth authClient.AuthorizationClient
+	Auth     authClient.AuthorizationClient
+	Compress compressmicroservice.CompressServiceClient
 }
 
 // type Handlers struct {

@@ -2,44 +2,26 @@ package usecase
 
 import (
 	"context"
-<<<<<<< HEAD
 	"fmt"
-=======
->>>>>>> dev
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-<<<<<<< HEAD
-	microservicesinterface "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/microservices_interfaces"
-	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
-=======
+
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
->>>>>>> dev
+
 	"github.com/sirupsen/logrus"
 )
 
 type ApplicantUsecase struct {
-<<<<<<< HEAD
-	logger          *logrus.Logger
-	applicantRepo   applicant.IApplicantRepository
-	compressManager microservicesinterface.ICompressServer
-=======
 	logger        *logrus.Entry
 	applicantRepo applicant.IApplicantRepository
->>>>>>> dev
 }
 
-func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories, CompressManager microservicesinterface.ICompressServer) *ApplicantUsecase {
+func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories) *ApplicantUsecase {
 	return &ApplicantUsecase{
-<<<<<<< HEAD
-		logger:          logger,
-		applicantRepo:   repositories.ApplicantRepository,
-		compressManager: CompressManager,
-=======
-		logger:        &logrus.Entry{Logger: logger},
+		logger:        logrus.NewEntry(logger),
 		applicantRepo: repositories.ApplicantRepository,
->>>>>>> dev
 	}
 }
 
@@ -87,21 +69,6 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(ctx context.Context, applican
 		return err
 	}
 	fmt.Println("compress")
-	au.compressManager.DeleteFile(
-		context.Background(),
-		&compressmicroservice.DeleteFileInput{
-			FileName: "filename",
-		},
-	)
-	fmt.Println("compress")
-	_, err = au.compressManager.CompressAndSaveFile(
-		context.Background(),
-		&compressmicroservice.CompressAndSaveFileInput{
-			FileName: "filename",
-			FileType: "filetype",
-			File:     []byte{},
-		},
-	)
 	if err != nil {
 		au.logger.Errorf("fail compress microservice")
 		return err
