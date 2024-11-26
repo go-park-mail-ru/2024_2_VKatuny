@@ -32,7 +32,7 @@ func Init(app *internal.App) *mux.Router {
 		Methods(http.MethodPost)
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/profile", applicantHandlers.GetProfile).
 		Methods(http.MethodGet)
-	updateApplicantProfile := middleware.RequireAuthorization(applicantHandlers.UpdateProfile, app.Repositories, dto.UserTypeApplicant)
+	updateApplicantProfile := middleware.RequireAuthorization(applicantHandlers.UpdateProfile, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/profile", updateApplicantProfile).
 		Methods(http.MethodPut)
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/portfolio", applicantHandlers.GetPortfolios).
@@ -45,22 +45,22 @@ func Init(app *internal.App) *mux.Router {
 		Methods(http.MethodPost)
 	router.HandleFunc("/api/v1/employer/{id:[0-9]+}/profile", employerHandlers.GetProfile).
 		Methods(http.MethodGet)
-	updateEmployerProfile := middleware.RequireAuthorization(employerHandlers.UpdateProfile, app.Repositories, dto.UserTypeEmployer)
+	updateEmployerProfile := middleware.RequireAuthorization(employerHandlers.UpdateProfile, app, dto.UserTypeEmployer)
 	router.HandleFunc("/api/v1/employer/{id:[0-9]+}/profile", updateEmployerProfile).
 		Methods(http.MethodPut)
 	router.HandleFunc("/api/v1/employer/{id:[0-9]+}/vacancies", employerHandlers.GetEmployerVacancies).
 		Methods(http.MethodGet)
 
 	cvsHandlers := cv_delivery.NewCVsHandler(app)
-	createCV := middleware.RequireAuthorization(cvsHandlers.CreateCV, app.Repositories, dto.UserTypeApplicant)
+	createCV := middleware.RequireAuthorization(cvsHandlers.CreateCV, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/cv", createCV).
 		Methods(http.MethodPost)
 	router.HandleFunc("/api/v1/cv/{id:[0-9]+}", cvsHandlers.GetCV).
 		Methods(http.MethodGet)
-	updateCV := middleware.RequireAuthorization(cvsHandlers.UpdateCV, app.Repositories, dto.UserTypeApplicant)
+	updateCV := middleware.RequireAuthorization(cvsHandlers.UpdateCV, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/cv/{id:[0-9]+}", updateCV).
 		Methods(http.MethodPut)
-	deleteCV := middleware.RequireAuthorization(cvsHandlers.DeleteCV, app.Repositories, dto.UserTypeApplicant)
+	deleteCV := middleware.RequireAuthorization(cvsHandlers.DeleteCV, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/cv/{id:[0-9]+}", deleteCV).
 		Methods(http.MethodDelete)
 	router.HandleFunc("/api/v1/cvs", cvsHandlers.SearchCVs).
@@ -69,28 +69,28 @@ func Init(app *internal.App) *mux.Router {
 	vacanciesHandlers := vacancies_delivery.NewVacanciesHandlers(app)
 	router.HandleFunc("/api/v1/vacancies", vacanciesHandlers.GetVacancies).
 		Methods(http.MethodGet)
-	createVacancy := middleware.RequireAuthorization(vacanciesHandlers.CreateVacancy, app.Repositories, dto.UserTypeEmployer)
+	createVacancy := middleware.RequireAuthorization(vacanciesHandlers.CreateVacancy, app, dto.UserTypeEmployer)
 	router.HandleFunc("/api/v1/vacancy", createVacancy).
 		Methods(http.MethodPost)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}", vacanciesHandlers.GetVacancy).
 		Methods(http.MethodGet)
-	updateVacancy := middleware.RequireAuthorization(vacanciesHandlers.UpdateVacancy, app.Repositories, dto.UserTypeEmployer)
+	updateVacancy := middleware.RequireAuthorization(vacanciesHandlers.UpdateVacancy, app, dto.UserTypeEmployer)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}", updateVacancy).
 		Methods(http.MethodPut)
-	deleteVacancy := middleware.RequireAuthorization(vacanciesHandlers.DeleteVacancy, app.Repositories, dto.UserTypeEmployer)
+	deleteVacancy := middleware.RequireAuthorization(vacanciesHandlers.DeleteVacancy, app, dto.UserTypeEmployer)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}", deleteVacancy).
 		Methods(http.MethodDelete)
 
-	subscribe := middleware.RequireAuthorization(vacanciesHandlers.SubscribeVacancy, app.Repositories, dto.UserTypeApplicant)
+	subscribe := middleware.RequireAuthorization(vacanciesHandlers.SubscribeVacancy, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", subscribe).
 		Methods(http.MethodPost)
-	unsubscribe := middleware.RequireAuthorization(vacanciesHandlers.UnsubscribeVacancy, app.Repositories, dto.UserTypeApplicant)
+	unsubscribe := middleware.RequireAuthorization(vacanciesHandlers.UnsubscribeVacancy, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", unsubscribe).
 		Methods(http.MethodDelete)
-	subscription := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscription, app.Repositories, dto.UserTypeApplicant)
+	subscription := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscription, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", subscription).
 		Methods(http.MethodGet)
-	subscribers := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscribers, app.Repositories, dto.UserTypeEmployer)
+	subscribers := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscribers, app, dto.UserTypeEmployer)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscribers", subscribers).
 		Methods(http.MethodGet)
 
