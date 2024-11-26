@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
@@ -10,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
@@ -33,43 +35,38 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 	}
 }
 
-func (h *CVsHandler) CVsRESTHandler(w http.ResponseWriter, r *http.Request) {
-	h.logger.Logger.Debugf("CVsHandler.CVsRESTHandler got request: %s", r.URL.Path)
-	repositories := &internal.Repositories{SessionApplicantRepository: h.sessionApplicantRepo}
-	switch r.Method {
-	case http.MethodPost:
-		handler := middleware.RequireAuthorization(h.CreateCVHandler, repositories, dto.UserTypeApplicant)
-		handler(w, r)
-	case http.MethodGet:
-		h.GetCVsHandler(w, r)
-	case http.MethodPut:
-		handler := middleware.RequireAuthorization(h.UpdateCVHandler, repositories, dto.UserTypeApplicant)
-		handler(w, r)
-	case http.MethodDelete:
-		handler := middleware.RequireAuthorization(h.DeleteCVHandler, repositories, dto.UserTypeApplicant)
-		handler(w, r)
-	default:
-		middleware.UniversalMarshal(w, http.StatusMethodNotAllowed, dto.JSONResponse{
-			HTTPStatus: http.StatusMethodNotAllowed,
-			Error:      dto.MsgMethodNotAllowed,
-		})
-		r.Body.Close()
-	}
-}
-
-func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
+// @Summary Create CV
+// @Description Create new CV
+// @Tags CV
+// @Accept  multipart/form-data
+// @Produce  json
+// @Param   profile_avatar     formData  file     true  "Profile avatar"
+// @Param   positionRu         formData  string   true  "Position in Russian"
+// @Param   positionEn         formData  string   true  "Position in English"
+// @Param   description        formData  string   true  "Description"
+// @Param   jobSearchStatus formData  string   true  "Job search status name"
+// @Param   workingExperience   formData  string   true  "Working experience"
+// @Param   group              formData  string   true  "Group"
+// @Success 200 {object} dto.JSONResponse{body=dto.JSONCv}
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/cv [POST]
+func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.CreateCVHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
 	newCV.PositionRu = r.FormValue("positionRu")
 	newCV.PositionEn = r.FormValue("positionEn")
 	newCV.Description = r.FormValue("description")
-	newCV.JobSearchStatusName = r.FormValue("jobSearchStatusName")
+	newCV.JobSearchStatusName = r.FormValue("jobSearchStatus")
 	newCV.WorkingExperience = r.FormValue("workingExperience")
+	newCV.PositionCategoryName = r.FormValue("group")
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
@@ -97,14 +94,14 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 
 	wroteCV, err := h.cvsUsecase.CreateCV(newCV, currentUser)
 	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
 			Error:      err.Error(),
 		})
 		return
 	}
-	h.logger.Debugf("function %s: success, got created cv: %v", fn, wroteCV)
+	h.logger.Debugf("%s: success, got created cv: %v", fn, wroteCV)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -112,24 +109,41 @@ func (h *CVsHandler) CreateCVHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *CVsHandler) GetCVsHandler(w http.ResponseWriter, r *http.Request) {
+// GetCV godoc
+// @Summary     Gets CV by id
+// @Description Gets CV by id
+// @Tags        CV
+// @Accept      json
+// @Produce     json
+// @Param       id   path      uint64  true  "CV ID"
+// @Success     200  {object}  dto.JSONGetApplicantCV
+// @Failure     400  {object}  dto.JSONResponse
+// @Failure     405  {object}  dto.JSONResponse
+// @Failure     500  {object}  dto.JSONResponse
+// @Router      /api/v1/cv/{id} [get]
+func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.GetCVsHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	cvID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-	h.logger.Debugf("function %s: got slug cvID: %d", fn, ID)
-
-	cvID := uint64(ID)
+	h.logger.Debugf("%s: got slug cvID: %d", fn, cvID)
 
 	CV, err := h.cvsUsecase.GetCV(cvID)
 	if err != nil {
-		h.logger.Errorf("function %s: got err %s", fn, err)
+		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
 			Error:      err.Error(),
@@ -137,33 +151,63 @@ func (h *CVsHandler) GetCVsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Debugf("function %s: success, got cv: %v", fn, CV)
+	h.logger.Debugf("%s: success, got cv: %v", fn, CV)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       CV,
 	})
 }
 
-func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
+// @Tags CV
+// @Summary Update CV
+// @Security ApiKeyAuth
+// @Description Update CV
+// @Accept  json
+// @Produce  json
+// @Param   id   path     uint64     true  "CV ID"
+// @Param   positionRu     formData   string     true  "Position in Russian"
+// @Param   positionEn     formData   string     true  "Position in English"
+// @Param   description     formData   string     true  "Description"
+// @Param   jobSearchStatus     formData   string     true  "Job search status name"
+// @Param   workingExperience     formData   string     true  "Working experience"
+// @Param   group     formData   string     true  "Group"
+// @Param   profile_avatar     formData   file     true  "Profile avatar"
+// @Success 200 {object} dto.JSONResponse{body=[]dto.JSONCv}
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 401 {object} dto.JSONResponse
+// @Failure 403 {object} dto.JSONResponse
+// @Failure 404 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router      /api/v1/cv/{id} [put]
+func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.UpdateCVHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	cvID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-	h.logger.Debugf("function %s: got slug cvID: %d", fn, ID)
-	cvID := uint64(ID)
+	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
+
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
 	newCV.PositionRu = r.FormValue("positionRu")
 	newCV.PositionEn = r.FormValue("positionEn")
 	newCV.Description = r.FormValue("description")
-	newCV.JobSearchStatusName = r.FormValue("jobSearchStatusName")
+	newCV.JobSearchStatusName = r.FormValue("jobSearchStatus")
 	newCV.WorkingExperience = r.FormValue("workingExperience")
+	newCV.PositionCategoryName = r.FormValue("group")
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
@@ -214,20 +258,38 @@ func (h *CVsHandler) UpdateCVHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *CVsHandler) DeleteCVHandler(w http.ResponseWriter, r *http.Request) {
+// @Tags CV
+// @Summary Delete cv
+// @Description Delete cv
+// @Accept json
+// @Produce json
+// @Param id path uint64 true "id of cv"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 401 {object} dto.JSONResponse
+// @Failure 404 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/cv/{id} [delete]
+func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CVsHandler.DeleteCVHandler"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
-	ID, err := middleware.GetIDSlugAtEnd(w, r, "/api/v1/cv/")
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	cvID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
 		return
 	}
-	h.logger.Debugf("function %s: got slug cvID: %d", fn, ID)
-
-	cvID := uint64(ID)
+	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {

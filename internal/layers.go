@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	authClient "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,6 +17,7 @@ type App struct {
 	BackendAddress string
 	Repositories   *Repositories
 	Usecases       *Usecases
+	Microservices  *Microservices
 }
 
 type Repositories struct {
@@ -37,6 +39,10 @@ type Usecases struct {
 	VacanciesUsecase   vacancies.IVacanciesUsecase
 	SessionUsecase     session.ISessionUsecase
 	FileLoadingUsecase fileloading.IFileLoadingUsecase
+}
+
+type Microservices struct {
+	Auth authClient.AuthorizationClient
 }
 
 // type Handlers struct {

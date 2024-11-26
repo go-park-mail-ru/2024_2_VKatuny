@@ -2,12 +2,15 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	applicant_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
@@ -20,6 +23,12 @@ import (
 	file_loading_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/usecase"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
+	session_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
+	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
+
+	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
+
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
@@ -48,7 +57,7 @@ var (
 // @host     127.0.0.1:8080
 // @BasePath /api/v1
 func main() {
-	conf, _ := configs.ReadConfig("./configs/conf.yml")
+	conf := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
 
 	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN())
@@ -56,6 +65,17 @@ func main() {
 		logger.Fatal(err.Error())
 	}
 	defer dbConnection.Close()
+
+	connAuthGRPC, err := grpc.NewClient(
+		conf.AuthMicroservice.Server.GetAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+	defer connAuthGRPC.Close()
+	logger.Infof("gRPC client started at %s", conf.AuthMicroservice.Server.GetAddress())
+
 	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
@@ -76,17 +96,21 @@ func main() {
 		SessionUsecase:     session_usecase.NewSessionUsecase(logger, repositories),
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
 	}
+	microservices := &internal.Microservices{
+		Auth: grpc_auth.NewAuthorizationClient(connAuthGRPC),
+	}
 	app := &internal.App{
-		Logger:       logger,
-		Repositories: repositories,
-		Usecases:     usecases,
+		Logger:        logger,
+		Repositories:  repositories,
+		Usecases:      usecases,
+		Microservices: microservices,
 	}
 
 	Mux := mux.Init(app)
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
-	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.MediaDir)
+	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.Front)
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)

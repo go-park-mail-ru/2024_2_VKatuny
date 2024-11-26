@@ -7,6 +7,8 @@ SRC_DIR=./cmd/app
 # flags for compilation
 BUILD_FLAGS=
 
+.PHONY: api
+
 all: build
 
 build:
@@ -23,8 +25,14 @@ lint:
 	revive -config reviveconfig.toml -formatter friendly ./...
 
 api:
-	swag init --parseInternal --pd --dir cmd/myapp/,delivery/handler/ --output api/
+	swag init --generalInfo ./cmd/app/main.go --output api/
 	node ./api/server.js
+
+redis-start:
+	redis-server .\configs\redis.conf
+
+auth-microservice:
+	go run ./cmd/auth/main.go
 
 run:
 	go run $(SRC_DIR)/main.go

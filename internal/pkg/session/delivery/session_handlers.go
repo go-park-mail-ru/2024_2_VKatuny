@@ -13,30 +13,47 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 
 	"github.com/sirupsen/logrus"
 )
 
 type SessionHandlers struct {
-	logger           *logrus.Entry
-	backendURL       string
-	sessionUsecase   session.ISessionUsecase
+	logger         *logrus.Entry
+	backendURL     string
+	sessionUsecase session.ISessionUsecase
+	authClientGRPC auth_grpc.AuthorizationClient
 }
 
 func NewSessionHandlers(app *internal.App) *SessionHandlers {
 	app.Logger.Debug("Session handlers initialized")
+	if app.Microservices.Auth == nil {
+		app.Logger.Fatal("Auth microservice is not initialized")
+	}
 	return &SessionHandlers{
 		logger:         &logrus.Entry{Logger: app.Logger},
 		backendURL:     app.BackendAddress,
 		sessionUsecase: app.Usecases.SessionUsecase,
+		authClientGRPC: app.Microservices.Auth,
 	}
 }
 
+// IsAuthorized godoc
+// @Summary Check if the user is authorized
+// @Description Validates the session cookie and user authorization
+// @Tags Session
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.JSONResponse{body=dto.JSONUser}
+// @Failure 401 {object} dto.JSONResponse{error=string}
+// @Failure 405 {object} dto.JSONResponse{error=string}
+// @Router /api/v1/authorized [get]
 func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "SessionHandlers.IsAuthorized"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
 
 	session, err := r.Cookie(dto.SessionIDName)
 	if err != nil {
@@ -47,11 +64,9 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	// TODO: session ID should be a field. Usable method in other PR
 	h.logger.Debugf("%s: got cookie: %s", fn, session.Value)
 
-	// TODO: remake this. It should be a session usecase not utils
-	userType, err := utils.CheckToken(session.Value)
+	_, err = utils.CheckToken(session.Value)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -61,21 +76,34 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := h.sessionUsecase.CheckAuthorization(userType, session.Value)
+	requestID, ok := r.Context().Value(dto.RequestIDContextKey).(string)
+	if !ok {
+		h.logger.Warningf("%s: no request id provided", fn)
+	}
+	grpc_request := &auth_grpc.CheckAuthRequest{
+		RequestID: requestID,
+		// TODO
+		Session: &auth_grpc.SessionToken{
+			ID: session.Value,
+		},
+	}
+
+	grpc_response, err := h.authClientGRPC.CheckAuth(r.Context(), grpc_request)
 	if err != nil {
-		h.logger.Errorf("%s: got err %s", fn, err)
+		h.logger.Errorf("%s: grpc returned err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusUnauthorized,
-			Error:      dto.MsgNoUserWithSession,
+			Error:      dto.MsgNoUserWithSession,  // TODO: implement error
 		})
 		return
 	}
-	// TODO: userID should be a field
-	h.logger.Debugf("%s: got userID: %d", fn, userID)
+	
+	userData := grpc_response.UserData
 
+	h.logger.Debugf("%s: got userID: %d", fn, userData.ID)
 	user := &dto.JSONUser{
-		ID:       userID,
-		UserType: userType,
+		ID:       userData.ID,
+		UserType: userData.UserType,
 	}
 	h.logger.Debugf("%s: user: %v", fn, user)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
@@ -84,12 +112,21 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summary Log in
+// @Description Validates the user credentials and returns a session id
+// @Tags Session
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.JSONResponse{body=dto.JSONUser}
+// @Failure 401 {object} dto.JSONResponse{error=string}
+// @Failure 405 {object} dto.JSONResponse{error=string}
+// @Failure 400 {object} dto.JSONResponse{error=string}
+// @Router /api/v1/login [post]
 func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "SessionHandlers.Login"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
-
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 	h.logger.Debugf("%s: entering", fn)
 
 	loginForm := new(dto.JSONLoginForm)
@@ -104,35 +141,55 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: login form parsed: %v", fn, loginForm)
 
-	userWithSession, err := h.sessionUsecase.Login(loginForm)
+	requestID, ok := r.Context().Value(dto.RequestIDContextKey).(string)
+	if !ok {
+		h.logger.Warningf("%s: no request id provided", fn)
+	}
+	grpc_request := &auth_grpc.AuthRequest{
+		RequestID: requestID,
+		UserType:  loginForm.UserType,
+		Email:     loginForm.Email,
+		Password:  loginForm.Password,
+	}
+
+	grpc_response, err := h.authClientGRPC.AuthUser(r.Context(), grpc_request)
 	if err != nil {
-		h.logger.Errorf("%s: got err %s", fn, err)
+		h.logger.Errorf("%s: grpc returned err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusUnauthorized,
-			Error:      err.Error(), // TODO: formalize error
+			Error:      dto.MsgNoUserWithSession,  // TODO: implement error
 		})
 		return
 	}
-	h.logger.Debugf("%s: user login successful: %v", fn, userWithSession)
 
-	cookie := utils.MakeAuthCookie(userWithSession.SessionID, h.backendURL)
+	h.logger.Debugf("%s: user login successful: %v", fn, grpc_response)
+
+	cookie := utils.MakeAuthCookie(grpc_response.Session.ID, h.backendURL)
 	http.SetCookie(w, cookie)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body: &dto.JSONUser{
-			ID:       userWithSession.ID,
-			UserType: userWithSession.UserType,
+			ID:       grpc_response.UserData.ID,
+			UserType: grpc_response.UserData.UserType,
 		},
 	})
 }
 
+// @Summary Log out
+// @Description Deletes the user session and logs them out
+// @Tags Session
+// @Accept json
+// @Produce json
+// @Success 200 {object} dto.JSONResponse{body=dto.JSONUser}
+// @Failure 405 {object} dto.JSONResponse{error=string}
+// @Failure 500 {object} dto.JSONResponse{error=string}
+// @Router /api/v1/logout [post]
 func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "SessionHandlers.Logout"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
-	
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 	h.logger.Debugf("%s: entering", fn)
 
 	session, err := r.Cookie(dto.SessionIDName)
@@ -157,23 +214,33 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: got user type: %s", fn, userType)
 
-	user, err := h.sessionUsecase.Logout(userType, session.Value)
+	requestID, ok := r.Context().Value(dto.RequestIDContextKey).(string)
+	if !ok {
+		h.logger.Warningf("%s: no request id provided", fn)
+	}
+	grpc_request := &auth_grpc.DeauthRequest{
+		RequestID: requestID,
+		Session: &auth_grpc.SessionToken{
+			ID: session.Value,
+		},
+	}
+	grpc_response, err := h.authClientGRPC.DeauthUser(r.Context(), grpc_request)
 	if err != nil {
-		h.logger.Errorf("%s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
-			Error:      dto.MsgNoUserWithSession,
+		h.logger.Errorf("%s: grpc returned err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgNoUserWithSession,  // TODO: implement error
 		})
 		return
 	}
-	h.logger.Debugf("%s: removed from session and got user: %v", fn, user)
+
+	h.logger.Debugf("%s: removed from session and got user: %v", fn, grpc_response)
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
 
-	h.logger.Debugf("%s: deleted user: %v", fn, user)
+	h.logger.Debugf("%s: deleted user", fn)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       user,
 	})
 }

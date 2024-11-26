@@ -26,7 +26,9 @@ go.work.sum
 
 # swagger autodoc
 *docs/
-*_swagger.json
+api/swagger.json
+api/swagger.yaml
+api/docs.go
 
 # node
 *package-lock.json
@@ -40,5 +42,12 @@ go.work.sum
 configs/conf.yaml
 configs/conf.yml
 db/migrations/tern.conf
+configs/redis.windows.conf
+configs/redis.conf
+
+# redis stuff
+*.rdb
+*redis.log
+
 # html
 index.html
