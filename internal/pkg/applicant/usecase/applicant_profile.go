@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
@@ -64,12 +65,22 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(applicantID uint64, newProfil
 		au.logger.Errorf("function: %s; got err: %s", fn, err)
 		return err
 	}
+	fmt.Println("compress")
+	au.compressManager.DeleteFile(
+		context.Background(),
+		&compressmicroservice.DeleteFileInput{
+			FileName: "filename",
+		},
+	)
+	fmt.Println("compress")
 	_, err = au.compressManager.CompressAndSaveFile(
 		context.Background(),
 		&compressmicroservice.CompressAndSaveFileInput{
 			FileName: "filename",
 			FileType: "filetype",
-		})
+			File:     []byte{},
+		},
+	)
 	if err != nil {
 		au.logger.Errorf("fail compress microservice")
 		return err

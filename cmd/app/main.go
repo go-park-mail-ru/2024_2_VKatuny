@@ -21,12 +21,16 @@ import (
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
 	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
 
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
-
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
 	vacancies_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
+
+	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
+	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
+	session_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
+	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 )
 
 var (
@@ -64,8 +68,12 @@ func main() {
 		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.Front),
 	}
 	usecases := &internal.Usecases{
-
 		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories, CompressManager),
+		PortfolioUsecase:   portfolioUsecase.NewPortfolioUsecase(logger, repositories),
+		CVUsecase:          cvUsecase.NewCVsUsecase(logger, repositories),
+		VacanciesUsecase:   vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
+		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
+		SessionUsecase:     session_usecase.NewSessionUsecase(logger, repositories),
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
 	}
 	app := &internal.App{

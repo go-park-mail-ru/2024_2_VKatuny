@@ -41,7 +41,6 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 	h.logger.Debugf("%s: json decoded: %v", fn, applicantRegistrationForm)
 
 	// TODO: add json validation with govalidator
-
 	applicant, err := h.applicantUsecase.Create(applicantRegistrationForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
