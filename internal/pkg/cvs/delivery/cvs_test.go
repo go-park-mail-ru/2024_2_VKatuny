@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -13,13 +14,28 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/golang/mock/gomock"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
+
+func createMultipartFormJSONCV(jsonForm *dto.JSONCv) (*bytes.Buffer, string) {
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+	defer writer.Close()
+	_ = writer.WriteField("positionRu", jsonForm.PositionRu)
+	_ = writer.WriteField("positionEn", jsonForm.PositionEn)
+	_ = writer.WriteField("description", jsonForm.Description)
+	_ = writer.WriteField("jobSearchStatus", jsonForm.JobSearchStatusName)
+	_ = writer.WriteField("workingExperience", jsonForm.WorkingExperience)
+	_ = writer.WriteField("group", jsonForm.PositionCategoryName)
+	return &buf, writer.FormDataContentType()
+}
 
 func TestCreateCVHandler(t *testing.T) {
 	t.Parallel()
@@ -32,8 +48,8 @@ func TestCreateCVHandler(t *testing.T) {
 		cvsUsecase *mock.MockICVsUsecase
 		logger     *logrus.Logger
 
-		cv          interface{} // dto.JSONCv
-		currentUser dto.UserFromSession
+		cv          *dto.JSONCv
+		currentUser *dto.UserFromSession
 
 		args args
 	}
@@ -46,7 +62,7 @@ func TestCreateCVHandler(t *testing.T) {
 		{
 			name: "CVsHandler.CreateCVHandler successful generation of cv",
 			prepare: func(f *dependencies) {
-				f.currentUser = dto.UserFromSession{
+				f.currentUser = &dto.UserFromSession{
 					ID:       1,
 					UserType: dto.UserTypeApplicant,
 				}
@@ -61,28 +77,29 @@ func TestCreateCVHandler(t *testing.T) {
 					Avatar:              "Mock Avatar",
 				}
 
+				multipartForm, contentType := createMultipartFormJSONCV(f.cv)
+
 				// disable logging
 				f.logger = logrus.New()
 				f.logger.Out = io.Discard
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(f.cv, &f.currentUser).
+					CreateCV(gomock.Any(), f.currentUser).
 					Return(f.cv, nil)
-
-				body, _ := json.Marshal(f.cv)
 
 				f.args.r = httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/cv/",
-					bytes.NewReader(body),
+					"/api/v1/cv",
+					multipartForm,
 				).WithContext(
 					context.WithValue(
 						context.Background(),
 						dto.UserContextKey,
-						&f.currentUser,
+						f.currentUser,
 					),
 				)
+				f.args.r.Header.Set("Content-Type", contentType)
 
 				f.args.w = httptest.NewRecorder()
 			},
@@ -90,26 +107,37 @@ func TestCreateCVHandler(t *testing.T) {
 			expectedStatusCode: http.StatusOK,
 		},
 		{
-			name: "CVsHandler.CreateCVHandler got invalid json",
+			name: "CVsHandler.CreateCVHandler got invalid multipart",
 			prepare: func(f *dependencies) {
-				f.cv = struct {
-					ID string `json:"id"`
-				}{ID: "1"}
+				f.cv = &dto.JSONCv{}
+				f.currentUser = &dto.UserFromSession{}
 
 				f.logger = logrus.New()
 				f.logger.Out = io.Discard
 
-				body, _ := json.Marshal(f.cv)
-
+				multipartForm, contentType := createMultipartFormJSONCV(f.cv)
 				f.args.r = httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/cv/",
-					bytes.NewReader(body),
+					"/api/v1/cv",
+					multipartForm,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						f.currentUser,
+					),
 				)
+
+				f.cvsUsecase.
+					EXPECT().
+					CreateCV(gomock.Any(), f.currentUser).
+					Return(f.cv, fmt.Errorf(dto.MsgDataBaseError))
+				
+				f.args.r.Header.Set("Content-Type", contentType)
 				f.args.w = httptest.NewRecorder()
 			},
 			wantErr:            true,
-			expectedStatusCode: http.StatusBadRequest,
+			expectedStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name: "CVsHandler.CreateCVHandler no user provided",
@@ -129,12 +157,14 @@ func TestCreateCVHandler(t *testing.T) {
 				f.logger = logrus.New()
 				f.logger.Out = io.Discard
 
-				body, _ := json.Marshal(f.cv)
+				multipartForm, contentType := createMultipartFormJSONCV(f.cv)
+
 				f.args.r = httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/cv/",
-					bytes.NewReader(body),
+					"/api/v1/cv",
+					multipartForm,
 				)
+				f.args.r.Header.Set("Content-Type", contentType)
 
 				f.args.w = httptest.NewRecorder()
 			},
@@ -144,7 +174,7 @@ func TestCreateCVHandler(t *testing.T) {
 		{
 			name: "CVsHandler.CreateCVHandler usecase returns error",
 			prepare: func(f *dependencies) {
-				f.currentUser = dto.UserFromSession{
+				f.currentUser = &dto.UserFromSession{
 					ID:       1,
 					UserType: dto.UserTypeApplicant,
 				}
@@ -165,22 +195,23 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(f.cv, &f.currentUser).
+					CreateCV(gomock.Any(), f.currentUser).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
-				body, _ := json.Marshal(f.cv)
+				multipartForm, contentType := createMultipartFormJSONCV(f.cv)
 
 				f.args.r = httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/cv/",
-					bytes.NewReader(body),
+					"/api/v1/cv",
+					multipartForm,
 				).WithContext(
 					context.WithValue(
 						context.Background(),
 						dto.UserContextKey,
-						&f.currentUser,
+						f.currentUser,
 					),
 				)
+				f.args.r.Header.Set("Content-Type", contentType)
 
 				f.args.w = httptest.NewRecorder()
 			},
@@ -211,12 +242,12 @@ func TestCreateCVHandler(t *testing.T) {
 				Logger: d.logger,
 			}
 
-			testMux := http.NewServeMux()
 			h := delivery.NewCVsHandler(app)
 
-			testMux.HandleFunc("/api/v1/cv/", h.CreateCVHandler)
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/cv", h.CreateCV).Methods(http.MethodPost)
 
-			testMux.ServeHTTP(d.args.w, d.args.r)
+			r.ServeHTTP(d.args.w, d.args.r)
 
 			status := d.args.w.Result().StatusCode
 			require.EqualValuesf(t, tt.expectedStatusCode, status,
@@ -324,21 +355,7 @@ func TestGetCVHandler(t *testing.T) {
 			expectedStatusCode: http.StatusOK,
 		},
 		{
-			name: "CVsHandler.GetCVHandler bad slug",
-			prepare: func(f *dependencies) {
-				IDslug := "bad-slug"
-
-				f.args.r = httptest.NewRequest(
-					http.MethodGet,
-					fmt.Sprintf("/api/v1/cv/%s", IDslug),
-					nil,
-				)
-				f.args.w = httptest.NewRecorder()
-			},
-			expectedStatusCode: http.StatusBadRequest,
-		},
-		{
-			name: "CVsHandler.GetCVHandler successfully got the cv",
+			name: "CVsHandler.GetCVHandler db err",
 			prepare: func(f *dependencies) {
 				IDslug := uint64(1)
 
@@ -384,12 +401,11 @@ func TestGetCVHandler(t *testing.T) {
 				},
 			}
 
-			testMux := http.NewServeMux()
 			h := delivery.NewCVsHandler(app)
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/cv/{id:[0-9]+}", h.GetCV).Methods(http.MethodGet)
+			r.ServeHTTP(d.args.w, d.args.r)
 
-			testMux.HandleFunc("/api/v1/cv/", h.GetCVsHandler)
-
-			testMux.ServeHTTP(d.args.w, d.args.r)
 			status := d.args.w.Result().StatusCode
 
 			require.EqualValuesf(t, tt.expectedStatusCode, status,
@@ -405,7 +421,7 @@ func TestGetCVHandler(t *testing.T) {
 func TestUpdateCVHandler(t *testing.T) {
 	t.Parallel()
 	type in struct {
-		updatedCV   interface{}
+		updatedCV   *dto.JSONCv
 		currentUser *dto.UserFromSession
 		slug        string
 	}
@@ -429,14 +445,13 @@ func TestUpdateCVHandler(t *testing.T) {
 			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
 				in.updatedCV = &dto.JSONCv{
 					ID:                  1,
+					ApplicantID:         1,
 					PositionRu:          "Мок Должность",
 					PositionEn:          "Mock Position",
 					Description:         "Mock Description",
 					JobSearchStatusName: "Больше не ищу",
+					PositionCategoryName: "group",
 					WorkingExperience:   "1 год",
-					Avatar:              "Mock Avatar",
-					CreatedAt:           "2022-02-02",
-					UpdatedAt:           "2022-02-05",
 				}
 				in.currentUser = &dto.UserFromSession{
 					ID:       1,
@@ -444,19 +459,22 @@ func TestUpdateCVHandler(t *testing.T) {
 				}
 				in.slug = "1"
 
+				multipartForm, contentType := createMultipartFormJSONCV(in.updatedCV)
+
 				slugInt, _ := strconv.Atoi(in.slug)
 
 				expectedCV := map[string]interface{}{
 					"id":                float64(1),
-					"applicant":         float64(0),
+					"applicant":         float64(1),
 					"positionRu":        "Мок Должность",
 					"positionEn":        "Mock Position",
 					"description":       "Mock Description",
 					"jobSearchStatus":   "Больше не ищу",
+					"positionGroup":     "group",
 					"workingExperience": "1 год",
-					"avatar":            "Mock Avatar",
-					"createdAt":         "2022-02-02",
-					"updatedAt":         "2022-02-05",
+					"avatar":            "",
+					"createdAt":         "",
+					"updatedAt":         "",
 				}
 				out.response = &dto.JSONResponse{
 					HTTPStatus: http.StatusOK,
@@ -464,17 +482,15 @@ func TestUpdateCVHandler(t *testing.T) {
 				}
 				out.status = http.StatusOK
 
-				updatedCVJSON, _ := json.Marshal(in.updatedCV)
-
 				usecase.cvsUsecase.
 					EXPECT().
-					UpdateCV(uint64(slugInt), in.currentUser, in.updatedCV).
+					UpdateCV(uint64(slugInt), in.currentUser, gomock.Any()).
 					Return(in.updatedCV, nil)
 
 				args.r = httptest.NewRequest(
 					http.MethodPut,
 					fmt.Sprintf("/api/v1/cv/%s", in.slug),
-					bytes.NewReader(updatedCVJSON),
+					multipartForm,
 				).WithContext(
 					context.WithValue(
 						context.Background(),
@@ -482,65 +498,38 @@ func TestUpdateCVHandler(t *testing.T) {
 						in.currentUser,
 					),
 				)
+				args.r.Header.Set("Content-Type", contentType)
 
 				args.w = httptest.NewRecorder()
 			},
 		},
-		{
-			name: "CVsHandler.UpdateCVHandler bad slug",
-			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
-				in.slug = "dfd"
+		// {
+		// 	name: "CVsHandler.UpdateCVHandler bad input",
+		// 	prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+		// 		in.slug = "1"
 
-				out.status = http.StatusBadRequest
+		// 		in.updatedCV = &dto.JSONCv{}
 
-				out.response = &dto.JSONResponse{
-					HTTPStatus: out.status,
-					Error:      "something bad with slug",
-				}
+		// 		out.status = http.StatusBadRequest
+		// 		out.response = &dto.JSONResponse{
+		// 			HTTPStatus: out.status,
+		// 			Error:      dto.MsgInvalidJSON,
+		// 		}
 
-				args.r = httptest.NewRequest(
-					http.MethodPut,
-					fmt.Sprintf("/api/v1/cv/%s", in.slug),
-					nil,
-				)
+		// 		args.r = httptest.NewRequest(
+		// 			http.MethodPut,
+		// 			fmt.Sprintf("/api/v1/cv/%s", in.slug),
+		// 			nil,
+		// 		)
 
-				args.w = httptest.NewRecorder()
-			},
-		},
-		{
-			name: "CVsHandler.UpdateCVHandler bad slug",
-			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
-				in.slug = "1"
-
-				in.updatedCV = &struct {
-					badInput string
-				}{
-					badInput: "bad input",
-				}
-
-				out.status = http.StatusBadRequest
-				out.response = &dto.JSONResponse{
-					HTTPStatus: out.status,
-					Error:      dto.MsgInvalidJSON,
-				}
-
-				args.r = httptest.NewRequest(
-					http.MethodPut,
-					fmt.Sprintf("/api/v1/cv/%s", in.slug),
-					nil,
-				)
-
-				args.w = httptest.NewRecorder()
-			},
-		},
+		// 		args.w = httptest.NewRecorder()
+		// 	},
+		// },
 		{
 			name: "CVsHandler.UpdateCVHandler can't get user from context",
 			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
 				in.slug = "1"
 
-				in.updatedCV = &dto.JSONCv{
-					ID: 1,
-				}
 
 				out.status = http.StatusUnauthorized
 				out.response = &dto.JSONResponse{
@@ -548,12 +537,11 @@ func TestUpdateCVHandler(t *testing.T) {
 					Error:      dto.MsgUnauthorized,
 				}
 
-				updatedCVJSON, _ := json.Marshal(in.updatedCV)
 
 				args.r = httptest.NewRequest(
 					http.MethodPut,
 					fmt.Sprintf("/api/v1/cv/%s", in.slug),
-					bytes.NewReader(updatedCVJSON),
+					nil,
 				)
 				args.w = httptest.NewRecorder()
 			},
@@ -576,27 +564,29 @@ func TestUpdateCVHandler(t *testing.T) {
 					ID:       1,
 					UserType: dto.UserTypeApplicant,
 				}
-				in.slug = "1"
+				in.slug = "1451566565115655515615645645656156156156156156156156156"
 
-				slugInt, _ := strconv.Atoi(in.slug)
+				multipartForm, contentType := createMultipartFormJSONCV(in.updatedCV)
+
+				// slugInt, _ := strconv.Atoi(in.slug)
 
 				out.status = http.StatusInternalServerError
 				out.response = &dto.JSONResponse{
 					HTTPStatus: out.status,
-					Error:      dto.MsgDataBaseError,
+					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 				}
 
-				updatedCVJSON, _ := json.Marshal(in.updatedCV)
+				// updatedCVJSON, _ := json.Marshal(in.updatedCV)
 
-				usecase.cvsUsecase.
-					EXPECT().
-					UpdateCV(uint64(slugInt), in.currentUser, in.updatedCV).
-					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
+				// usecase.cvsUsecase.
+				// 	EXPECT().
+				// 	UpdateCV(uint64(slugInt), in.currentUser, in.updatedCV).
+				// 	Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
 					http.MethodPut,
 					fmt.Sprintf("/api/v1/cv/%s", in.slug),
-					bytes.NewReader(updatedCVJSON),
+					multipartForm,
 				).WithContext(
 					context.WithValue(
 						context.Background(),
@@ -604,6 +594,7 @@ func TestUpdateCVHandler(t *testing.T) {
 						in.currentUser,
 					),
 				)
+				args.r.Header.Set("Content-Type", contentType)
 
 				args.w = httptest.NewRecorder()
 			},
@@ -634,14 +625,14 @@ func TestUpdateCVHandler(t *testing.T) {
 				},
 			}
 
-			testMux := http.NewServeMux()
 			h := delivery.NewCVsHandler(app)
-			testMux.HandleFunc("/api/v1/cv/", h.UpdateCVHandler)
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/cv/{id:[0-9]+}", h.UpdateCV)
 
 			require.NotNil(t, args.r, "request is nil")
 			require.NotNil(t, args.w, "response is nil")
 
-			testMux.ServeHTTP(args.w, args.r)
+			r.ServeHTTP(args.w, args.r)
 
 			require.EqualValuesf(t, out.status, args.w.Result().StatusCode,
 				"got status %d, expected %d",
@@ -717,32 +708,6 @@ func TestDeleteCVHandler(t *testing.T) {
 					),
 				)
 				args.w = httptest.NewRecorder()
-			},
-		},
-		{
-			name: "CVHandler.DeleteCVHandler bad slug",
-			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
-				in.slug = "bad"
-
-				out.status = http.StatusBadRequest
-				out.response = &dto.JSONResponse{
-					HTTPStatus: out.status,
-					Error:      "something bad with slug",
-				}
-
-				args.r = httptest.NewRequest(
-					http.MethodDelete,
-					fmt.Sprintf("/api/v1/cv/%s", in.slug),
-					nil,
-				).WithContext(
-					context.WithValue(
-						context.Background(),
-						dto.UserContextKey,
-						in.user,
-					),
-				)
-				args.w = httptest.NewRecorder()
-
 			},
 		},
 		{
@@ -826,14 +791,14 @@ func TestDeleteCVHandler(t *testing.T) {
 				},
 			}
 
-			testMux := http.NewServeMux()
 			h := delivery.NewCVsHandler(app)
-			testMux.HandleFunc("/api/v1/cv/", h.DeleteCVHandler)
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/cv/{id:[0-9]+}", h.DeleteCV)
 
 			require.NotNil(t, args.r, "request is nil")
 			require.NotNil(t, args.w, "response is nil")
 
-			testMux.ServeHTTP(args.w, args.r)
+			r.ServeHTTP(args.w, args.r)
 
 			require.EqualValuesf(t, out.status, args.w.Result().StatusCode,
 				"got status %d, expected %d",

@@ -15,7 +15,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	session_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
@@ -74,7 +74,7 @@ func TestApplicantRegistration(t *testing.T) {
 
 				usecase.applicant.
 					EXPECT().
-					Create(in.registrationForm).
+					Create(gomock.Any(), in.registrationForm).
 					Return(user, nil)
 
 				loginForm := &dto.JSONLoginForm{
@@ -92,7 +92,7 @@ func TestApplicantRegistration(t *testing.T) {
 
 				usecase.session.
 					EXPECT().
-					Login(loginForm).
+					Login(gomock.Any(), loginForm).
 					Return(userWithSession, nil)
 
 				requestBody, _ := json.Marshal(registrationForm)
@@ -139,7 +139,7 @@ func TestApplicantRegistration(t *testing.T) {
 
 				usecase.applicant.
 					EXPECT().
-					Create(in.registrationForm).
+					Create(gomock.Any(), in.registrationForm).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				requestBody, _ := json.Marshal(registrationForm)

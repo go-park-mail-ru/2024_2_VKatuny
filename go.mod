@@ -16,6 +16,7 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	go.uber.org/mock v0.5.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 )
 

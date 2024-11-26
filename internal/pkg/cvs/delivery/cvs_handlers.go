@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
@@ -207,6 +208,16 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
+	
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
+	if !ok {
+		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnauthorized,
+		})
+		return
+	}
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
@@ -229,16 +240,6 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newCV.Avatar = fileAddress
-	}
-
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
-	if !ok {
-		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
-		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
-			Error:      dto.MsgUnauthorized,
-		})
-		return
 	}
 
 	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, currentUser, newCV)
