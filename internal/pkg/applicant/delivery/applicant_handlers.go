@@ -7,6 +7,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 )
 
 // CreateApplicantHandler creates applicant in db
@@ -52,13 +53,15 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		return
 	}
 	h.logger.Debugf("%s: user created successfully: %v", fn, applicant)
-
-	loginForm := &dto.JSONLoginForm{
-		UserType: dto.UserTypeApplicant,
-		Email:    applicantRegistrationForm.Email,
-		Password: applicantRegistrationForm.Password,
+	
+	requestID := r.Context().Value(dto.RequestIDContextKey).(string)
+	grpc_request := &grpc_auth.AuthRequest{
+		RequestID: requestID,
+		UserType:  dto.UserTypeApplicant,
+		Email:     applicantRegistrationForm.Email,
+		Password:  applicantRegistrationForm.Password,
 	}
-	userWithSession, err := h.sessionUsecase.Login(r.Context(), loginForm)
+	grpc_response, err := h.authGRPC.AuthUser(r.Context(), grpc_request)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -67,16 +70,19 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		})
 		return
 	}
-	h.logger.Debugf("%s: user logged in: %v", fn, userWithSession)
 
-	cookie := utils.MakeAuthCookie(userWithSession.SessionID, h.backendURI)
+	user := &dto.JSONUser{
+		ID:       grpc_response.UserData.ID,
+		UserType: grpc_response.UserData.UserType,
+	}
+	h.logger.Debugf("%s: user logged in: %v", fn, user)
+
+	cookie := utils.MakeAuthCookie(grpc_response.Session.ID, h.backendURI)
 	http.SetCookie(w, cookie)
+	h.logger.Debugf("%s: cookie set: %s", fn, cookie.Value)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body: &dto.JSONUser{
-			ID:       userWithSession.ID,
-			UserType: userWithSession.UserType,
-		},
+		Body:       user,
 	})
 }

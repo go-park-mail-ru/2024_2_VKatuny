@@ -43,6 +43,13 @@ api/docs.go
 configs/conf.yaml
 configs/conf.yml
 db/migrations/tern.conf
+configs/redis.windows.conf
+configs/redis.conf
+
+# redis stuff
+*.rdb
+*redis.log
+
 
 # html
 *.html

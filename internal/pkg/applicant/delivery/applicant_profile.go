@@ -12,20 +12,21 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+
+	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 )
 
 type ApplicantHandlers struct {
 	logger             *logrus.Entry
 	backendURI         string
 	applicantUsecase   applicant.IApplicantUsecase
-	sessionUsecase     session.ISessionUsecase
 	portfolioUsecase   portfolio.IPortfolioUsecase
 	cvUsecase          cvs.ICVsUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
+	authGRPC           auth_grpc.AuthorizationClient
 }
 
 func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
@@ -33,10 +34,10 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 		logger:             logrus.NewEntry(app.Logger),
 		backendURI:         app.BackendAddress,
 		applicantUsecase:   app.Usecases.ApplicantUsecase,
-		sessionUsecase:     app.Usecases.SessionUsecase,
 		portfolioUsecase:   app.Usecases.PortfolioUsecase,
 		cvUsecase:          app.Usecases.CVUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
+		authGRPC:           app.Microservices.Auth,
 	}
 }
 

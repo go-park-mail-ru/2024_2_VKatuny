@@ -12,8 +12,9 @@ import (
 
 // Config is a struct of .yaml config file
 type Config struct {
-	Server   *ServerConfig   `yaml:"server"`
-	DataBase *DataBaseConfig `yaml:"database"`
+	Server           *ServerConfig     `yaml:"server"`
+	DataBase         *DataBaseConfig   `yaml:"database"`
+	AuthMicroservice *AuthMicroservice `yaml:"auth_microservice"`
 }
 
 // ServerConfig is a struct of server config block in .yaml
@@ -36,14 +37,30 @@ type DataBaseConfig struct {
 	ConnectionTimeout string `yaml:"conn_timeout,omitempty"` // Temporary unused
 }
 
+type AuthMicroservice struct {
+	Server   *Microservice `yaml:"server"`
+	Database *Redis        `yaml:"database"`
+}
+
+type Microservice struct {
+	Scheme string `yaml:"scheme"`
+	Host   string `yaml:"host"`
+	Port   int    `yaml:"port"`
+}
+
+type Redis struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	Password string `yaml:"password"`
+}
+
 // ReadConfig reads file with configuration.
 // Accepts path to .yaml config.
 // Returns pointer to Config.
-func ReadConfig(confPath string) (*Config, error) {
+func ReadConfig(confPath string) *Config {
 	data, err := os.ReadFile(confPath)
 	if err != nil {
 		log.Fatalf("unable to read config file: %s", confPath)
-		return nil, err
 	}
 
 	var conf *Config
@@ -56,7 +73,7 @@ func ReadConfig(confPath string) (*Config, error) {
 		conf.DataBase.ConnectionTimeout = "60s"
 	}
 
-	return conf, nil
+	return conf
 }
 
 // GetAddress returns address of server
@@ -79,4 +96,12 @@ func (d *DataBaseConfig) GetDSN() string {
 		d.Port,
 		d.SSLMode,
 	)
+}
+
+func (m *Microservice) GetAddress() string {
+	return m.Host + ":" + strconv.Itoa(m.Port)
+}
+
+func (r *Redis) GetDSN() string {
+	return r.Host + ":" + strconv.Itoa(r.Port)
 }

@@ -47,5 +47,11 @@ mock-gen:
 	done
 	@echo "OK!"
 
+redis-start:
+	redis-server .\configs\redis.conf
+
+auth-microservice:
+	go run ./cmd/auth/main.go
+
 run:
 	go run $(SRC_DIR)/main.go
