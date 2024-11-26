@@ -2,6 +2,9 @@ package delivery_test
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -13,6 +16,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/mock"
 	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
+	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
+	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
@@ -437,6 +442,240 @@ func TestGetVacancies(t *testing.T) {
 
 			r := mux.NewRouter()
 			r.HandleFunc("/api/v1/employer/{id:[0-9]+}/vacancies", h.GetEmployerVacancies).Methods(http.MethodGet)
+
+			r.ServeHTTP(tt.w, tt.r)
+
+			require.Equal(t, tt.codeExpected, tt.w.Code)
+		})
+	}
+}
+
+func TestRegistration(t *testing.T) {
+	t.Parallel()
+	type usecase struct {
+		registration *mock.MockIEmployerUsecase
+		grpc         *grpc_mock.MockAuthorizationClient
+	}
+	tests := []struct {
+		name         string
+		r            *http.Request
+		w            *httptest.ResponseRecorder
+		usecase      *usecase
+		codeExpected int
+
+		prepare func(
+			r *http.Request,
+			w *httptest.ResponseRecorder,
+			usecase *usecase,
+		) (*httptest.ResponseRecorder, *http.Request)
+	}{
+		{
+			name:         "Registration: bad json",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusBadRequest,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				jsonForm, _ := json.Marshal(
+					`{
+						"unknown_field": "unknown_value",
+						broken field 22r#25,
+						[
+					}`,
+				)
+				nr := httptest.NewRequest(
+					http.MethodPost,
+					"/api/v1/employer/registration",
+					bytes.NewReader(jsonForm),
+				)
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+		{
+			name:         "Registration: bad create usecase",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				form := &dto.JSONEmployerRegistrationForm{
+					FirstName:          "Ivan",
+					LastName:           "Ivanov",
+					Position:           "HR",
+					Company:            "Texas Instruments",
+					CompanyDescription: "Microelectronics company",
+					CompanyWebsite:     "texasinstruments.com",
+					Email:              "iY5sG@example.com",
+					Password:           "password",
+				}
+
+				jsonForm, _ := json.Marshal(form)
+				usecase.registration.
+					EXPECT().
+					Create(gomock.Any(), form).
+					Return(nil, errors.New("bad create usecase"))
+				nr := httptest.NewRequest(
+					http.MethodPost,
+					"/api/v1/employer/registration",
+					bytes.NewReader(jsonForm),
+				)
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+		{
+			name:         "Registration: bad grpc",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				form := &dto.JSONEmployerRegistrationForm{
+					FirstName:          "Ivan",
+					LastName:           "Ivanov",
+					Position:           "HR",
+					Company:            "Texas Instruments",
+					CompanyDescription: "Microelectronics company",
+					CompanyWebsite:     "texasinstruments.com",
+					Email:              "iY5sG@example.com",
+					Password:           "password",
+				}
+
+				requestID := "1234567890"
+				jsonForm, _ := json.Marshal(form)
+				grpc_request := &auth_grpc.AuthRequest{
+					RequestID: requestID,
+					UserType: dto.UserTypeEmployer,
+					Email:    form.Email,
+					Password: form.Password,
+				}
+				user := &dto.JSONUser{
+					ID: 1,
+					UserType: dto.UserTypeEmployer,
+				}
+				usecase.registration.
+					EXPECT().
+					Create(gomock.Any(), form).
+					Return(user, nil)
+				usecase.grpc.
+					EXPECT().
+					AuthUser(gomock.Any(), grpc_request).
+					Return(nil, errors.New("bad grpc"))
+				nr := httptest.NewRequest(
+					http.MethodPost,
+					"/api/v1/employer/registration",
+					bytes.NewReader(jsonForm),
+				).WithContext(
+					context.WithValue(r.Context(), dto.RequestIDContextKey, requestID),
+				)
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+		{
+			name:         "Registration: ok",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusOK,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				form := &dto.JSONEmployerRegistrationForm{
+					FirstName:          "Ivan",
+					LastName:           "Ivanov",
+					Position:           "HR",
+					Company:            "Texas Instruments",
+					CompanyDescription: "Microelectronics company",
+					CompanyWebsite:     "texasinstruments.com",
+					Email:              "iY5sG@example.com",
+					Password:           "password",
+				}
+
+				requestID := "1234567890"
+				jsonForm, _ := json.Marshal(form)
+				grpc_request := &auth_grpc.AuthRequest{
+					RequestID: requestID,
+					UserType: dto.UserTypeEmployer,
+					Email:    form.Email,
+					Password: form.Password,
+				}
+				user := &dto.JSONUser{
+					ID: 1,
+					UserType: dto.UserTypeEmployer,
+				}
+				grpc_response := &auth_grpc.AuthResponse{
+					UserData: &auth_grpc.User{
+						UserType: dto.UserTypeEmployer,
+						ID:       user.ID,
+					},
+					Session: &auth_grpc.SessionToken{
+						ID: requestID,
+					},
+				}
+				usecase.registration.
+					EXPECT().
+					Create(gomock.Any(), form).
+					Return(user, nil)
+				usecase.grpc.
+					EXPECT().
+					AuthUser(gomock.Any(), grpc_request).
+					Return(grpc_response, nil)
+				nr := httptest.NewRequest(
+					http.MethodPost,
+					"/api/v1/employer/registration",
+					bytes.NewReader(jsonForm),
+				).WithContext(
+					context.WithValue(r.Context(), dto.RequestIDContextKey, requestID),
+				)
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			usecase := &usecase{
+				registration: mock.NewMockIEmployerUsecase(ctrl),
+				grpc:         grpc_mock.NewMockAuthorizationClient(ctrl),
+			}
+			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
+
+			app := &internal.App{
+				Logger:         logrus.New(),
+				BackendAddress: "http://localhost:8080",
+				Usecases: &internal.Usecases{
+					EmployerUsecase:    usecase.registration,
+					VacanciesUsecase:   nil,
+					FileLoadingUsecase: nil,
+				},
+				Microservices: &internal.Microservices{
+					Auth: usecase.grpc,
+				},
+			}
+
+			h := delivery.NewEmployerHandlers(app)
+			require.NotNil(t, h)
+			require.NotNil(t, tt.r)
+			require.NotNil(t, tt.w)
+
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/employer/registration", h.Registration).Methods(http.MethodPost)
 
 			r.ServeHTTP(tt.w, tt.r)
 
