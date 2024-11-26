@@ -22,7 +22,7 @@ install:
 
 tests:
 	go test ./... -coverprofile=coverage.out.tmp
-	cat coverage.out.tmp | grep -v 'mock' > coverage.out
+	cat coverage.out.tmp | grep -v -E 'mock|pb.go' > coverage.out
 	go tool cover -func=coverage.out
 	go tool cover -html=coverage.out -o index.html
 
