@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 )
@@ -22,7 +23,8 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*dto.JS
 	CVs := make([]*dto.JSONCv, 0)
 
 	rows, err := s.db.Query(`select cv.id, applicant_id, position_rus, position_eng, job_search_status_name, cv_description, working_experience,
-		path_to_profile_avatar, cv.created_at, cv.updated_at  from cv left join job_search_status on job_search_status.id = cv.job_search_status_id 
+		path_to_profile_avatar, position_category.category_name, cv.created_at, cv.updated_at  from cv
+		left join job_search_status on job_search_status.id = cv.job_search_status_id left join position_category on cv.position_category_id = position_category.id
 		where cv.applicant_id = $1`, applicantID)
 	if err != nil {
 		return nil, err
@@ -30,12 +32,34 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*dto.JS
 	defer rows.Close()
 
 	for rows.Next() {
-		var CV dto.JSONCv
-		if err := rows.Scan(&CV.ID, &CV.ApplicantID, &CV.PositionRu, &CV.PositionEn, &CV.JobSearchStatusName, &CV.Description, &CV.WorkingExperience, &CV.Avatar, &CV.CreatedAt, &CV.UpdatedAt); err != nil {
+		var oneCV dto.JSONCvWithNull
+		if err := rows.Scan(&oneCV.ID,
+			&oneCV.ApplicantID,
+			&oneCV.PositionRu,
+			&oneCV.PositionEn,
+			&oneCV.JobSearchStatusName,
+			&oneCV.Description,
+			&oneCV.WorkingExperience,
+			&oneCV.Avatar,
+			&oneCV.PositionCategoryName,
+			&oneCV.CreatedAt,
+			&oneCV.UpdatedAt); err != nil {
 			return nil, err
 		}
-		CVs = append(CVs, &CV)
-		fmt.Println(CV)
+		oneCVOk := dto.JSONCv{
+			ID:                   oneCV.ID,
+			ApplicantID:          oneCV.ApplicantID,
+			PositionRu:           oneCV.PositionRu,
+			PositionEn:           oneCV.PositionEn,
+			JobSearchStatusName:  oneCV.JobSearchStatusName,
+			Description:          oneCV.Description,
+			WorkingExperience:    oneCV.WorkingExperience,
+			Avatar:               oneCV.Avatar,
+			PositionCategoryName: oneCV.PositionCategoryName.String,
+			CreatedAt:            oneCV.CreatedAt,
+			UpdatedAt:            oneCV.UpdatedAt}
+		CVs = append(CVs, &oneCVOk)
+		fmt.Println(oneCVOk)
 	}
 
 	return CVs, nil
@@ -57,10 +81,23 @@ func (s *PostgreSQLCVStorage) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
 		}
 	}
 	var oneCv dto.JSONCv
-	row = s.db.QueryRow(`insert into cv (applicant_id, position_rus, position_eng, cv_description, job_search_status_id, working_experience)
-		VALUES ($1, $2, $3, $4, $5, $6) returning id, applicant_id, position_rus, position_eng,
+	if cv.PositionCategoryName == "" {
+		row = s.db.QueryRow(`insert into cv (applicant_id, position_rus, position_eng, cv_description, job_search_status_id, working_experience, path_to_profile_avatar)
+		VALUES ($1, $2, $3, $4, $5, $6, $7) returning id, applicant_id, position_rus, position_eng,
 		cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
-		cv.ApplicantID, cv.PositionRu, cv.PositionEn, cv.Description, JobSearchStatusID, cv.WorkingExperience)
+			cv.ApplicantID, cv.PositionRu, cv.PositionEn, cv.Description, JobSearchStatusID, cv.WorkingExperience, cv.Avatar)
+	} else {
+		var PositionCategoryID int
+		row = s.db.QueryRow(`select id from position_category where category_name=$1`, cv.PositionCategoryName)
+		err := row.Scan(&PositionCategoryID)
+		if err != nil {
+			return nil, err
+		}
+		row = s.db.QueryRow(`insert into cv (applicant_id, position_rus, position_eng, cv_description, job_search_status_id, working_experience, path_to_profile_avatar, position_category_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) returning id, applicant_id, position_rus, position_eng,
+		cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
+			cv.ApplicantID, cv.PositionRu, cv.PositionEn, cv.Description, JobSearchStatusID, cv.WorkingExperience, cv.Avatar, PositionCategoryID)
+	}
 	err := row.Scan(&oneCv.ID,
 		&oneCv.ApplicantID,
 		&oneCv.PositionRu,
@@ -71,6 +108,7 @@ func (s *PostgreSQLCVStorage) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
 		&oneCv.CreatedAt,
 		&oneCv.UpdatedAt)
 	oneCv.JobSearchStatusName = cv.JobSearchStatusName
+	oneCv.PositionCategoryName = cv.PositionCategoryName
 	if err != nil {
 		return nil, err
 	}
@@ -80,23 +118,39 @@ func (s *PostgreSQLCVStorage) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
 func (s *PostgreSQLCVStorage) GetByID(ID uint64) (*dto.JSONCv, error) {
 
 	row := s.db.QueryRow(`select cv.id, applicant_id, position_rus, position_eng, job_search_status.job_search_status_name, cv_description, working_experience,
-		path_to_profile_avatar, cv.created_at, cv.updated_at  from cv left join job_search_status on job_search_status.id = cv.job_search_status_id where cv.id = $1`, ID)
-	var oneCv dto.JSONCv
+		path_to_profile_avatar, position_category.category_name, cv.created_at, cv.updated_at  from cv
+		left join job_search_status on job_search_status.id = cv.job_search_status_id left join position_category on cv.position_category_id = position_category.id where cv.id = $1`, ID)
+	var oneCV dto.JSONCvWithNull
 
-	err := row.Scan(&oneCv.ID,
-		&oneCv.ApplicantID,
-		&oneCv.PositionRu,
-		&oneCv.PositionEn,
-		&oneCv.JobSearchStatusName,
-		&oneCv.Description,
-		&oneCv.WorkingExperience,
-		&oneCv.Avatar,
-		&oneCv.CreatedAt,
-		&oneCv.UpdatedAt)
+	err := row.Scan(
+		&oneCV.ID,
+		&oneCV.ApplicantID,
+		&oneCV.PositionRu,
+		&oneCV.PositionEn,
+		&oneCV.JobSearchStatusName,
+		&oneCV.Description,
+		&oneCV.WorkingExperience,
+		&oneCV.Avatar,
+		&oneCV.PositionCategoryName,
+		&oneCV.CreatedAt,
+		&oneCV.UpdatedAt)
+
+	oneCVOk := dto.JSONCv{
+		ID:                   oneCV.ID,
+		ApplicantID:          oneCV.ApplicantID,
+		PositionRu:           oneCV.PositionRu,
+		PositionEn:           oneCV.PositionEn,
+		Description:          oneCV.Description,
+		JobSearchStatusName:  oneCV.JobSearchStatusName,
+		WorkingExperience:    oneCV.WorkingExperience,
+		Avatar:               oneCV.Avatar,
+		PositionCategoryName: oneCV.PositionCategoryName.String,
+		CreatedAt:            oneCV.CreatedAt,
+		UpdatedAt:            oneCV.UpdatedAt}
 	if err != nil {
 		return nil, err
 	}
-	return &oneCv, err
+	return &oneCVOk, err
 }
 
 func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSONCv, error) {
@@ -115,28 +169,62 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 			return nil, err
 		}
 	}
-	row = s.db.QueryRow(`update cv
-		set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
-		job_search_status_id = $5, working_experience = $6, path_to_profile_avatar=$7 where id=$8 returning id, 
-		applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
-		updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, ID)
+	var PositionCategoryID int
+	if updatedCv.PositionCategoryName != "" {
+		row = s.db.QueryRow(`select id from position_category where category_name=$1`, updatedCv.PositionCategoryName)
+		err := row.Scan(&PositionCategoryID)
+		if err != nil {
+			return nil, err
+		}
+	}
+	fmt.Println(updatedCv)
+	if updatedCv.Avatar != "" {
+		if updatedCv.PositionCategoryName == "" {
+			row = s.db.QueryRow(`update cv
+				set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
+				job_search_status_id = $5, working_experience = $6, path_to_profile_avatar=$7 where id=$8 returning id, 
+				applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
+				updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, ID)
+		} else {
+			row = s.db.QueryRow(`update cv
+				set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
+				job_search_status_id = $5, working_experience = $6, path_to_profile_avatar=$7, position_category_id=$8 where id=$9 returning id, 
+				applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
+				updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, PositionCategoryID, ID)
+		}
+	} else {
+		if updatedCv.PositionCategoryName == "" {
+			row = s.db.QueryRow(`update cv
+				set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
+				job_search_status_id = $5, working_experience = $6 where id=$7 returning id, 
+				applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
+				updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, ID)
+		} else {
+			row = s.db.QueryRow(`update cv
+					set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
+					job_search_status_id = $5, working_experience = $6, path_to_profile_avatar=$7, position_category_id=$8 where id=$9 returning id, 
+					applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at`,
+				updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, PositionCategoryID, ID)
+		}
+	}
 
-	var oneCV dto.JSONCv
+	var oneCVOk dto.JSONCv
 
-	err := row.Scan(&oneCV.ID,
-		&oneCV.ApplicantID,
-		&oneCV.PositionRu,
-		&oneCV.PositionEn,
-		&oneCV.Description,
-		&oneCV.WorkingExperience,
-		&oneCV.Avatar,
-		&oneCV.CreatedAt,
-		&oneCV.UpdatedAt)
-	oneCV.JobSearchStatusName = updatedCv.JobSearchStatusName
+	err := row.Scan(
+		&oneCVOk.ID,
+		&oneCVOk.ApplicantID,
+		&oneCVOk.PositionRu,
+		&oneCVOk.PositionEn,
+		&oneCVOk.Description,
+		&oneCVOk.WorkingExperience,
+		&oneCVOk.Avatar,
+		&oneCVOk.CreatedAt,
+		&oneCVOk.UpdatedAt)
+	oneCVOk.JobSearchStatusName = updatedCv.JobSearchStatusName
 	if err != nil {
 		return nil, err
 	}
-	return &oneCV, err
+	return &oneCVOk, err
 }
 
 func (s *PostgreSQLCVStorage) Delete(ID uint64) error {
@@ -144,49 +232,93 @@ func (s *PostgreSQLCVStorage) Delete(ID uint64) error {
 	return err
 }
 
-func (s *PostgreSQLCVStorage) GetWithOffset(offset uint64, num uint64) ([]*dto.JSONCv, error) {
+func (s *PostgreSQLCVStorage) SearchAll(offset uint64, num uint64, searchStr, group, searchBy string) ([]*dto.JSONCv, error) {
 	CVs := make([]*dto.JSONCv, 0)
-	rows, err := s.db.Query(`select cv.id, applicant_id, cv.position_rus, cv.position_eng, cv_description, job_search_status.job_search_status_name,
-		working_experience, path_to_profile_avatar, cv.created_at, cv.updated_at from cv
+	iter := 1
+	mainPart := `select cv.id, applicant_id, cv.position_rus, cv.position_eng, cv_description, job_search_status.job_search_status_name,
+		working_experience, path_to_profile_avatar, position_category.category_name, cv.created_at, cv.updated_at from cv
 		left join job_search_status on cv.job_search_status_id=job_search_status.id
-		ORDER BY created_at desc limit $1 offset $2`, num, offset)
+		left join position_category on cv.position_category_id = position_category.id `
+	categoryPart := ""
+	if group != "" {
+		categoryPart = "where position_category.category_name = $" + strconv.Itoa(iter)
+		iter++
+	}
+	searchPart := ""
+	if searchStr != "" {
+		if iter != 1 {
+			searchPart += " and "
+		} else {
+			searchPart += " where "
+		}
+		weights := "'{1, 1, 1, 1}'"
+		language := "'russian'"
+		switch searchBy {
+		case "position_rus":
+			weights = "'{0, 0, 0, 1}'"
+		case "position_eng":
+			weights = "'{0, 0, 1, 0}'"
+			language = "'english'"
+		case "working_experience":
+			weights = "'{0, 1, 0, 0}'"
+		case "cv_description":
+			weights = "'{1, 0, 0, 0}'"
+		}
+		searchPart += "ts_rank_cd(" + weights + ", cv.fts, plainto_tsquery(" + language + ", $" + strconv.Itoa(iter) + ")) <> 0 order by ts_rank_cd(" + weights + ", cv.fts, plainto_tsquery(" + language + ", $" + strconv.Itoa(iter+1) + ")) desc "
+		iter += 2
+	} else {
+		searchPart += " ORDER BY created_at desc "
+	}
+
+	lastPart := " limit $" + strconv.Itoa(iter) + " offset $" + strconv.Itoa(iter+1)
+	fmt.Println(categoryPart)
+	fmt.Println(mainPart + categoryPart + searchPart + lastPart)
+	iter += 2
+	var rows *sql.Rows
+	var err error
+	if group != "" && searchStr != "" {
+		rows, err = s.db.Query(mainPart+categoryPart+searchPart+lastPart, group, searchStr, searchStr, num, offset)
+	} else if group == "" && searchStr != "" {
+		rows, err = s.db.Query(mainPart+categoryPart+searchPart+lastPart, searchStr, searchStr, num, offset)
+	} else if group == "" && searchStr == "" {
+		rows, err = s.db.Query(mainPart+categoryPart+searchPart+lastPart, num, offset)
+	} else if group != "" && searchStr == "" {
+		rows, err = s.db.Query(mainPart+categoryPart+searchPart+lastPart, group, num, offset)
+	}
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-
 	for rows.Next() {
-		var CV dto.JSONCv
-		if err := rows.Scan(&CV.ID, &CV.ApplicantID, &CV.PositionRu, &CV.PositionEn, &CV.Description, &CV.JobSearchStatusName, &CV.WorkingExperience,
-			&CV.Avatar, &CV.CreatedAt, &CV.UpdatedAt); err != nil {
+		var oneCV dto.JSONCvWithNull
+		if err := rows.Scan(
+			&oneCV.ID,
+			&oneCV.ApplicantID,
+			&oneCV.PositionRu,
+			&oneCV.PositionEn,
+			&oneCV.JobSearchStatusName,
+			&oneCV.Description,
+			&oneCV.WorkingExperience,
+			&oneCV.Avatar,
+			&oneCV.PositionCategoryName,
+			&oneCV.CreatedAt,
+			&oneCV.UpdatedAt); err != nil {
 			return nil, err
 		}
-		CVs = append(CVs, &CV)
-		fmt.Println(CV)
-	}
-
-	return CVs, nil
-}
-
-func (s *PostgreSQLCVStorage) SearchByPositionDescription(offset uint64, num uint64, searchStr string) ([]*dto.JSONCv, error) {
-	CVs := make([]*dto.JSONCv, 0)
-	rows, err := s.db.Query(`select cv.id, applicant_id, cv.position_rus, cv.position_eng, cv_description, job_search_status.job_search_status_name,
-		working_experience, path_to_profile_avatar, cv.created_at, cv.updated_at from cv
-		left join job_search_status on cv.job_search_status_id=job_search_status.id
-		where ts_rank_cd(fts, plainto_tsquery('russian', $1)) <> 0 order by ts_rank_cd(fts, plainto_tsquery('russian', $2)) desc limit $3 offset $4`, searchStr, searchStr, num, offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var CV dto.JSONCv
-		if err := rows.Scan(&CV.ID, &CV.ApplicantID, &CV.PositionRu, &CV.PositionEn, &CV.Description, &CV.JobSearchStatusName, &CV.WorkingExperience,
-			&CV.Avatar, &CV.CreatedAt, &CV.UpdatedAt); err != nil {
-			return nil, err
-		}
-		CVs = append(CVs, &CV)
-		fmt.Println(CV)
+		oneCVOk := dto.JSONCv{
+			ID:                   oneCV.ID,
+			ApplicantID:          oneCV.ApplicantID,
+			PositionRu:           oneCV.PositionRu,
+			PositionEn:           oneCV.PositionEn,
+			JobSearchStatusName:  oneCV.JobSearchStatusName,
+			Description:          oneCV.Description,
+			WorkingExperience:    oneCV.WorkingExperience,
+			Avatar:               oneCV.Avatar,
+			PositionCategoryName: oneCV.PositionCategoryName.String,
+			CreatedAt:            oneCV.CreatedAt,
+			UpdatedAt:            oneCV.UpdatedAt}
+		CVs = append(CVs, &oneCVOk)
+		fmt.Println(oneCVOk)
 	}
 	fmt.Println(CVs)
 	return CVs, nil

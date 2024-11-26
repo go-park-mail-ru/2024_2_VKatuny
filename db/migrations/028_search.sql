@@ -5,7 +5,7 @@ ALTER TABLE vacancy
 ALTER TABLE cv
     ADD fts TSVECTOR;
 
-UPDATE cv SET fts = setweight(to_tsvector('russian', "position_rus"), 'A')|| setweight(to_tsvector('english', "position_eng"), 'A') || setweight(to_tsvector('russian', cv_description), 'B') || setweight(to_tsvector('russian', working_experience), 'B');
+UPDATE cv SET fts = setweight(to_tsvector('russian', "position_rus"), 'A')|| setweight(to_tsvector('english', "position_eng"), 'B') || setweight(to_tsvector('russian', cv_description), 'C') || setweight(to_tsvector('russian', working_experience), 'D');
 UPDATE vacancy SET fts = setweight(to_tsvector('russian', "position"), 'A') || setweight(to_tsvector('russian', vacancy_description), 'B');
 
 CREATE INDEX cv_fts ON cv  USING GIN(fts);
@@ -14,7 +14,7 @@ CREATE INDEX vacancy_fts ON vacancy  USING GIN(fts);
 CREATE OR REPLACE FUNCTION update_cv_fts_function()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.fts = setweight(to_tsvector('russian', NEW."position_rus"), 'A')|| setweight(to_tsvector('english', NEW."position_eng"), 'A') || setweight(to_tsvector('russian', NEW.cv_description), 'B') || setweight(to_tsvector('russian', NEW.working_experience), 'B');
+    NEW.fts = setweight(to_tsvector('russian', NEW."position_rus"), 'A')|| setweight(to_tsvector('english', NEW."position_eng"), 'B') || setweight(to_tsvector('russian', NEW.cv_description), 'C') || setweight(to_tsvector('russian', NEW.working_experience), 'D');
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

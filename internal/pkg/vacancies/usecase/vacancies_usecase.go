@@ -52,7 +52,7 @@ const (
 	defaultVacanciesNum    = 10
 )
 
-func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr string) ([]*dto.JSONVacancy, error) {
+func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
 	offset, num, err := vu.ValidateQueryParameters(offsetStr, numStr)
 	if errors.Is(ErrOffsetIsNotANumber, err) {
@@ -61,12 +61,11 @@ func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr string)
 	if errors.Is(ErrNumIsNotANumber, err) {
 		num = defaultVacanciesNum
 	}
-	var vacancies []*dto.JSONVacancy
-	if searchStr != "" {
-		vacancies, err = vu.vacanciesRepository.SearchByPositionDescription(offset, offset+num, searchStr)
-	} else {
-		vacancies, err = vu.vacanciesRepository.GetWithOffset(offset, offset+num)
+	if searchStr == "" && searchBy != "" {
+		searchBy = ""
 	}
+	var vacancies []*dto.JSONVacancy
+	vacancies, err = vu.vacanciesRepository.SearchAll(offset, offset+num, searchStr, group, searchBy)
 	if err != nil {
 		return nil, err
 	}
@@ -85,14 +84,16 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 	vacancies := make([]*dto.JSONGetEmployerVacancy, 0, len(vacanciesModels))
 	for _, vacancyModel := range vacanciesModels {
 		vacancies = append(vacancies, &dto.JSONGetEmployerVacancy{
-			ID:          vacancyModel.ID,
-			EmployerID:  vacancyModel.EmployerID,
-			Salary:      vacancyModel.Salary,
-			Position:    vacancyModel.Position,
-			Description: vacancyModel.Description,
-			WorkType:    vacancyModel.WorkType,
-			Avatar:      vacancyModel.Avatar,
-			CreatedAt:   vacancyModel.CreatedAt,
+			ID:                   vacancyModel.ID,
+			EmployerID:           vacancyModel.EmployerID,
+			Salary:               vacancyModel.Salary,
+			Position:             vacancyModel.Position,
+			Description:          vacancyModel.Description,
+			WorkType:             vacancyModel.WorkType,
+			Avatar:               vacancyModel.Avatar,
+			PositionCategoryName: vacancyModel.PositionCategoryName,
+			CreatedAt:            vacancyModel.CreatedAt,
+			UpdatedAt:            vacancyModel.UpdatedAt,
 		})
 	}
 	return vacancies, nil

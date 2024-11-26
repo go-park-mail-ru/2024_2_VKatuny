@@ -176,10 +176,17 @@ func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSO
 			return nil, err
 		}
 	}
-	row = s.db.QueryRow(`update applicant
+	if newApplicantData.Avatar == "" {
+		row = s.db.QueryRow(`update applicant
 		set first_name = $1, last_name = $2, city_id = $3, birth_date=$4,
 		contacts = $5, education = $6 where id=$7 returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at`,
-		newApplicantData.FirstName, newApplicantData.LastName, CityId, newApplicantData.BirthDate, newApplicantData.Contacts, newApplicantData.Education, ID)
+			newApplicantData.FirstName, newApplicantData.LastName, CityId, newApplicantData.BirthDate, newApplicantData.Contacts, newApplicantData.Education, ID)
+	} else {
+		row = s.db.QueryRow(`update applicant
+		set first_name = $1, last_name = $2, city_id = $3, birth_date=$4,
+		contacts = $5, education = $6, path_to_profile_avatar=$7 where id=$8 returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at`,
+			newApplicantData.FirstName, newApplicantData.LastName, CityId, newApplicantData.BirthDate, newApplicantData.Contacts, newApplicantData.Education, newApplicantData.Avatar, ID)
+	}
 	var applicantWithNull dto.ApplicantWithNull
 	err := row.Scan(
 		&applicantWithNull.ID,
