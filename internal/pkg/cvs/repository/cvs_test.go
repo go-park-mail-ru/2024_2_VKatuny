@@ -25,15 +25,16 @@ func TestPostgresGetCVsByApplicantID(t *testing.T) {
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select cv.id, applicant_id, position_rus, position_eng, job_search_status_name, cv_description, working_experience,
-						path_to_profile_avatar, cv.created_at, cv.updated_at  from cv left join job_search_status on job_search_status.id = cv.job_search_status_id 
-						where cv.applicant_id = (.+)`).
+							path_to_profile_avatar, position_category.category_name, cv.created_at, cv.updated_at  from cv
+							left join job_search_status on job_search_status.id = cv.job_search_status_id left join position_category on cv.position_category_id = position_category.id
+							where cv.applicant_id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"cv.id", "applicant_id", "position_rus", "position_eng", "cv_description",
-							"job_search_status_name", "working_experience", "path_to_profile_avatar", "cv.created_at", "cv.updated_at"}).
+							"job_search_status_name", "working_experience", "path_to_profile_avatar", "position_category.category_name", "cv.created_at", "cv.updated_at"}).
 							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Постоянная", "без опыта",
-								"cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+								"cv.svg", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
 				},
 			},
 			wantErr: false,
@@ -45,15 +46,16 @@ func TestPostgresGetCVsByApplicantID(t *testing.T) {
 				ID: 0,
 				query: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select cv.id, applicant_id, position_rus, position_eng, job_search_status_name, cv_description, working_experience,
-						path_to_profile_avatar, cv.created_at, cv.updated_at  from cv left join job_search_status on job_search_status.id = cv.job_search_status_id 
-						where cv.applicant_id = (.+)`).
+							path_to_profile_avatar, position_category.category_name, cv.created_at, cv.updated_at  from cv
+							left join job_search_status on job_search_status.id = cv.job_search_status_id left join position_category on cv.position_category_id = position_category.id
+							where cv.applicant_id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"cv.id", "applicant_id", "position_rus", "position_eng", "cv_description",
-							"job_search_status_name", "working_experience", "path_to_profile_avatar", "cv.created_at", "cv.updated_at"}).
+							"job_search_status_name", "working_experience", "path_to_profile_avatar", "position_category.category_name", "cv.created_at", "cv.updated_at"}).
 							AddRow(1, nil, nil, nil, nil, nil, nil,
-								nil, nil, nil))
+								nil, nil, nil, nil))
 				},
 			},
 			wantErr: true,
@@ -183,13 +185,15 @@ func TestPostgresGetByID(t *testing.T) {
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select cv.id, applicant_id, position_rus, position_eng, job_search_status.job_search_status_name, cv_description, working_experience,
-						path_to_profile_avatar, cv.created_at, cv.updated_at  from cv left join job_search_status on job_search_status.id = cv.job_search_status_id where cv.id = (.+)`).
+							path_to_profile_avatar, position_category.category_name, cv.created_at, cv.updated_at  from cv
+							left join job_search_status on job_search_status.id = cv.job_search_status_id left join position_category on cv.position_category_id = position_category.id where cv.id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
-						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng", "job_search_status.job_search_status_name",
-							"cv_description", "working_experience", "path_to_profile_avatar", "created_at", "updated_at"}).
-							AddRow(1, 1, "Скульптор", "Sculptor", "Ищу", "Я усердный и трудолюбивый", "Нет опыта", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+						WillReturnRows(sqlmock.NewRows([]string{"cv.id", "applicant_id", "position_rus", "position_eng", "cv_description",
+							"job_search_status_name", "working_experience", "path_to_profile_avatar", "position_category.category_name", "cv.created_at", "cv.updated_at"}).
+							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Постоянная", "без опыта",
+								"cv.svg", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
 				},
 			},
 			wantErr: false,
@@ -201,13 +205,15 @@ func TestPostgresGetByID(t *testing.T) {
 				ID: 0,
 				query: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select cv.id, applicant_id, position_rus, position_eng, job_search_status.job_search_status_name, cv_description, working_experience,
-						path_to_profile_avatar, cv.created_at, cv.updated_at  from cv left join job_search_status on job_search_status.id = cv.job_search_status_id where cv.id = (.+)`).
+							path_to_profile_avatar, position_category.category_name, cv.created_at, cv.updated_at  from cv
+							left join job_search_status on job_search_status.id = cv.job_search_status_id left join position_category on cv.position_category_id = position_category.id where cv.id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
-						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng", "job_search_status.job_search_status_name",
-							"cv_description", "working_experience", "path_to_profile_avatar", "created_at", "updated_at"}).
-							AddRow(1, nil, nil, nil, nil, nil, nil, nil, nil, nil))
+						WillReturnRows(sqlmock.NewRows([]string{"cv.id", "applicant_id", "position_rus", "position_eng", "cv_description",
+							"job_search_status_name", "working_experience", "path_to_profile_avatar", "position_category.category_name", "cv.created_at", "cv.updated_at"}).
+							AddRow(1, nil, nil, nil, nil, nil, nil,
+								nil, nil, nil, nil))
 				},
 			},
 			wantErr: true,
@@ -377,12 +383,13 @@ func TestPostgresDelete(t *testing.T) {
 	}
 }
 
-func TestPostgresGetWithOffset(t *testing.T) {
+func TestPostgresSearchAll(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		offset uint64
-		num    uint64
-		query  func(mock sqlmock.Sqlmock, args args)
+		offset                     uint64
+		num                        uint64
+		searchStr, group, searchBy string
+		query                      func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
@@ -393,20 +400,24 @@ func TestPostgresGetWithOffset(t *testing.T) {
 		{
 			name: "TestOk",
 			args: args{
-				offset: 0,
-				num:    1,
+				offset:    0,
+				num:       1,
+				searchStr: "Скульптор",
+				group:     "Творец",
+				searchBy:  "position",
 				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select cv.id, applicant_id, cv.position_rus, cv.position_eng, cv_description, job_search_status.job_search_status_name,
-						working_experience, path_to_profile_avatar, cv.created_at, cv.updated_at from cv
-						left join job_search_status on cv.job_search_status_id=job_search_status.id
-						ORDER BY created_at desc limit (.+) offset (.+)`).
+					mock.ExpectQuery(`select (.+)`).
 						WithArgs(
-							args.offset,
+							args.group,
+							args.searchStr,
+							args.searchStr,
 							args.num,
+							args.offset,
 						).
-						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
-							"cv_description", "job_search_status_name", "working_experience", "path_to_profile_avatar", "created_at", "updated_at"}).
-							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Ищу работу", "Нет опыта", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+						WillReturnRows(sqlmock.NewRows([]string{"cv.id", "applicant_id", "position_rus", "position_eng", "cv_description",
+							"job_search_status_name", "working_experience", "path_to_profile_avatar", "position_category.category_name", "cv.created_at", "cv.updated_at"}).
+							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Постоянная", "без опыта",
+								"cv.svg", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
 				},
 			},
 			wantErr: false,
@@ -427,73 +438,8 @@ func TestPostgresGetWithOffset(t *testing.T) {
 
 			s := NewCVStorage(db)
 
-			if _, err := s.GetWithOffset(tt.args.num, tt.args.offset); (err != nil) != tt.wantErr {
-				t.Errorf("Postgres error = %v, wantErr %v, err %s", err != nil, tt.wantErr, err.Error())
-			}
-
-			if err := mock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-		})
-	}
-}
-
-func TestPostgresSearchByPositionDescription(t *testing.T) {
-	t.Parallel()
-	type args struct {
-		offset uint64
-		num    uint64
-		search string
-		query  func(mock sqlmock.Sqlmock, args args)
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-		err     error
-	}{
-		{
-			name: "TestOk",
-			args: args{
-				offset: 0,
-				num:    1,
-				search: "Скульптор",
-				query: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select cv.id, applicant_id, cv.position_rus, cv.position_eng, cv_description, job_search_status.job_search_status_name,
-						working_experience, path_to_profile_avatar, cv.created_at, cv.updated_at from cv
-						left join job_search_status on cv.job_search_status_id=job_search_status.id
-						where (.+)`).
-						WithArgs(
-							args.search,
-							args.search,
-							args.num,
-							args.offset,
-						).
-						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
-							"cv_description", "job_search_status_name", "working_experience", "path_to_profile_avatar", "created_at", "updated_at"}).
-							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Ищу работу", "Нет опыта", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
-				},
-			},
-			wantErr: false,
-			err:     nil,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			db, mock, err := sqlmock.New()
-			if err != nil {
-				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-			}
-			defer db.Close()
-
-			tt.args.query(mock, tt.args)
-
-			s := NewCVStorage(db)
-
-			if _, err := s.SearchByPositionDescription(tt.args.offset, tt.args.num, tt.args.search); (err != nil) != tt.wantErr {
-				t.Errorf("Postgres error = %v, wantErr %v, err %s", err != nil, tt.wantErr, err.Error())
+			if _, err := s.SearchAll(tt.args.offset, tt.args.num, tt.args.searchStr, tt.args.group, tt.args.searchBy); (err != nil) != tt.wantErr {
+				t.Errorf("Postgres error = %v, wantErr %v, err !!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
 			if err := mock.ExpectationsWereMet(); err != nil {

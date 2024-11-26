@@ -2,25 +2,16 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
-	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
-// TODO: refactor valid code
-func CreateApplicantInputCheck(Name, LastName, Email, Password string) error {
-	if len(Name) > 50 || len(LastName) > 50 ||
-		strings.Index(Email, "@") < 0 || len(Password) > 50 {
-		return fmt.Errorf("applicant's fields aren't valid %s %s %s", Name, LastName, Email)
-	}
-	return nil
-}
-
-func (u *ApplicantUsecase) Create(form *dto.JSONApplicantRegistrationForm) (*dto.JSONUser, error) {
+func (u *ApplicantUsecase) Create(ctx context.Context, form *dto.JSONApplicantRegistrationForm) (*dto.JSONUser, error) {
 	fn := "ApplicantUsecase.Create"
-
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
 	u.logger.Debugf("%s: entering", fn)
 
 	_, err := u.applicantRepo.GetByEmail(form.Email)
@@ -51,8 +42,9 @@ func (u *ApplicantUsecase) Create(form *dto.JSONApplicantRegistrationForm) (*dto
 	}, nil
 }
 
-func (u *ApplicantUsecase) GetByID(ID uint64) (*dto.JSONApplicantOutput, error) {
+func (u *ApplicantUsecase) GetByID(ctx context.Context, ID uint64) (*dto.JSONApplicantOutput, error) {
 	fn := "ApplicantUsecase.GetByID"
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
 	u.logger.Debugf("%s: entering", fn)
 
 	applicantModel, err := u.applicantRepo.GetByID(ID)

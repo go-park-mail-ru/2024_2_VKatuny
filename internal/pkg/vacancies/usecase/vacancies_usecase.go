@@ -62,17 +62,10 @@ func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group,
 		num = defaultVacanciesNum
 	}
 	if searchStr == "" && searchBy != "" {
-		vu.logger.Errorf("function %s: unable to get vacancies: %s", fn, err)
-		return nil, fmt.Errorf(dto.MsgDataBaseError)
+		searchBy = ""
 	}
 	var vacancies []*dto.JSONVacancy
-	// if searchStr != "" && group == "" {
-	// 	vacancies, err = vu.vacanciesRepository.SearchByPositionDescription(offset, offset+num, searchStr)
-	// } else if searchStr == "" {
-	// 	vacancies, err = vu.vacanciesRepository.GetWithOffset(offset, offset+num)
-	// } else {
 	vacancies, err = vu.vacanciesRepository.SearchAll(offset, offset+num, searchStr, group, searchBy)
-	// }
 	if err != nil {
 		return nil, err
 	}

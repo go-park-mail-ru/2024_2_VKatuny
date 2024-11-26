@@ -8,32 +8,36 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 )
 
-// GetCVsHandler returns list of CVs
-// GetCVs godoc
-// @Summary     Gets list of CVs
-// @Description Accepts offset and number of CVs with id >= offset. Returns CVs
-// @Tags        CVs
-// @Produce     json
-// @Param       offset query int true "offset"
-// @Param       num    query int true "num"
-// @Success     200
-// @Failure     400
-// @Failure     405
-// @Failure     500
-// @Router      /CVs [get]
+
+// @Summary Search CVs
+// @Description Get CVs with optional parameters
+// @Tags CV
+// @Accept json
+// @Produce json
+// @Param offset query integer false "Offset"
+// @Param num query integer false "Number of objects to return"
+// @Param searchQuery query string false "Search query"
+// @Param group query string false "Group"
+// @Param searchBy query string false "Search by"
+// @Success 200 {object} dto.JSONResponse "CVs"
+// @Failure 405 {object} dto.JSONResponse
+// @Router /api/v1/cvs [get]
 func (h *CVsHandler) SearchCVs(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	fn := "CvsHandlers.GetCVs"
-	h.logger = utils.SetRequestIDInLoggerFromRequest(r, h.logger)
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
 
 	queryParams := r.URL.Query()
 	h.logger.Debugf("%s; Query params read: %v", fn, queryParams)
 
 	offsetStr := queryParams.Get("offset")
 	numStr := queryParams.Get("num")
-	searchStr := queryParams.Get("positionDescription")
-	CVs, err := h.cvsUsecase.SearchCVs(offsetStr, numStr, searchStr)
+	searchStr := queryParams.Get("searchQuery")
+	group := queryParams.Get("group")
+	searchBy := queryParams.Get("searchBy")
+	CVs, err := h.cvsUsecase.SearchCVs(offsetStr, numStr, searchStr, group, searchBy)
 
 	if err != nil {
 		h.logger.Errorf("function: %s; got err while reading CVs from db %s", fn, err)
