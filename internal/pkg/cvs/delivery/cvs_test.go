@@ -132,7 +132,7 @@ func TestCreateCVHandler(t *testing.T) {
 					EXPECT().
 					CreateCV(gomock.Any(), f.currentUser).
 					Return(f.cv, fmt.Errorf(dto.MsgDataBaseError))
-				
+
 				f.args.r.Header.Set("Content-Type", contentType)
 				f.args.w = httptest.NewRecorder()
 			},
@@ -235,6 +235,9 @@ func TestCreateCVHandler(t *testing.T) {
 			app := &internal.App{
 				Usecases: &internal.Usecases{
 					CVUsecase: d.cvsUsecase,
+				},
+				Microservices: &internal.Microservices{
+					Compress: nil,
 				},
 				Logger: d.logger,
 			}
@@ -393,6 +396,9 @@ func TestGetCVHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					CVUsecase: d.cvsUsecase,
 				},
+				Microservices: &internal.Microservices{
+					Compress: nil,
+				},
 			}
 
 			h := delivery.NewCVsHandler(app)
@@ -438,14 +444,14 @@ func TestUpdateCVHandler(t *testing.T) {
 			name: "CVsHandler.UpdateCVHandler success",
 			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
 				in.updatedCV = &dto.JSONCv{
-					ID:                  1,
-					ApplicantID:         1,
-					PositionRu:          "Мок Должность",
-					PositionEn:          "Mock Position",
-					Description:         "Mock Description",
-					JobSearchStatusName: "Больше не ищу",
+					ID:                   1,
+					ApplicantID:          1,
+					PositionRu:           "Мок Должность",
+					PositionEn:           "Mock Position",
+					Description:          "Mock Description",
+					JobSearchStatusName:  "Больше не ищу",
 					PositionCategoryName: "group",
-					WorkingExperience:   "1 год",
+					WorkingExperience:    "1 год",
 				}
 				in.currentUser = &dto.UserFromSession{
 					ID:       1,
@@ -467,6 +473,7 @@ func TestUpdateCVHandler(t *testing.T) {
 					"positionGroup":     "group",
 					"workingExperience": "1 год",
 					"avatar":            "",
+					"compressedAvatar":  "",
 					"createdAt":         "",
 					"updatedAt":         "",
 				}
@@ -524,13 +531,11 @@ func TestUpdateCVHandler(t *testing.T) {
 			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
 				in.slug = "1"
 
-
 				out.status = http.StatusUnauthorized
 				out.response = &dto.JSONResponse{
 					HTTPStatus: out.status,
 					Error:      dto.MsgUnauthorized,
 				}
-
 
 				args.r = httptest.NewRequest(
 					http.MethodPut,
@@ -613,6 +618,9 @@ func TestUpdateCVHandler(t *testing.T) {
 				Logger: logger,
 				Usecases: &internal.Usecases{
 					CVUsecase: usecase.cvsUsecase,
+				},
+				Microservices: &internal.Microservices{
+					Compress: nil,
 				},
 			}
 
@@ -776,6 +784,9 @@ func TestDeleteCVHandler(t *testing.T) {
 				Logger: logger,
 				Usecases: &internal.Usecases{
 					CVUsecase: usecase.cvsUsecase,
+				},
+				Microservices: &internal.Microservices{
+					Compress: nil,
 				},
 			}
 
