@@ -90,7 +90,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
@@ -181,7 +181,15 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 // @Router /api/v1/vacancy/{id} [put]
 func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnableToGetUserFromContext,
+		})
+		return
+	}
 	fn := "VacanciesHandlers.UpdateVacancy"
 	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 	h.logger.Debugf("%s; entering", fn)
@@ -232,15 +240,7 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 		updatedVacancy.Avatar = fileAddress
 	}
 
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
-	if !ok {
-		h.logger.Error(dto.MsgUnableToGetUserFromContext)
-		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
-			Error:      dto.MsgUnableToGetUserFromContext,
-		})
-		return
-	}
+	
 	wroteVacancy, err := h.vacanciesUsecase.UpdateVacancy(vacancyID, updatedVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -255,7 +255,6 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 		Body:       wroteVacancy,
 	})
 }
-
 
 // @Summary DeleteVacancy
 // @Description Delete vacancy by ID
@@ -280,8 +279,8 @@ func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request
 	vacancyID, err := strconv.ParseUint(slug, 10, 64)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+		middleware.UniversalMarshal(w, http.StatusNotFound, dto.JSONResponse{
+			HTTPStatus: http.StatusNotFound,
 			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 		})
 		return
@@ -292,7 +291,7 @@ func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
