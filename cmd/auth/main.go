@@ -24,7 +24,7 @@ func main() {
 	}
 	logger.Info("Successfully connected to postgres")
 	defer pgSQLConn.Close()
-
+	
 	redisConn, err := redis.Dial("tcp", conf.AuthMicroservice.Database.GetDSN())
 	if err != nil {
 		logger.Fatal(err.Error())

@@ -18,15 +18,16 @@ func NewFileLoadingStorage(dir string) *FileLoadingStorage {
 	}
 }
 
-func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) error {
+func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error) {
+	fmt.Println(s.dir + filename + header.Filename)
 	dst, err := os.Create(s.dir + filename + header.Filename)
 	if err != nil {
 		log.Println("error creating file", err)
-		return fmt.Errorf("error creating file")
+		return "", "", fmt.Errorf("error creating file")
 	}
 	defer dst.Close()
 	if _, err := io.Copy(dst, file); err != nil {
-		return fmt.Errorf("error copying file")
+		return "", "", fmt.Errorf("error copying file")
 	}
-	return nil
+	return s.dir, filename + header.Filename, nil
 }

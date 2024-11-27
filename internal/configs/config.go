@@ -12,9 +12,10 @@ import (
 
 // Config is a struct of .yaml config file
 type Config struct {
-	Server           *ServerConfig     `yaml:"server"`
-	DataBase         *DataBaseConfig   `yaml:"database"`
-	AuthMicroservice *AuthMicroservice `yaml:"auth_microservice"`
+	Server               *ServerConfig         `yaml:"server"`
+	DataBase             *DataBaseConfig       `yaml:"database"`
+	AuthMicroservice     *AuthMicroservice     `yaml:"auth_microservice"`
+	CompressMicroservice *CompressMicroservice `yaml:"compress_microservice"`
 }
 
 // ServerConfig is a struct of server config block in .yaml
@@ -40,6 +41,11 @@ type DataBaseConfig struct {
 type AuthMicroservice struct {
 	Server   *Microservice `yaml:"server"`
 	Database *Redis        `yaml:"database"`
+}
+
+type CompressMicroservice struct {
+	Server             *Microservice `yaml:"server"`
+	CompressedMediaDir string        `yaml:"CompressedMediaDir"`
 }
 
 type Microservice struct {
