@@ -23,6 +23,14 @@ services:
         condition: service_started
         restart: true
 
+  compress_microservice:
+    build:
+      context: ../
+      dockerfile: ./build/services/compress_microservice/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ../configs/:/build/configs
+
   main_service:
     build:
       context: ../
@@ -34,9 +42,6 @@ services:
       - ../configs/:/build/configs
     depends_on:
       db_postgresql:
-        condition: service_started
-        restart: true
-      auth_microservice:
         condition: service_started
         restart: true
 
