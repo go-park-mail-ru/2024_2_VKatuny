@@ -50,6 +50,7 @@ func (au *ApplicantUsecase) GetApplicantProfile(ctx context.Context, userID uint
 		Contacts:  applicantModel.Contacts,
 		Education: applicantModel.Education,
 		Avatar:    applicantModel.PathToProfileAvatar,
+		CompressedAvatar: applicantModel.CompressedAvatar,
 	}, nil
 }
 

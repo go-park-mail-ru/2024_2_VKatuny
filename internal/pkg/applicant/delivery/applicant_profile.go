@@ -134,7 +134,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -143,17 +143,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 			return
 		}
 		newProfileData.Avatar = fileAddress
-		var buff []byte
-		file.Read(buff)
-		h.logger.Debugf("Start compression")
-		_, err = h.CompressGRPC.CompressAndSaveFile(
-			r.Context(),
-			&compressmicroservice.CompressAndSaveFileInput{
-				FileName: fileAddress + header.Filename,
-				FileType: header.Header["Content-Type"][0],
-				File:     buff,
-			},
-		)
+		newProfileData.CompressedAvatar = compressedFileAddress
 	}
 	err = h.applicantUsecase.UpdateApplicantProfile(r.Context(), applicantID, newProfileData)
 	if err != nil {

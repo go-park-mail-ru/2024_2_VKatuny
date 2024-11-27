@@ -7,6 +7,7 @@ type Applicant struct {
 	CityName            string
 	BirthDate           string
 	PathToProfileAvatar string
+	CompressedAvatar    string
 	Contacts            string
 	Education           string
 	Email               string

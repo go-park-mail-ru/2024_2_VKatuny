@@ -45,6 +45,7 @@ func (eu *EmployerUsecase) GetEmployerProfile(ctx context.Context, employerID ui
 		CompanyWebsite:     employerModel.CompanyWebsite,
 		Contacts:           employerModel.Contacts,
 		Avatar:             employerModel.PathToProfileAvatar,
+		CompressedAvatar:   employerModel.CompressedAvatar,
 	}, nil
 }
 

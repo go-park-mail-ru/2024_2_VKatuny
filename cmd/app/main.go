@@ -91,6 +91,10 @@ func main() {
 		SessionEmployerRepository:  sessionEmployerRepository,
 		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.MediaDir),
 	}
+	microservices := &internal.Microservices{
+		Auth:     grpc_auth.NewAuthorizationClient(connAuthGRPC),
+		Compress: compressmicroservice.NewCompressServiceClient(connCompressGRPC),
+	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories),
 		PortfolioUsecase:   portfolioUsecase.NewPortfolioUsecase(logger, repositories),
@@ -98,12 +102,9 @@ func main() {
 		VacanciesUsecase:   vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
 		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
 		SessionUsecase:     session_usecase.NewSessionUsecase(logger, repositories),
-		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
+		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices),
 	}
-	microservices := &internal.Microservices{
-		Auth:     grpc_auth.NewAuthorizationClient(connAuthGRPC),
-		Compress: compressmicroservice.NewCompressServiceClient(connCompressGRPC),
-	}
+	
 	app := &internal.App{
 		Logger:        logger,
 		Repositories:  repositories,
