@@ -102,7 +102,7 @@ func TestCreateVacancyHandler(t *testing.T) {
 				//filePart.Write(data)
 				f.args.r = httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/vacancy/",
+					"/api/v1/vacancy",
 					&buf,
 				).WithContext(
 					context.WithValue(
@@ -150,7 +150,7 @@ func TestCreateVacancyHandler(t *testing.T) {
 				//filePart.Write([]byte("0x5fd3bc"))
 				f.args.r = httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/vacancy/",
+					"/api/v1/vacancy",
 					&buf,
 				)
 				f.args.r.Header.Set("Content-Type", "multipart/form-data"+"; boundary="+multipartWriter.Boundary())
@@ -173,7 +173,7 @@ func TestCreateVacancyHandler(t *testing.T) {
 
 				f.args.r = httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/vacancy/",
+					"/api/v1/vacancy",
 					bytes.NewReader(body),
 				)
 				f.args.w = httptest.NewRecorder()
@@ -221,7 +221,7 @@ func TestCreateVacancyHandler(t *testing.T) {
 				CreateOneMultipart(multipartWriter, "group", "Mock Position Category")
 				f.args.r = httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/vacancy/",
+					"/api/v1/vacancy",
 					&buf,
 				).WithContext(
 					context.WithValue(
@@ -242,9 +242,9 @@ func TestCreateVacancyHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
+
 			d := dependencies{
-				vacanciesUsecase:   vacancies_mock.NewMockIVacanciesUsecase(ctrl),
-				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
+				vacanciesUsecase: vacancies_mock.NewMockIVacanciesUsecase(ctrl),
 			}
 			if tt.prepare != nil {
 				tt.prepare(&d)
@@ -252,16 +252,21 @@ func TestCreateVacancyHandler(t *testing.T) {
 
 			app := &internal.App{
 				Usecases: &internal.Usecases{
-					VacanciesUsecase:   d.vacanciesUsecase,
-					FileLoadingUsecase: d.fileLoadingUsecase,
+					VacanciesUsecase: d.vacanciesUsecase,
 				},
-				Repositories: &internal.Repositories{},
-				Logger:       d.logger,
+				Microservices: &internal.Microservices{
+					Compress: nil,
+				},
+				Logger: d.logger,
 			}
-			testMux := mux.NewRouter()
+
 			h := delivery.NewVacanciesHandlers(app)
-			testMux.HandleFunc("/api/v1/vacancy/", h.CreateVacancy)
-			testMux.ServeHTTP(d.args.w, d.args.r)
+
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/vacancy", h.CreateVacancy).Methods(http.MethodPost)
+
+			r.ServeHTTP(d.args.w, d.args.r)
+
 			status := d.args.w.Result().StatusCode
 			require.EqualValuesf(t, tt.expectedStatusCode, status,
 				"got status %d, expected %d. Response body: %s",
@@ -413,8 +418,7 @@ func TestGetVacancyHandler(t *testing.T) {
 			expectedStatusCode: http.StatusInternalServerError,
 		},
 	}
-
-	for _, tt := range tests {
+    for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -435,7 +439,9 @@ func TestGetVacancyHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					VacanciesUsecase: d.vacanciesUsecase,
 				},
-				Repositories: &internal.Repositories{},
+				Microservices: &internal.Microservices{
+					Compress: nil,
+				},
 			}
 
 			h := delivery.NewVacanciesHandlers(app)
@@ -454,6 +460,7 @@ func TestGetVacancyHandler(t *testing.T) {
 		})
 	}
 }
+
 
 func TestUpdateVacancyHandler(t *testing.T) {
 	t.Parallel()
@@ -509,6 +516,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 					"description":   "Mock Description",
 					"workType":      "Mock Work Type",
 					"positionGroup": "Mock Position Category",
+                    "compressedAvatar": "",
 					"updatedAt":     "",
 					"createdAt":     "",
 					"avatar":        "",
@@ -722,6 +730,9 @@ func TestUpdateVacancyHandler(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
+                Microservices: &internal.Microservices{
+					Compress: nil,
+				},
 			}
 
 			h := delivery.NewVacanciesHandlers(app)
@@ -924,6 +935,9 @@ func TestDeleteVacancyHandler(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
+                Microservices: &internal.Microservices{
+					Compress: nil,
+				},
 			}
 
 			testMux := mux.NewRouter()
