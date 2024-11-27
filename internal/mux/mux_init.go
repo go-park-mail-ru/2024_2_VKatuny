@@ -14,10 +14,13 @@ import (
 	vacancies_delivery "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func Init(app *internal.App) *mux.Router {
 	router := mux.NewRouter()
+
+	router.HandleFunc("/metrics", promhttp.Handler().ServeHTTP).Host("main_service").Host("127.0.0.1")
 
 	sessionHandlers := session_delivery.NewSessionHandlers(app)
 	router.HandleFunc("/api/v1/login", sessionHandlers.Login).

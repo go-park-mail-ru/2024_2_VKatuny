@@ -1,9 +1,18 @@
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data: {}
+  grafana-storage: {}
+
+
 services:
   auth_microservice:
     build:
       context: ../
       dockerfile: ./build/services/auth/Dockerfile
-    restart: always
+    restart: unless-stopped
     volumes:
       - ../configs/:/build/configs
     depends_on:
@@ -20,7 +29,7 @@ services:
       dockerfile: ./build/services/app/Dockerfile
     ports:
       - "8082:8001"
-    restart: always
+    restart: unless-stopped
     volumes:
       - ../configs/:/build/configs
     depends_on:
@@ -50,8 +59,7 @@ services:
         echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
         redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
       '
-    restart: always
-    
+    restart: unless-stopped
 
   db_postgresql:
     build:
@@ -59,7 +67,7 @@ services:
       dockerfile: ./build/db/Dockerfile
     ports:
       - "127.0.0.1:8083:5432"
-    restart: always
+    restart: unless-stopped
     shm_size: 256mb
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -68,3 +76,38 @@ services:
       POSTGRES_SCHEMA: ${POSTGRES_SCHEMA}
     volumes:
       - /var/lib/postgres/container_data:/var/lib/postgresql
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    command:
+      - "--path.rootfs=/host"
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro"
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - "../configs/:/etc/prometheus"
+      - "prometheus_data:/prometheus"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    ports:
+      - '127.0.0.1:3000:3000'
+    networks:
+      - monitoring

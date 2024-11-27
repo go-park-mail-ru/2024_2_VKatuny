@@ -104,7 +104,7 @@ func main() {
 		SessionUsecase:     session_usecase.NewSessionUsecase(logger, repositories),
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices, conf),
 	}
-	
+
 	app := &internal.App{
 		Logger:        logger,
 		Repositories:  repositories,
@@ -120,6 +120,7 @@ func main() {
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
+	handlers = middleware.PrometheusMiddleware(handlers)
 	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
 	err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
 	if err != nil {
