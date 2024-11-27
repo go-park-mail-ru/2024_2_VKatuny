@@ -506,7 +506,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 				}
 				in.slug = "1"
 
-				multipartForm, contentType := createMultipartFormJSONVacancy(in.updatedVacancy)
+				multipartForm, contentType := createMultipartFormJSONVacancy(in.updatedVacancy, "1111")
 
 				slugInt, _ := strconv.Atoi(in.slug)
 
@@ -534,6 +534,51 @@ func TestUpdateVacancyHandler(t *testing.T) {
 					EXPECT().
 					UpdateVacancy(uint64(slugInt), in.updatedVacancy, in.currentUser).
 					Return(in.updatedVacancy, nil)
+
+				args.r = httptest.NewRequest(
+					http.MethodPut,
+					fmt.Sprintf("/api/v1/vacancy/%s", in.slug),
+					multipartForm,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.currentUser,
+					),
+				)
+				args.r.Header.Set("Content-Type", contentType)
+
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancysHandler.UpdateVacancyHandler success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.updatedVacancy = &dto.JSONVacancy{
+					EmployerID:           0,
+					Salary:               1111,
+					Position:             "Mock Position",
+					Location:             "Mock Location",
+					Description:          "Mock Description",
+					WorkType:             "Mock Work Type",
+					PositionCategoryName: "Mock Position Category",
+					//Avatar:               "Mock Avatar",
+				}
+				in.currentUser = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeEmployer,
+				}
+				in.slug = "1"
+
+				multipartForm, contentType := createMultipartFormJSONVacancy(in.updatedVacancy, "1111.111")
+
+				//slugInt, _ := strconv.Atoi(in.slug)
+
+				out.response = &dto.JSONResponse{
+					HTTPStatus: http.StatusBadRequest,
+					Error: dto.MsgInvalidJSON,
+				}
+				out.status = http.StatusBadRequest
 
 				args.r = httptest.NewRequest(
 					http.MethodPut,
@@ -589,7 +634,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 				}
 				in.slug = "1451566565115655515615645645656156156156156156156156156"
 
-				multipartForm, contentType := createMultipartFormJSONVacancy(in.updatedVacancy)
+				multipartForm, contentType := createMultipartFormJSONVacancy(in.updatedVacancy, "1111")
 
 				// slugInt, _ := strconv.Atoi(in.slug)
 
@@ -598,6 +643,56 @@ func TestUpdateVacancyHandler(t *testing.T) {
 					HTTPStatus: out.status,
 					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
 				}
+
+				args.r = httptest.NewRequest(
+					http.MethodPut,
+					fmt.Sprintf("/api/v1/vacancy/%s", in.slug),
+					multipartForm,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.currentUser,
+					),
+				)
+				args.r.Header.Set("Content-Type", contentType)
+
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancysHandler.UpdateVacancyHandler success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.updatedVacancy = &dto.JSONVacancy{
+					EmployerID:           0,
+					Salary:               1111,
+					Position:             "Mock Position",
+					Location:             "Mock Location",
+					Description:          "Mock Description",
+					WorkType:             "Mock Work Type",
+					PositionCategoryName: "Mock Position Category",
+					//Avatar:               "Mock Avatar",
+				}
+				in.currentUser = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeEmployer,
+				}
+				in.slug = "1"
+
+				multipartForm, contentType := createMultipartFormJSONVacancy(in.updatedVacancy, "1111")
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				out.response = &dto.JSONResponse{
+					HTTPStatus: http.StatusInternalServerError,
+					Error:      dto.MsgDataBaseError,
+				}
+				out.status = http.StatusInternalServerError
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					UpdateVacancy(uint64(slugInt), in.updatedVacancy, in.currentUser).
+					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
 					http.MethodPut,
@@ -668,11 +763,11 @@ func TestUpdateVacancyHandler(t *testing.T) {
 		})
 	}
 }
-func createMultipartFormJSONVacancy(jsonForm *dto.JSONVacancy) (*bytes.Buffer, string) {
+func createMultipartFormJSONVacancy(jsonForm *dto.JSONVacancy, salary string) (*bytes.Buffer, string) {
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 	defer writer.Close()
-	_ = writer.WriteField("salary", strconv.Itoa(int(jsonForm.Salary)))
+	_ = writer.WriteField("salary", salary)
 	_ = writer.WriteField("position", jsonForm.Position)
 	_ = writer.WriteField("location", jsonForm.Location)
 	_ = writer.WriteField("description", jsonForm.Description)
