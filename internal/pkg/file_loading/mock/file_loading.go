@@ -41,11 +41,13 @@ func (m *MockIFileLoadingRepository) EXPECT() *MockIFileLoadingRepositoryMockRec
 }
 
 // WriteFileOnDisk mocks base method.
-func (m *MockIFileLoadingRepository) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) error {
+func (m *MockIFileLoadingRepository) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteFileOnDisk", filename, header, file)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // WriteFileOnDisk indicates an expected call of WriteFileOnDisk.
@@ -79,12 +81,13 @@ func (m *MockIFileLoadingUsecase) EXPECT() *MockIFileLoadingUsecaseMockRecorder 
 }
 
 // WriteImage mocks base method.
-func (m *MockIFileLoadingUsecase) WriteImage(file multipart.File, header *multipart.FileHeader) (string, error) {
+func (m *MockIFileLoadingUsecase) WriteImage(file multipart.File, header *multipart.FileHeader) (string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteImage", file, header)
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // WriteImage indicates an expected call of WriteImage.
