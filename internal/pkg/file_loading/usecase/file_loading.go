@@ -19,13 +19,15 @@ type FileLoadingUsecase struct {
 	logger                *logrus.Logger
 	FileLoadingRepository fileloading.IFileLoadingRepository
 	CompressGRPC          compressmicroservice.CompressServiceClient
+	conf *configs.Config
 }
 
-func NewFileLoadingUsecase(logger *logrus.Logger, repositories *internal.Repositories, microservices *internal.Microservices) *FileLoadingUsecase {
+func NewFileLoadingUsecase(logger *logrus.Logger, repositories *internal.Repositories, microservices *internal.Microservices, conf *configs.Config) *FileLoadingUsecase {
 	return &FileLoadingUsecase{
 		logger:                logger,
 		FileLoadingRepository: repositories.FileLoadingRepository,
 		CompressGRPC:          microservices.Compress,
+		conf:                  conf,
 	}
 }
 
@@ -58,6 +60,5 @@ func (vu *FileLoadingUsecase) WriteImage(file multipart.File, header *multipart.
 	if err != nil {
 		return "", "", err
 	}
-	conf := configs.ReadConfig("./configs/conf.yml")
-	return dir + fileAddress, conf.CompressMicroservice.CompressedMediaDir + fileAddress, nil
+	return dir + fileAddress, vu.conf.CompressMicroservice.CompressedMediaDir + fileAddress, nil
 }

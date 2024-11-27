@@ -22,4 +22,5 @@ var (
 
 var (
 	NotAllowedType = fmt.Errorf("not allowed type")
+	WrongData = fmt.Errorf("wrong data in input")
 )

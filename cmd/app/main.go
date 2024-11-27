@@ -102,7 +102,7 @@ func main() {
 		VacanciesUsecase:   vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
 		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
 		SessionUsecase:     session_usecase.NewSessionUsecase(logger, repositories),
-		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices),
+		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices, conf),
 	}
 	
 	app := &internal.App{

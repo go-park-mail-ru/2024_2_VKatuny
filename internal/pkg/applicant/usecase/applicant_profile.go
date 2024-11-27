@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
@@ -42,14 +41,14 @@ func (au *ApplicantUsecase) GetApplicantProfile(ctx context.Context, userID uint
 	}
 	au.logger.Debugf("function: %s; successfully got applicant profile: %v", fn, applicantModel)
 	return &dto.JSONGetApplicantProfile{
-		ID:        applicantModel.ID,
-		FirstName: applicantModel.FirstName,
-		LastName:  applicantModel.LastName,
-		City:      applicantModel.CityName,
-		BirthDate: applicantModel.BirthDate,
-		Contacts:  applicantModel.Contacts,
-		Education: applicantModel.Education,
-		Avatar:    applicantModel.PathToProfileAvatar,
+		ID:               applicantModel.ID,
+		FirstName:        applicantModel.FirstName,
+		LastName:         applicantModel.LastName,
+		City:             applicantModel.CityName,
+		BirthDate:        applicantModel.BirthDate,
+		Contacts:         applicantModel.Contacts,
+		Education:        applicantModel.Education,
+		Avatar:           applicantModel.PathToProfileAvatar,
 		CompressedAvatar: applicantModel.CompressedAvatar,
 	}, nil
 }
@@ -69,7 +68,7 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(ctx context.Context, applican
 		au.logger.Errorf("function: %s; got err: %s", fn, err)
 		return err
 	}
-	fmt.Println("compress")
+	au.logger.Debug("compress")
 	if err != nil {
 		au.logger.Errorf("fail compress microservice")
 		return err
