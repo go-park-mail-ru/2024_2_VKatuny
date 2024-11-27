@@ -967,3 +967,776 @@ func TestDeleteVacancyHandler(t *testing.T) {
 		})
 	}
 }
+
+
+func TestGetVacancySubscription(t *testing.T) {
+	t.Parallel()
+
+	type in struct {
+		slug string
+		user *dto.UserFromSession
+	}
+	type outExpected struct {
+		response *dto.JSONResponse
+		status   int
+	}
+	type usecaseMock struct {
+		vacanciesUsecase *vacancies_mock.MockIVacanciesUsecase
+	}
+	type args struct {
+		r *http.Request
+		w *httptest.ResponseRecorder
+	}
+	tests := []struct {
+		name    string
+		prepare func(in *in, out *outExpected, usecase *usecaseMock, args *args)
+	}{
+		{
+			name: "VacancyHandler.GetVacancySubscription success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
+				}
+
+				out.status = http.StatusOK
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					GetSubscriptionInfo(uint64(1), uint64(slugInt)).
+					Return(nil, nil)
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription bad slug",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "142526575673463457814521467851672457"
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+				}
+
+				args.r = httptest.NewRequest(
+					"",
+					fmt.Sprintf("/api/v1/vacancy/142526575673463457814521467851672457/subscription"),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+
+				out.status = http.StatusUnauthorized
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgUnableToGetUserFromContext,
+				}
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.DeleteVacancyHandler no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeEmployer,
+				}
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgDataBaseError,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					GetSubscriptionInfo(uint64(slugInt), uint64(slugInt)).
+					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			in, out, usecase, args := new(in), new(outExpected), new(usecaseMock), new(args)
+
+			usecase.vacanciesUsecase = vacancies_mock.NewMockIVacanciesUsecase(ctrl)
+
+			tt.prepare(in, out, usecase, args)
+
+			logger := logrus.New()
+			logger.Out = io.Discard
+
+			app := &internal.App{
+				Logger: logger,
+				Usecases: &internal.Usecases{
+					VacanciesUsecase: usecase.vacanciesUsecase,
+				},
+				Repositories: &internal.Repositories{},
+                Microservices: &internal.Microservices{
+					Compress: nil,
+				},
+			}
+
+			testMux := mux.NewRouter()
+			h := delivery.NewVacanciesHandlers(app)
+			testMux.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", h.GetVacancySubscription)
+
+			require.NotNil(t, args.r, "request is nil")
+			require.NotNil(t, args.w, "response is nil")
+
+			testMux.ServeHTTP(args.w, args.r)
+
+			require.EqualValuesf(t, out.status, args.w.Result().StatusCode,
+				"got status %d, expected %d",
+				args.w.Result().StatusCode,
+				out.status,
+			)
+
+			jsonResonse := new(dto.JSONResponse)
+			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			require.NoError(t, err)
+
+			require.Equalf(t, out.response, jsonResonse,
+				"got response %v, expected %v",
+				jsonResonse,
+				out.response,
+			)
+		})
+	}
+}
+
+func TestSubscribeVacancy(t *testing.T) {
+	t.Parallel()
+
+	type in struct {
+		slug string
+		user *dto.UserFromSession
+	}
+	type outExpected struct {
+		response *dto.JSONResponse
+		status   int
+	}
+	type usecaseMock struct {
+		vacanciesUsecase *vacancies_mock.MockIVacanciesUsecase
+	}
+	type args struct {
+		r *http.Request
+		w *httptest.ResponseRecorder
+	}
+	tests := []struct {
+		name    string
+		prepare func(in *in, out *outExpected, usecase *usecaseMock, args *args)
+	}{
+		{
+			name: "VacancyHandler.GetVacancySubscription success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
+				}
+
+				out.status = http.StatusOK
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					SubscribeOnVacancy(uint64(slugInt), in.user).
+					Return(nil)
+
+				args.r = httptest.NewRequest(
+					http.MethodPost,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription bad slug",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "142526575673463457814521467851672457"
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+				}
+
+				args.r = httptest.NewRequest(
+					"",
+					fmt.Sprintf("/api/v1/vacancy/142526575673463457814521467851672457/subscription"),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+
+				out.status = http.StatusUnauthorized
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgUnableToGetUserFromContext,
+				}
+
+				args.r = httptest.NewRequest(
+					http.MethodPost,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.DeleteVacancyHandler no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeEmployer,
+				}
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgDataBaseError,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					SubscribeOnVacancy(uint64(slugInt), in.user).
+					Return(fmt.Errorf(dto.MsgDataBaseError))
+
+				args.r = httptest.NewRequest(
+					http.MethodPost,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			in, out, usecase, args := new(in), new(outExpected), new(usecaseMock), new(args)
+
+			usecase.vacanciesUsecase = vacancies_mock.NewMockIVacanciesUsecase(ctrl)
+
+			tt.prepare(in, out, usecase, args)
+
+			logger := logrus.New()
+			logger.Out = io.Discard
+
+			app := &internal.App{
+				Logger: logger,
+				Usecases: &internal.Usecases{
+					VacanciesUsecase: usecase.vacanciesUsecase,
+				},
+				Repositories: &internal.Repositories{},
+                Microservices: &internal.Microservices{
+					Compress: nil,
+				},
+			}
+
+			testMux := mux.NewRouter()
+			h := delivery.NewVacanciesHandlers(app)
+			testMux.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", h.SubscribeVacancy)
+
+			require.NotNil(t, args.r, "request is nil")
+			require.NotNil(t, args.w, "response is nil")
+
+			testMux.ServeHTTP(args.w, args.r)
+
+			require.EqualValuesf(t, out.status, args.w.Result().StatusCode,
+				"got status %d, expected %d",
+				args.w.Result().StatusCode,
+				out.status,
+			)
+
+			jsonResonse := new(dto.JSONResponse)
+			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			require.NoError(t, err)
+
+			require.Equalf(t, out.response, jsonResonse,
+				"got response %v, expected %v",
+				jsonResonse,
+				out.response,
+			)
+		})
+	}
+}
+
+func TestUnsubscribeVacancy(t *testing.T) {
+	t.Parallel()
+
+	type in struct {
+		slug string
+		user *dto.UserFromSession
+	}
+	type outExpected struct {
+		response *dto.JSONResponse
+		status   int
+	}
+	type usecaseMock struct {
+		vacanciesUsecase *vacancies_mock.MockIVacanciesUsecase
+	}
+	type args struct {
+		r *http.Request
+		w *httptest.ResponseRecorder
+	}
+	tests := []struct {
+		name    string
+		prepare func(in *in, out *outExpected, usecase *usecaseMock, args *args)
+	}{
+		{
+			name: "VacancyHandler.GetVacancySubscription success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
+				}
+
+				out.status = http.StatusOK
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					UnsubscribeFromVacancy(uint64(slugInt), in.user).
+					Return(nil)
+
+				args.r = httptest.NewRequest(
+					http.MethodDelete,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription bad slug",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "142526575673463457814521467851672457"
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+				}
+
+				args.r = httptest.NewRequest(
+					"",
+					fmt.Sprintf("/api/v1/vacancy/142526575673463457814521467851672457/subscription"),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+
+				out.status = http.StatusUnauthorized
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgUnableToGetUserFromContext,
+				}
+
+				args.r = httptest.NewRequest(
+					http.MethodDelete,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.DeleteVacancyHandler no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeEmployer,
+				}
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgDataBaseError,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					UnsubscribeFromVacancy(uint64(slugInt), in.user).
+					Return(fmt.Errorf(dto.MsgDataBaseError))
+
+				args.r = httptest.NewRequest(
+					http.MethodDelete,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscription", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			in, out, usecase, args := new(in), new(outExpected), new(usecaseMock), new(args)
+
+			usecase.vacanciesUsecase = vacancies_mock.NewMockIVacanciesUsecase(ctrl)
+
+			tt.prepare(in, out, usecase, args)
+
+			logger := logrus.New()
+			logger.Out = io.Discard
+
+			app := &internal.App{
+				Logger: logger,
+				Usecases: &internal.Usecases{
+					VacanciesUsecase: usecase.vacanciesUsecase,
+				},
+				Repositories: &internal.Repositories{},
+                Microservices: &internal.Microservices{
+					Compress: nil,
+				},
+			}
+
+			testMux := mux.NewRouter()
+			h := delivery.NewVacanciesHandlers(app)
+			testMux.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", h.UnsubscribeVacancy)
+
+			require.NotNil(t, args.r, "request is nil")
+			require.NotNil(t, args.w, "response is nil")
+
+			testMux.ServeHTTP(args.w, args.r)
+
+			require.EqualValuesf(t, out.status, args.w.Result().StatusCode,
+				"got status %d, expected %d",
+				args.w.Result().StatusCode,
+				out.status,
+			)
+
+			jsonResonse := new(dto.JSONResponse)
+			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			require.NoError(t, err)
+
+			require.Equalf(t, out.response, jsonResonse,
+				"got response %v, expected %v",
+				jsonResonse,
+				out.response,
+			)
+		})
+	}
+}
+
+func TestGetVacancySubscribers(t *testing.T) {
+	t.Parallel()
+
+	type in struct {
+		slug string
+		user *dto.UserFromSession
+	}
+	type outExpected struct {
+		response *dto.JSONResponse
+		status   int
+	}
+	type usecaseMock struct {
+		vacanciesUsecase *vacancies_mock.MockIVacanciesUsecase
+	}
+	type args struct {
+		r *http.Request
+		w *httptest.ResponseRecorder
+	}
+	tests := []struct {
+		name    string
+		prepare func(in *in, out *outExpected, usecase *usecaseMock, args *args)
+	}{
+		{
+			name: "VacancyHandler.GetVacancySubscription success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
+				}
+
+				out.status = http.StatusOK
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					GetVacancySubscribers(uint64(slugInt), in.user).
+					Return(nil, nil)
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscribers", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription bad slug",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "142526575673463457814521467851672457"
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+				}
+
+				args.r = httptest.NewRequest(
+					"",
+					fmt.Sprintf("/api/v1/vacancy/142526575673463457814521467851672457/subscribers"),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+
+				out.status = http.StatusUnauthorized
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgUnableToGetUserFromContext,
+				}
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscribers", in.slug),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.DeleteVacancyHandler no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeEmployer,
+				}
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgDataBaseError,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					GetVacancySubscribers(uint64(slugInt), in.user).
+					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscribers", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			in, out, usecase, args := new(in), new(outExpected), new(usecaseMock), new(args)
+
+			usecase.vacanciesUsecase = vacancies_mock.NewMockIVacanciesUsecase(ctrl)
+
+			tt.prepare(in, out, usecase, args)
+
+			logger := logrus.New()
+			logger.Out = io.Discard
+
+			app := &internal.App{
+				Logger: logger,
+				Usecases: &internal.Usecases{
+					VacanciesUsecase: usecase.vacanciesUsecase,
+				},
+				Repositories: &internal.Repositories{},
+                Microservices: &internal.Microservices{
+					Compress: nil,
+				},
+			}
+
+			testMux := mux.NewRouter()
+			h := delivery.NewVacanciesHandlers(app)
+			testMux.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscribers", h.GetVacancySubscribers)
+
+			require.NotNil(t, args.r, "request is nil")
+			require.NotNil(t, args.w, "response is nil")
+
+			testMux.ServeHTTP(args.w, args.r)
+
+			require.EqualValuesf(t, out.status, args.w.Result().StatusCode,
+				"got status %d, expected %d",
+				args.w.Result().StatusCode,
+				out.status,
+			)
+
+			jsonResonse := new(dto.JSONResponse)
+			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			require.NoError(t, err)
+
+			require.Equalf(t, out.response, jsonResonse,
+				"got response %v, expected %v",
+				jsonResonse,
+				out.response,
+			)
+		})
+	}
+}

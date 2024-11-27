@@ -346,7 +346,7 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
@@ -403,7 +403,7 @@ func (h *VacanciesHandlers) UnsubscribeVacancy(w http.ResponseWriter, r *http.Re
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
@@ -460,7 +460,7 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
@@ -517,7 +517,7 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 	if !ok {
 		h.logger.Error(dto.MsgUnableToGetUserFromContext)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
