@@ -12,20 +12,23 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+
+	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 )
 
 type ApplicantHandlers struct {
 	logger             *logrus.Entry
 	backendURI         string
 	applicantUsecase   applicant.IApplicantUsecase
-	sessionUsecase     session.ISessionUsecase
 	portfolioUsecase   portfolio.IPortfolioUsecase
 	cvUsecase          cvs.ICVsUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
+	authGRPC           auth_grpc.AuthorizationClient
+	CompressGRPC       compressmicroservice.CompressServiceClient
 }
 
 func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
@@ -33,10 +36,11 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 		logger:             logrus.NewEntry(app.Logger),
 		backendURI:         app.BackendAddress,
 		applicantUsecase:   app.Usecases.ApplicantUsecase,
-		sessionUsecase:     app.Usecases.SessionUsecase,
 		portfolioUsecase:   app.Usecases.PortfolioUsecase,
 		cvUsecase:          app.Usecases.CVUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
+		authGRPC:           app.Microservices.Auth,
+		CompressGRPC:       app.Microservices.Compress,
 	}
 }
 
@@ -130,7 +134,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -139,8 +143,8 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 			return
 		}
 		newProfileData.Avatar = fileAddress
+		newProfileData.CompressedAvatar = compressedFileAddress
 	}
-
 	err = h.applicantUsecase.UpdateApplicantProfile(r.Context(), applicantID, newProfileData)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)

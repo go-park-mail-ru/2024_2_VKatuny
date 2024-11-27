@@ -8,21 +8,18 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/sirupsen/logrus"
 )
 
 type CVsUsecase struct {
 	logger      *logrus.Logger
 	cvsRepo     cvs.ICVsRepository
-	sessionRepo session.ISessionRepository
 }
 
 func NewCVsUsecase(logger *logrus.Logger, repositories *internal.Repositories) *CVsUsecase {
 	return &CVsUsecase{
 		logger:      logger,
 		cvsRepo:     repositories.CVRepository,
-		sessionRepo: repositories.SessionApplicantRepository,
 	}
 }
 
@@ -82,6 +79,8 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy st
 			Avatar:               CVModel.Avatar,
 			CreatedAt:            CVModel.CreatedAt,
 			UpdatedAt:            CVModel.UpdatedAt,
+			Description:          CVModel.Description,
+			CompressedAvatar:     CVModel.CompressedAvatar,
 		})
 	}
 	if err != nil {
@@ -114,6 +113,8 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 			Avatar:               CVModel.Avatar,
 			CreatedAt:            CVModel.CreatedAt,
 			UpdatedAt:            CVModel.UpdatedAt,
+			Description:          CVModel.Description,
+			CompressedAvatar:     CVModel.CompressedAvatar,
 		})
 	}
 
@@ -125,7 +126,7 @@ func (cu *CVsUsecase) CreateCV(cv *dto.JSONCv, currentUser *dto.UserFromSession)
 	cv, err := cu.cvsRepo.Create(cv)
 	if err != nil {
 		cu.logger.Errorf("while adding to db got err: %s", err)
-		return nil, err
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 	return cv, nil
 }

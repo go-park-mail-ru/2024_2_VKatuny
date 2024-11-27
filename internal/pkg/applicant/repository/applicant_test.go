@@ -25,15 +25,15 @@ func TestPostgresGetByID(t *testing.T) {
 				ID: 1,
 				query: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select applicant.id, first_name, last_name, city.city_name, birth_date, path_to_profile_avatar, contacts, 
-						education, email, password_hash, applicant.created_at, applicant.updated_at 
+						education, email, password_hash, applicant.created_at, applicant.updated_at, applicant.compressed_image
 						from applicant left join city on applicant.city_id = city.id where applicant.id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"applicant_id", "first_name", "last_name", "city.city_name",
-							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at"}).
+							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at", "compressed_image"}).
 							AddRow(1, "Иван", "Иванов", "Москва", "12-12-2001", "/src",
-								"tg - ", " ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+								"tg - ", " ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "image"))
 				},
 			},
 			wantErr: false,
@@ -45,15 +45,15 @@ func TestPostgresGetByID(t *testing.T) {
 				ID: 0,
 				query: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select applicant.id, first_name, last_name, city.city_name, birth_date, path_to_profile_avatar, contacts, 
-						education, email, password_hash, applicant.created_at, applicant.updated_at 
+						education, email, password_hash, applicant.created_at, applicant.updated_at, applicant.compressed_image
 						from applicant left join city on applicant.city_id = city.id where applicant.id = (.+)`).
 						WithArgs(
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"applicant_id", "first_name", "last_name", "city.city_name",
-							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at"}).
+							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at", "compressed_image"}).
 							AddRow(1, nil, nil, nil, nil, nil,
-								nil, nil, nil, nil, nil, nil))
+								nil, nil, nil, nil, nil, nil, nil))
 				},
 			},
 			wantErr: true,
@@ -103,15 +103,15 @@ func TestPostgresGetByEmail(t *testing.T) {
 				Email: "a@mail.ru",
 				query: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select applicant.id, first_name, last_name, city.city_name, birth_date, path_to_profile_avatar, contacts, 
-						education, email, password_hash, applicant.created_at, applicant.updated_at 
+						education, email, password_hash, applicant.created_at, applicant.updated_at, applicant.compressed_image
 						from applicant left join city on applicant.city_id = city.id where applicant.email=(.+)`).
 						WithArgs(
 							args.Email,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"applicant_id", "first_name", "last_name", "city.city_name",
-							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at"}).
+							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at", "compressed_image"}).
 							AddRow(1, "Иван", "Иванов", "Москва", "12-12-2001", "/src",
-								"tg - ", " ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+								"tg - ", " ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "image"))
 				},
 			},
 			wantErr: false,
@@ -177,9 +177,9 @@ func TestPostgresCreate(t *testing.T) {
 							args.applicant.Password,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"applicant_id", "first_name", "last_name",
-							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at"}).
+							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at", "compressed_image"}).
 							AddRow(1, "Иван", "Иванов", "12-12-2001", "/src",
-								"tg - ", " ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+								"tg - ", " ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "image"))
 				},
 			},
 			wantErr: false,
@@ -259,9 +259,9 @@ func TestPostgresUpdate(t *testing.T) {
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"applicant_id", "first_name", "last_name",
-							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at"}).
+							"birth_date", "path_to_profile_avatar", "contacts", "education", "email", "password_hash", "created_at", "updated_at", "compressed_image"}).
 							AddRow(1, "Иван", "Иванов", "12-12-2001", "/src",
-								"tg - ", " ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+								"tg - ", " ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "image"))
 				},
 			},
 			wantErr: false,

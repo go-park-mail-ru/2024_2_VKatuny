@@ -9,10 +9,10 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 )
@@ -20,18 +20,27 @@ import (
 type CVsHandler struct {
 	logger               *logrus.Entry
 	cvsUsecase           cvs.ICVsUsecase
-	sessionApplicantRepo session.ISessionRepository
 	fileLoadingUsecase   fileloading.IFileLoadingUsecase
+	CompressGRPC       compressmicroservice.CompressServiceClient
 }
 
 func NewCVsHandler(layers *internal.App) *CVsHandler {
+	fn := "CVsHandler.NewCVsHandler"
+	if layers == nil {
+		logrus.Fatalf("%s: layers is nil", fn)
+		return nil
+	}
 	logger := layers.Logger
+	if layers.Usecases == nil || layers.Usecases.CVUsecase == nil {
+		logrus.Fatalf("%s: layers is nil", fn)
+		return nil
+	}
 	logger.Debug("CVsHandler created")
 	return &CVsHandler{
 		logger:               &logrus.Entry{Logger: logger},
 		cvsUsecase:           layers.Usecases.CVUsecase,
-		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
+		CompressGRPC:       layers.Microservices.Compress,
 	}
 }
 
@@ -71,7 +80,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -80,13 +89,14 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newCV.Avatar = fileAddress
+		newCV.CompressedAvatar = compressedFileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
@@ -199,6 +209,16 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
+	
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
+	if !ok {
+		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnauthorized,
+		})
+		return
+	}
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
@@ -212,7 +232,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -221,27 +241,11 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newCV.Avatar = fileAddress
-	}
-
-	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
-	if !ok {
-		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
-		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
-			Error:      dto.MsgUnableToGetUserFromContext,
-		})
-		return
+		newCV.CompressedAvatar = compressedFileAddress
 	}
 
 	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, currentUser, newCV)
-	if err == commonerrors.ErrUnauthorized || err == commonerrors.ErrSessionNotFound {
-		h.logger.Errorf("function %s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
-			Error:      err.Error(),
-		})
-		return
-	} else if err != nil {
+	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -295,21 +299,14 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusInternalServerError,
+			HTTPStatus: http.StatusUnauthorized,
 			Error:      dto.MsgUnableToGetUserFromContext,
 		})
 		return
 	}
 
 	err = h.cvsUsecase.DeleteCV(cvID, currentUser)
-	if err == commonerrors.ErrUnauthorized || err == commonerrors.ErrSessionNotFound {
-		h.logger.Errorf("function %s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
-			Error:      err.Error(),
-		})
-		return
-	} else if err != nil {
+ 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,

@@ -66,5 +66,6 @@ func (u *ApplicantUsecase) GetByID(ctx context.Context, ID uint64) (*dto.JSONApp
 		Education:    applicantModel.Education,
 		UpdatedAt:    applicantModel.UpdatedAt,
 		CreatedAt:    applicantModel.CreatedAt,
+		CompressedAvatar: applicantModel.CompressedAvatar,
 	}, nil	
 }

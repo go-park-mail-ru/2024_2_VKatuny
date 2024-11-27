@@ -13,6 +13,7 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+*.tmp
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
@@ -42,5 +43,13 @@ api/docs.go
 configs/conf.yaml
 configs/conf.yml
 db/migrations/tern.conf
+configs/redis.windows.conf
+configs/redis.conf
+
+# redis stuff
+*.rdb
+*redis.log
+
+
 # html
-index.html
+*.html

@@ -94,6 +94,7 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 			PositionCategoryName: vacancyModel.PositionCategoryName,
 			CreatedAt:            vacancyModel.CreatedAt,
 			UpdatedAt:            vacancyModel.UpdatedAt,
+			CompressedAvatar:     vacancyModel.CompressedAvatar,
 		})
 	}
 	return vacancies, nil
@@ -241,14 +242,15 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.Us
 	subscribers := make([]*dto.JSONGetApplicantProfile, 0, len(subscribersModel))
 	for _, subscriberModel := range subscribersModel {
 		subscribers = append(subscribers, &dto.JSONGetApplicantProfile{
-			ID:        subscriberModel.ID,
-			FirstName: subscriberModel.FirstName,
-			LastName:  subscriberModel.LastName,
-			City:      subscriberModel.CityName,
-			BirthDate: subscriberModel.BirthDate,
-			Avatar:    subscriberModel.PathToProfileAvatar,
-			Contacts:  subscriberModel.Contacts,
-			Education: subscriberModel.Education,
+			ID:               subscriberModel.ID,
+			FirstName:        subscriberModel.FirstName,
+			LastName:         subscriberModel.LastName,
+			City:             subscriberModel.CityName,
+			BirthDate:        subscriberModel.BirthDate,
+			Avatar:           subscriberModel.PathToProfileAvatar,
+			Contacts:         subscriberModel.Contacts,
+			Education:        subscriberModel.Education,
+			CompressedAvatar: subscriberModel.CompressedAvatar,
 		})
 	}
 

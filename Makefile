@@ -10,7 +10,10 @@ BUILD_FLAGS=
 # domain dirs in internal/pkg
 DOMAINS=applicant cvs employer portfolio session vacancies file_loading
 
-.PHONY: mock-gen
+
+
+
+.PHONY: mock-gen api
 
 all: install build
 
@@ -22,7 +25,7 @@ install:
 
 tests:
 	go test ./... -coverprofile=coverage.out.tmp
-	cat coverage.out.tmp | grep -v 'mock' > coverage.out
+	cat coverage.out.tmp | grep -v -E 'mock|pb.go' > coverage.out
 	go tool cover -func=coverage.out
 	go tool cover -html=coverage.out -o index.html
 
@@ -46,6 +49,12 @@ mock-gen:
 			-package=mock; \
 	done
 	@echo "OK!"
+
+redis-start:
+	redis-server .\configs\redis.conf
+
+auth-microservice:
+	go run ./cmd/auth/main.go
 
 run:
 	go run $(SRC_DIR)/main.go
