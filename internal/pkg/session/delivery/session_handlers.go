@@ -10,7 +10,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
@@ -21,7 +20,6 @@ import (
 type SessionHandlers struct {
 	logger         *logrus.Entry
 	backendURL     string
-	sessionUsecase session.ISessionUsecase
 	authClientGRPC auth_grpc.AuthorizationClient
 }
 
@@ -33,7 +31,6 @@ func NewSessionHandlers(app *internal.App) *SessionHandlers {
 	return &SessionHandlers{
 		logger:         &logrus.Entry{Logger: app.Logger},
 		backendURL:     app.BackendAddress,
-		sessionUsecase: app.Usecases.SessionUsecase,
 		authClientGRPC: app.Microservices.Auth,
 	}
 }
