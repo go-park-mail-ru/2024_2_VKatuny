@@ -120,7 +120,6 @@ func main() {
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
-	handlers = middleware.PrometheusMiddleware(handlers)
 	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
 	err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
 	if err != nil {
