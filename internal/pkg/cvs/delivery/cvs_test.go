@@ -236,9 +236,6 @@ func TestCreateCVHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					CVUsecase: d.cvsUsecase,
 				},
-				Repositories: &internal.Repositories{
-					SessionApplicantRepository: nil,
-				},
 				Logger: d.logger,
 			}
 
@@ -395,9 +392,6 @@ func TestGetCVHandler(t *testing.T) {
 				Logger: logger,
 				Usecases: &internal.Usecases{
 					CVUsecase: d.cvsUsecase,
-				},
-				Repositories: &internal.Repositories{
-					SessionApplicantRepository: nil,
 				},
 			}
 
@@ -620,9 +614,6 @@ func TestUpdateCVHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					CVUsecase: usecase.cvsUsecase,
 				},
-				Repositories: &internal.Repositories{
-					SessionApplicantRepository: nil,
-				},
 			}
 
 			h := delivery.NewCVsHandler(app)
@@ -785,9 +776,6 @@ func TestDeleteCVHandler(t *testing.T) {
 				Logger: logger,
 				Usecases: &internal.Usecases{
 					CVUsecase: usecase.cvsUsecase,
-				},
-				Repositories: &internal.Repositories{
-					SessionApplicantRepository: nil,
 				},
 			}
 

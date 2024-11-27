@@ -8,21 +8,18 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/sirupsen/logrus"
 )
 
 type CVsUsecase struct {
 	logger      *logrus.Logger
 	cvsRepo     cvs.ICVsRepository
-	sessionRepo session.ISessionRepository
 }
 
 func NewCVsUsecase(logger *logrus.Logger, repositories *internal.Repositories) *CVsUsecase {
 	return &CVsUsecase{
 		logger:      logger,
 		cvsRepo:     repositories.CVRepository,
-		sessionRepo: repositories.SessionApplicantRepository,
 	}
 }
 

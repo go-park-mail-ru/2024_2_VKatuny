@@ -9,7 +9,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -20,7 +19,6 @@ import (
 type CVsHandler struct {
 	logger               *logrus.Entry
 	cvsUsecase           cvs.ICVsUsecase
-	sessionApplicantRepo session.ISessionRepository
 	fileLoadingUsecase   fileloading.IFileLoadingUsecase
 }
 
@@ -39,7 +37,6 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 	return &CVsHandler{
 		logger:               &logrus.Entry{Logger: logger},
 		cvsUsecase:           layers.Usecases.CVUsecase,
-		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
 	}
 }
