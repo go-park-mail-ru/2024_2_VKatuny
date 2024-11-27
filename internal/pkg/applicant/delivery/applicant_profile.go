@@ -1,8 +1,6 @@
 package delivery
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -42,6 +40,7 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 		cvUsecase:          app.Usecases.CVUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
 		authGRPC:           app.Microservices.Auth,
+		CompressGRPC:       app.Microservices.Compress,
 	}
 }
 
@@ -144,22 +143,18 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 			return
 		}
 		newProfileData.Avatar = fileAddress
+		var buff []byte
+		file.Read(buff)
+		h.logger.Debugf("Start compression")
+		_, err = h.CompressGRPC.CompressAndSaveFile(
+			r.Context(),
+			&compressmicroservice.CompressAndSaveFileInput{
+				FileName: fileAddress + header.Filename,
+				FileType: header.Header["Content-Type"][0],
+				File:     buff,
+			},
+		)
 	}
-	h.CompressGRPC.DeleteFile(
-		context.Background(),
-		&compressmicroservice.DeleteFileInput{
-			FileName: "filename",
-		},
-	)
-	fmt.Println("compress")
-	_, err = h.CompressGRPC.CompressAndSaveFile(
-		context.Background(),
-		&compressmicroservice.CompressAndSaveFileInput{
-			FileName: "filename",
-			FileType: "filetype",
-			File:     []byte{},
-		},
-	)
 	err = h.applicantUsecase.UpdateApplicantProfile(r.Context(), applicantID, newProfileData)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)

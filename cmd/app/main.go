@@ -89,7 +89,7 @@ func main() {
 		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
 		SessionApplicantRepository: sessionApplicantRepository,
 		SessionEmployerRepository:  sessionEmployerRepository,
-		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.Front),
+		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.MediaDir),
 	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories),

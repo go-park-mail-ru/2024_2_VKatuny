@@ -22,10 +22,10 @@ func main() {
 	if err != nil {
 		log.Fatalln("can't listen port", err)
 	}
-	repository := compressrepository.NewCompressRepository(conf.CompressMicroservice.CompressedMediaDir)
-	usecase := compressusecase.NewCompressUsecase(repository)
+	repository := compressrepository.NewCompressRepository(conf.CompressMicroservice.CompressedMediaDir, logger)
+	usecase := compressusecase.NewCompressUsecase(repository, logger)
 	server := grpc.NewServer()
-	compress_api.RegisterCompressServiceServer(server, compressdelivery.NewCompressManager(usecase))
+	compress_api.RegisterCompressServiceServer(server, compressdelivery.NewCompressManager(usecase, logger))
 
 	logger.Infof("Compress starting server at %s", conf.CompressMicroservice.Server.GetAddress())
 	server.Serve(lis)

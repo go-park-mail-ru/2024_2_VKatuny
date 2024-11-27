@@ -12,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -22,6 +23,7 @@ type VacanciesHandlers struct {
 	sessionEmployerRepo  session.ISessionRepository
 	sessionApplicantRepo session.ISessionRepository
 	fileLoadingUsecase   fileloading.IFileLoadingUsecase
+	CompressGRPC         compressmicroservice.CompressServiceClient
 }
 
 func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
@@ -34,6 +36,7 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 		sessionEmployerRepo:  layers.Repositories.SessionEmployerRepository,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
+		CompressGRPC:         layers.Microservices.Compress,
 	}
 }
 
@@ -84,6 +87,17 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 			return
 		}
 		newVacancy.Avatar = fileAddress
+		var buff []byte
+		file.Read(buff)
+		h.logger.Debugf("Start compression")
+		_, err = h.CompressGRPC.CompressAndSaveFile(
+			r.Context(),
+			&compressmicroservice.CompressAndSaveFileInput{
+				FileName: fileAddress + header.Filename,
+				FileType: header.Header["Content-Type"][0],
+				File:     buff,
+			},
+		)
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
@@ -230,6 +244,17 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 			return
 		}
 		updatedVacancy.Avatar = fileAddress
+		var buff []byte
+		file.Read(buff)
+		h.logger.Debugf("Start compression")
+		_, err = h.CompressGRPC.CompressAndSaveFile(
+			r.Context(),
+			&compressmicroservice.CompressAndSaveFileInput{
+				FileName: fileAddress + header.Filename,
+				FileType: header.Header["Content-Type"][0],
+				File:     buff,
+			},
+		)
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
@@ -255,7 +280,6 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 		Body:       wroteVacancy,
 	})
 }
-
 
 // @Summary DeleteVacancy
 // @Description Delete vacancy by ID
