@@ -75,5 +75,6 @@ func (u *EmployerUsecase) GetByID(ctx context.Context, ID uint64) (*dto.JSONEmpl
 		Email:               employerModel.Email,
 		CreatedAt:           employerModel.CreatedAt,
 		UpdatedAt:           employerModel.UpdatedAt,
+		CompressedAvatar:    employerModel.CompressedAvatar,
 	}, nil
 }

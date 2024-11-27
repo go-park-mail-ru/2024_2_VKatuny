@@ -10,6 +10,7 @@ type Employer struct {
 	CompanyDescription  string
 	CompanyWebsite      string
 	PathToProfileAvatar string
+	CompressedAvatar    string
 	Contacts            string
 	Email               string
 	PasswordHash        string

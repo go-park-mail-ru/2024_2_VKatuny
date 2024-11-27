@@ -15,15 +15,15 @@ import (
 	applicant_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/repository"
 	applicantUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
 	cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
-	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 
+	//"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
-	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
 	file_loading_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/repository"
 	file_loading_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/usecase"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
 	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
+
 	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 
 	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
@@ -32,7 +32,11 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
 	vacancies_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
+
+	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
 )
 
 // @title   μArt's API
@@ -65,13 +69,28 @@ func main() {
 	defer connAuthGRPC.Close()
 	logger.Infof("gRPC client started at %s", conf.AuthMicroservice.Server.GetAddress())
 
+	connCompressGRPC, err := grpc.NewClient(
+		conf.CompressMicroservice.Server.GetAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+	defer connAuthGRPC.Close()
+	logger.Infof("Compress gRPC client started at %s", conf.CompressMicroservice.Server.GetAddress())
+
+
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
 		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection),
 		CVRepository:               cvRepository.NewCVStorage(dbConnection),
 		VacanciesRepository:        vacancies_repository.NewVacanciesStorage(dbConnection),
 		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
-		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.Front),
+		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.MediaDir),
+	}
+	microservices := &internal.Microservices{
+		Auth:     grpc_auth.NewAuthorizationClient(connAuthGRPC),
+		Compress: compressmicroservice.NewCompressServiceClient(connCompressGRPC),
 	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories),
@@ -79,11 +98,9 @@ func main() {
 		CVUsecase:          cvUsecase.NewCVsUsecase(logger, repositories),
 		VacanciesUsecase:   vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
 		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
-		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories),
+		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices, conf),
 	}
-	microservices := &internal.Microservices{
-		Auth: grpc_auth.NewAuthorizationClient(connAuthGRPC),
-	}
+	
 	app := &internal.App{
 		Logger:        logger,
 		Repositories:  repositories,
