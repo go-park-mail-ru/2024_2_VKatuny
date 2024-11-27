@@ -21,7 +21,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
-	session_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
 	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	"github.com/gorilla/mux"
@@ -41,11 +40,9 @@ func TestCreateVacancyHandler(t *testing.T) {
 		w *httptest.ResponseRecorder
 	}
 	type dependencies struct {
-		vacanciesUsecase     *vacancies_mock.MockIVacanciesUsecase
-		fileLoadingUsecase   *file_loading_mock.MockIFileLoadingUsecase
-		sessionEmployerRepo  *session_mock.MockISessionRepository
-		sessionApplicantRepo *session_mock.MockISessionRepository
-		logger               *logrus.Logger
+		vacanciesUsecase   *vacancies_mock.MockIVacanciesUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
+		logger             *logrus.Logger
 
 		vacancy     interface{}
 		currentUser dto.UserFromSession
@@ -246,10 +243,8 @@ func TestCreateVacancyHandler(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			d := dependencies{
-				vacanciesUsecase:     vacancies_mock.NewMockIVacanciesUsecase(ctrl),
-				fileLoadingUsecase:   file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
-				sessionEmployerRepo:  session_mock.NewMockISessionRepository(ctrl),
-				sessionApplicantRepo: session_mock.NewMockISessionRepository(ctrl),
+				vacanciesUsecase:   vacancies_mock.NewMockIVacanciesUsecase(ctrl),
+				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 			if tt.prepare != nil {
 				tt.prepare(&d)
@@ -260,11 +255,8 @@ func TestCreateVacancyHandler(t *testing.T) {
 					VacanciesUsecase:   d.vacanciesUsecase,
 					FileLoadingUsecase: d.fileLoadingUsecase,
 				},
-				Repositories: &internal.Repositories{
-					SessionEmployerRepository:  d.sessionEmployerRepo,
-					SessionApplicantRepository: d.sessionApplicantRepo,
-				},
-				Logger: d.logger,
+				Repositories: &internal.Repositories{},
+				Logger:       d.logger,
 			}
 			testMux := mux.NewRouter()
 			h := delivery.NewVacanciesHandlers(app)
@@ -443,9 +435,7 @@ func TestGetVacancyHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					VacanciesUsecase: d.vacanciesUsecase,
 				},
-				Repositories: &internal.Repositories{
-					SessionApplicantRepository: nil,
-				},
+				Repositories: &internal.Repositories{},
 			}
 
 			h := delivery.NewVacanciesHandlers(app)
@@ -576,7 +566,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 
 				out.response = &dto.JSONResponse{
 					HTTPStatus: http.StatusBadRequest,
-					Error: dto.MsgInvalidJSON,
+					Error:      dto.MsgInvalidJSON,
 				}
 				out.status = http.StatusBadRequest
 
@@ -731,9 +721,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
-				Repositories: &internal.Repositories{
-					SessionApplicantRepository: nil,
-				},
+				Repositories: &internal.Repositories{},
 			}
 
 			h := delivery.NewVacanciesHandlers(app)
@@ -935,9 +923,7 @@ func TestDeleteVacancyHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
-				Repositories: &internal.Repositories{
-					SessionApplicantRepository: nil,
-				},
+				Repositories: &internal.Repositories{},
 			}
 
 			testMux := mux.NewRouter()
