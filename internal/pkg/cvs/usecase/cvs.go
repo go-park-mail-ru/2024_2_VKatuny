@@ -82,6 +82,8 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy st
 			Avatar:               CVModel.Avatar,
 			CreatedAt:            CVModel.CreatedAt,
 			UpdatedAt:            CVModel.UpdatedAt,
+			Description:          CVModel.Description,
+			CompressedAvatar:     CVModel.CompressedAvatar,
 		})
 	}
 	if err != nil {
@@ -114,6 +116,8 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 			Avatar:               CVModel.Avatar,
 			CreatedAt:            CVModel.CreatedAt,
 			UpdatedAt:            CVModel.UpdatedAt,
+			Description:          CVModel.Description,
+			CompressedAvatar:     CVModel.CompressedAvatar,
 		})
 	}
 

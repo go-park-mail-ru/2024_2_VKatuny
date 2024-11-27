@@ -112,6 +112,7 @@ type JSONEmployer struct {
 	CompanyDescription  string `json:"companyDescription"`
 	CompanyWebsite      string `json:"companyWebsite"`
 	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	CompressedAvatar    string `json:"compressedAvatar"`
 	Contacts            string `json:"contacts"`
 	Email               string `json:"email"`
 	CreatedAt           string `json:"createdAt"`
@@ -125,6 +126,7 @@ type ApplicantInput struct {
 	CityName            string `json:"cityName"`
 	BirthDate           string `json:"birthDate"`
 	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	CompressedAvatar    string `json:"compressedAvatar"`
 	Contacts            string `json:"contacts"`
 	Education           string `json:"education"`
 	Email               string `json:"email"`
@@ -139,6 +141,7 @@ type JSONApplicantOutput struct {
 	CityName            string `json:"cityName"`
 	BirthDate           string `json:"birthDate"`
 	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	CompressedAvatar    string `json:"compressedAvatar"`
 	Contacts            string `json:"contacts"`
 	Education           string `json:"education"`
 	Email               string `json:"email"`
@@ -154,6 +157,7 @@ type ApplicantWithNull struct {
 	CityName            sql.NullString
 	BirthDate           string
 	PathToProfileAvatar string
+	CompressedAvatar    sql.NullString
 	Contacts            sql.NullString
 	Education           sql.NullString
 	Email               string
@@ -171,6 +175,7 @@ type EmployerInput struct {
 	CompanyDescription  string `json:"companyDescription"`
 	CompanyWebsite      string `json:"companyWebsite"`
 	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	CompressedAvatar    string `json:"compressedAvatar"`
 	Contacts            string `json:"contacts"`
 	Email               string `json:"email"`
 	Password            string `json:"password"`
@@ -186,6 +191,7 @@ type EmployerWithNull struct {
 	CompanyDescription  string
 	CompanyWebsite      string
 	PathToProfileAvatar string
+	CompressedAvatar    sql.NullString
 	Contacts            sql.NullString
 	Email               string
 	PasswordHash        string
@@ -204,6 +210,7 @@ type EmployerOutput struct {
 	CompanyDescription  string `json:"companyDescription"`
 	CompanyWebsite      string `json:"companyWebsite"`
 	PathToProfileAvatar string `json:"pathToProfileAvatar"`
+	CompressedAvatar    string `json:"compressedAvatar"`
 	Contacts            string `json:"contacts"`
 	Email               string `json:"email"`
 	PasswordHash        string `json:"-"`
@@ -232,35 +239,39 @@ type JSONGetEmployerProfile struct {
 	CompanyWebsite     string `json:"companyWebsite"`
 	Contacts           string `json:"contacts"`
 	Avatar             string `json:"avatar"`
+	CompressedAvatar   string `json:"compressedAvatar"`
 }
 
 type JSONGetApplicantProfile struct {
-	ID        uint64 `json:"id"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	City      string `json:"city"`
-	BirthDate string `json:"birthDate"`
-	Avatar    string `json:"avatar"`
-	Contacts  string `json:"contacts"`
-	Education string `json:"education"`
+	ID               uint64 `json:"id"`
+	FirstName        string `json:"firstName"`
+	LastName         string `json:"lastName"`
+	City             string `json:"city"`
+	BirthDate        string `json:"birthDate"`
+	Avatar           string `json:"avatar"`
+	CompressedAvatar string `json:"compressedAvatar"`
+	Contacts         string `json:"contacts"`
+	Education        string `json:"education"`
 }
 
 type JSONUpdateEmployerProfile struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	City      string `json:"city"`
-	Contacts  string `json:"contacts"`
-	Avatar    string `json:"avatar"`
+	FirstName        string `json:"firstName"`
+	LastName         string `json:"lastName"`
+	City             string `json:"city"`
+	Contacts         string `json:"contacts"`
+	Avatar           string `json:"avatar"`
+	CompressedAvatar string `json:"compressedAvatar"`
 }
 
 type JSONUpdateApplicantProfile struct {
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	City      string `json:"city"`
-	BirthDate string `json:"birthDate"`
-	Contacts  string `json:"contacts"`
-	Education string `json:"education"`
-	Avatar    string `json:"avatar"`
+	FirstName        string `json:"firstName"`
+	LastName         string `json:"lastName"`
+	City             string `json:"city"`
+	BirthDate        string `json:"birthDate"`
+	Contacts         string `json:"contacts"`
+	Education        string `json:"education"`
+	Avatar           string `json:"avatar"`
+	CompressedAvatar string `json:"compressedAvatar"`
 }
 
 type JSONGetEmployerVacancy struct {
@@ -272,6 +283,7 @@ type JSONGetEmployerVacancy struct {
 	Description          string `json:"description"`
 	WorkType             string `json:"workType"`
 	Avatar               string `json:"avatar"`
+	CompressedAvatar     string `json:"compressedAvatar"`
 	PositionCategoryName string `json:"positionGroup"`
 	CreatedAt            string `json:"createdAt"`
 	UpdatedAt            string `json:"updatedAt"`
@@ -295,6 +307,7 @@ type JSONGetApplicantCV struct {
 	WorkingExperience    string `json:"workingExperience"`
 	PositionCategoryName string `json:"positionGroup"`
 	Avatar               string `json:"avatar"`
+	CompressedAvatar     string `json:"compressedAvatar"`
 	CreatedAt            string `json:"createdAt"`
 	UpdatedAt            string `json:"updatedAt"`
 }
@@ -308,6 +321,7 @@ type JSONCv struct {
 	JobSearchStatusName  string `json:"jobSearchStatus"`
 	WorkingExperience    string `json:"workingExperience"`
 	Avatar               string `json:"avatar"`
+	CompressedAvatar     string `json:"compressedAvatar"`
 	PositionCategoryName string `json:"positionGroup"`
 	CreatedAt            string `json:"createdAt"`
 	UpdatedAt            string `json:"updatedAt"`
@@ -322,6 +336,7 @@ type JSONCvWithNull struct {
 	JobSearchStatusName  string         `json:"jobSearchStatus"`
 	WorkingExperience    string         `json:"workingExperience"`
 	Avatar               string         `json:"avatar"`
+	CompressedAvatar     sql.NullString `json:"compressedAvatar"`
 	PositionCategoryName sql.NullString `json:"positionGroup"`
 	CreatedAt            string         `json:"createdAt"`
 	UpdatedAt            string         `json:"updatedAt"`
@@ -336,6 +351,7 @@ type JSONVacancyWithNull struct {
 	Description          string         `json:"description"`
 	WorkType             string         `json:"workType"`
 	Avatar               string         `json:"avatar"`
+	CompressedAvatar     sql.NullString `json:"compressedAvatar"`
 	CompanyName          string         `json:"companyName"`
 	PositionCategoryName sql.NullString `json:"positionGroup"`
 	CreatedAt            string         `json:"createdAt"`
@@ -350,6 +366,7 @@ type JSONVacancy struct {
 	Description          string `json:"description"`
 	WorkType             string `json:"workType"`
 	Avatar               string `json:"avatar"`
+	CompressedAvatar     string `json:"compressedAvatar"`
 	CompanyName          string `json:"companyName"`
 	PositionCategoryName string `json:"positionGroup"`
 	CreatedAt            string `json:"createdAt"`

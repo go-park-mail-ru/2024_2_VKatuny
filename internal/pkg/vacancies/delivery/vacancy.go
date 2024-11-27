@@ -12,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -22,6 +23,7 @@ type VacanciesHandlers struct {
 	sessionEmployerRepo  session.ISessionRepository
 	sessionApplicantRepo session.ISessionRepository
 	fileLoadingUsecase   fileloading.IFileLoadingUsecase
+	CompressGRPC         compressmicroservice.CompressServiceClient
 }
 
 func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
@@ -34,6 +36,7 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 		sessionEmployerRepo:  layers.Repositories.SessionEmployerRepository,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
+		CompressGRPC:         layers.Microservices.Compress,
 	}
 }
 
@@ -75,7 +78,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	file, header, err := r.FormFile("company_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -84,6 +87,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 			return
 		}
 		newVacancy.Avatar = fileAddress
+		newVacancy.CompressedAvatar = compressedFileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
@@ -221,7 +225,7 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 	file, header, err := r.FormFile("company_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -230,6 +234,7 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 			return
 		}
 		updatedVacancy.Avatar = fileAddress
+		updatedVacancy.CompressedAvatar = compressedFileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
@@ -255,7 +260,6 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 		Body:       wroteVacancy,
 	})
 }
-
 
 // @Summary DeleteVacancy
 // @Description Delete vacancy by ID

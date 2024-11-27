@@ -13,6 +13,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 )
@@ -22,6 +23,7 @@ type CVsHandler struct {
 	cvsUsecase           cvs.ICVsUsecase
 	sessionApplicantRepo session.ISessionRepository
 	fileLoadingUsecase   fileloading.IFileLoadingUsecase
+	CompressGRPC       compressmicroservice.CompressServiceClient
 }
 
 func NewCVsHandler(layers *internal.App) *CVsHandler {
@@ -32,6 +34,7 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 		cvsUsecase:           layers.Usecases.CVUsecase,
 		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
+		CompressGRPC:       layers.Microservices.Compress,
 	}
 }
 
@@ -71,7 +74,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -80,6 +83,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newCV.Avatar = fileAddress
+		newCV.CompressedAvatar = compressedFileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
@@ -212,7 +216,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -221,6 +225,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newCV.Avatar = fileAddress
+		newCV.CompressedAvatar = compressedFileAddress
 	}
 
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
