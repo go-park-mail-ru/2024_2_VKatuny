@@ -9,7 +9,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
@@ -20,8 +19,6 @@ import (
 type VacanciesHandlers struct {
 	logger               *logrus.Entry
 	vacanciesUsecase     vacancies.IVacanciesUsecase
-	sessionEmployerRepo  session.ISessionRepository
-	sessionApplicantRepo session.ISessionRepository
 	fileLoadingUsecase   fileloading.IFileLoadingUsecase
 	CompressGRPC         compressmicroservice.CompressServiceClient
 }
@@ -33,8 +30,6 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 	return &VacanciesHandlers{
 		logger:               &logrus.Entry{Logger: logger},
 		vacanciesUsecase:     layers.Usecases.VacanciesUsecase,
-		sessionEmployerRepo:  layers.Repositories.SessionEmployerRepository,
-		sessionApplicantRepo: layers.Repositories.SessionApplicantRepository,
 		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
 		CompressGRPC:         layers.Microservices.Compress,
 	}
