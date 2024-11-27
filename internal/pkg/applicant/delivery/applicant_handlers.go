@@ -63,8 +63,8 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 	grpc_response, err := h.authGRPC.AuthUser(r.Context(), grpc_request)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
-		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
-			HTTPStatus: http.StatusUnauthorized,
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
 			Error:      err.Error(), // TODO: standardize errors
 		})
 		return

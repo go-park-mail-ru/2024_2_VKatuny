@@ -22,8 +22,8 @@ import (
 	file_loading_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/repository"
 	file_loading_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/usecase"
 	portfolioRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/repository"
-	session_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/repository"
-	session_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session/usecase"
+	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
+
 	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 
 	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
@@ -37,7 +37,6 @@ import (
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
-	portfolioUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/usecase"
 )
 
 // @title   μArt's API
@@ -80,15 +79,13 @@ func main() {
 	defer connAuthGRPC.Close()
 	logger.Infof("Compress gRPC client started at %s", conf.CompressMicroservice.Server.GetAddress())
 
-	sessionApplicantRepository, sessionEmployerRepository := session_repository.NewSessionStorage(dbConnection)
+
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
 		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection),
 		CVRepository:               cvRepository.NewCVStorage(dbConnection),
 		VacanciesRepository:        vacancies_repository.NewVacanciesStorage(dbConnection),
 		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
-		SessionApplicantRepository: sessionApplicantRepository,
-		SessionEmployerRepository:  sessionEmployerRepository,
 		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.MediaDir),
 	}
 	microservices := &internal.Microservices{
@@ -101,7 +98,6 @@ func main() {
 		CVUsecase:          cvUsecase.NewCVsUsecase(logger, repositories),
 		VacanciesUsecase:   vacanciesUsecase.NewVacanciesUsecase(logger, repositories),
 		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
-		SessionUsecase:     session_usecase.NewSessionUsecase(logger, repositories),
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices, conf),
 	}
 	

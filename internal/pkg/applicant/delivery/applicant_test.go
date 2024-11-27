@@ -12,25 +12,29 @@ import (
 	"testing"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/delivery"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
+	cv_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/mock"
-	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
+	portfolio_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
+
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
-func createMultipartFormJSON(jsonForm *dto.JSONUpdateEmployerProfile) (*bytes.Buffer, string) {
+func createMultipartForm(jsonForm *dto.JSONUpdateApplicantProfile) (*bytes.Buffer, string) {
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 	defer writer.Close()
 	writer.WriteField("firstName", jsonForm.FirstName)
 	writer.WriteField("lastName", jsonForm.LastName)
 	writer.WriteField("city", jsonForm.City)
+	writer.WriteField("birthDate", jsonForm.BirthDate)
+	writer.WriteField("education", jsonForm.Education)
 	writer.WriteField("contacts", jsonForm.Contacts)
 	return &buf, writer.FormDataContentType()
 }
@@ -38,7 +42,7 @@ func createMultipartFormJSON(jsonForm *dto.JSONUpdateEmployerProfile) (*bytes.Bu
 func TestGetProfileHandler(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
-		profile *mock.MockIEmployerUsecase
+		profile *mock.MockIApplicantUsecase
 	}
 	tests := []struct {
 		name         string
@@ -66,7 +70,7 @@ func TestGetProfileHandler(t *testing.T) {
 				slug := "123534657548574856785785346346367542151341354756869568"
 				nr := httptest.NewRequest(
 					http.MethodGet,
-					fmt.Sprintf("/api/v1/employer/%s/profile", slug),
+					fmt.Sprintf("/api/v1/applicant/%s/profile", slug),
 					nil,
 				)
 				nw := httptest.NewRecorder()
@@ -86,13 +90,13 @@ func TestGetProfileHandler(t *testing.T) {
 				slug := uint64(1)
 				nr := httptest.NewRequest(
 					http.MethodGet,
-					fmt.Sprintf("/api/v1/employer/%d/profile", slug),
+					fmt.Sprintf("/api/v1/applicant/%d/profile", slug),
 					nil,
 				)
 				nw := httptest.NewRecorder()
 				usecase.profile.
 					EXPECT().
-					GetEmployerProfile(gomock.Any(), slug).
+					GetApplicantProfile(gomock.Any(), slug).
 					Return(nil, fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -110,18 +114,18 @@ func TestGetProfileHandler(t *testing.T) {
 				slug := uint64(1)
 				nr := httptest.NewRequest(
 					http.MethodGet,
-					fmt.Sprintf("/api/v1/employer/%d/profile", slug),
+					fmt.Sprintf("/api/v1/applicant/%d/profile", slug),
 					nil,
 				)
 				nw := httptest.NewRecorder()
-				profile := &dto.JSONGetEmployerProfile{
+				profile := &dto.JSONGetApplicantProfile{
 					ID:        slug,
 					FirstName: "John",
 					LastName:  "Doe",
 				}
 				usecase.profile.
 					EXPECT().
-					GetEmployerProfile(gomock.Any(), slug).
+					GetApplicantProfile(gomock.Any(), slug).
 					Return(profile, nil)
 				return nw, nr
 			},
@@ -133,7 +137,7 @@ func TestGetProfileHandler(t *testing.T) {
 			defer ctrl.Finish()
 
 			usecase := &usecase{
-				profile: mock.NewMockIEmployerUsecase(ctrl),
+				profile: mock.NewMockIApplicantUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
 
@@ -141,8 +145,9 @@ func TestGetProfileHandler(t *testing.T) {
 				Logger:         logrus.New(),
 				BackendAddress: "http://localhost:8080",
 				Usecases: &internal.Usecases{
-					EmployerUsecase:    usecase.profile,
-					VacanciesUsecase:   nil,
+					ApplicantUsecase:   usecase.profile,
+					CVUsecase:          nil,
+					PortfolioUsecase:   nil,
 					FileLoadingUsecase: nil,
 				},
 				Microservices: &internal.Microservices{
@@ -150,26 +155,24 @@ func TestGetProfileHandler(t *testing.T) {
 				},
 			}
 
-			h := delivery.NewEmployerHandlers(app)
+			h := delivery.NewApplicantProfileHandlers(app)
 			require.NotNil(t, h)
 			require.NotNil(t, tt.r)
 			require.NotNil(t, tt.w)
 
 			r := mux.NewRouter()
-			r.HandleFunc("/api/v1/employer/{id:[0-9]+}/profile", h.GetProfile).Methods(http.MethodGet)
-
+			r.HandleFunc("/api/v1/applicant/{id:[0-9]+}/profile", h.GetProfile).Methods(http.MethodGet)
 			r.ServeHTTP(tt.w, tt.r)
 
 			require.Equal(t, tt.codeExpected, tt.w.Code)
 		})
-
 	}
 }
 
 func TestUpdateProfile(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
-		profile *mock.MockIEmployerUsecase
+		profile *mock.MockIApplicantUsecase
 	}
 	tests := []struct {
 		name         string
@@ -197,7 +200,7 @@ func TestUpdateProfile(t *testing.T) {
 				slug := "123534657548574856785785346346367542151341354756869568"
 				nr := httptest.NewRequest(
 					http.MethodPut,
-					fmt.Sprintf("/api/v1/employer/%s/profile", slug),
+					fmt.Sprintf("/api/v1/applicant/%s/profile", slug),
 					nil,
 				)
 				nw := httptest.NewRecorder()
@@ -215,17 +218,18 @@ func TestUpdateProfile(t *testing.T) {
 				usecase *usecase,
 			) (*httptest.ResponseRecorder, *http.Request) {
 				slug := uint64(1)
-				newProfile := &dto.JSONUpdateEmployerProfile{
+				newProfile := &dto.JSONUpdateApplicantProfile{
 					FirstName: "John",
 					LastName:  "Doe",
 					City:      "Chicago",
+					BirthDate: "2000-01-01",
 					Contacts:  "+1234567890",
 				}
-				mulipartForm, contentType := createMultipartFormJSON(newProfile)
+				mulipartForm, contentType := createMultipartForm(newProfile)
 
 				nr := httptest.NewRequest(
 					http.MethodPut,
-					fmt.Sprintf("/api/v1/employer/%d/profile", slug),
+					fmt.Sprintf("/api/v1/applicant/%d/profile", slug),
 					mulipartForm,
 				)
 				nr.Header.Set("Content-Type", contentType)
@@ -233,7 +237,7 @@ func TestUpdateProfile(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.profile.
 					EXPECT().
-					UpdateEmployerProfile(gomock.Any(), slug, newProfile).
+					UpdateApplicantProfile(gomock.Any(), slug, newProfile).
 					Return(fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -249,17 +253,18 @@ func TestUpdateProfile(t *testing.T) {
 				usecase *usecase,
 			) (*httptest.ResponseRecorder, *http.Request) {
 				slug := uint64(1)
-				newProfile := &dto.JSONUpdateEmployerProfile{
+				newProfile := &dto.JSONUpdateApplicantProfile{
 					FirstName: "John",
 					LastName:  "Doe",
 					City:      "Chicago",
+					BirthDate: "2000-01-01",
 					Contacts:  "+1234567890",
 				}
-				mulipartForm, contentType := createMultipartFormJSON(newProfile)
+				mulipartForm, contentType := createMultipartForm(newProfile)
 
 				nr := httptest.NewRequest(
 					http.MethodPut,
-					fmt.Sprintf("/api/v1/employer/%d/profile", slug),
+					fmt.Sprintf("/api/v1/applicant/%d/profile", slug),
 					mulipartForm,
 				)
 				nr.Header.Set("Content-Type", contentType)
@@ -267,7 +272,7 @@ func TestUpdateProfile(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.profile.
 					EXPECT().
-					UpdateEmployerProfile(gomock.Any(), slug, newProfile).
+					UpdateApplicantProfile(gomock.Any(), slug, newProfile).
 					Return(nil)
 				return nw, nr
 			},
@@ -280,7 +285,7 @@ func TestUpdateProfile(t *testing.T) {
 			defer ctrl.Finish()
 
 			usecase := &usecase{
-				profile: mock.NewMockIEmployerUsecase(ctrl),
+				profile: mock.NewMockIApplicantUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
 
@@ -288,8 +293,9 @@ func TestUpdateProfile(t *testing.T) {
 				Logger:         logrus.New(),
 				BackendAddress: "http://localhost:8080",
 				Usecases: &internal.Usecases{
-					EmployerUsecase:    usecase.profile,
-					VacanciesUsecase:   nil,
+					ApplicantUsecase:   usecase.profile,
+					CVUsecase:          nil,
+					PortfolioUsecase:   nil,
 					FileLoadingUsecase: nil,
 				},
 				Microservices: &internal.Microservices{
@@ -297,13 +303,13 @@ func TestUpdateProfile(t *testing.T) {
 				},
 			}
 
-			h := delivery.NewEmployerHandlers(app)
+			h := delivery.NewApplicantProfileHandlers(app)
 			require.NotNil(t, h)
 			require.NotNil(t, tt.r)
 			require.NotNil(t, tt.w)
 
 			r := mux.NewRouter()
-			r.HandleFunc("/api/v1/employer/{id:[0-9]+}/profile", h.UpdateProfile).Methods(http.MethodPut)
+			r.HandleFunc("/api/v1/applicant/{id:[0-9]+}/profile", h.UpdateProfile).Methods(http.MethodPut)
 
 			r.ServeHTTP(tt.w, tt.r)
 
@@ -312,10 +318,10 @@ func TestUpdateProfile(t *testing.T) {
 	}
 }
 
-func TestGetVacancies(t *testing.T) {
+func TestGetCVs(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
-		profile *vacancies_mock.MockIVacanciesUsecase
+		cv *cv_mock.MockICVsUsecase
 	}
 	tests := []struct {
 		name         string
@@ -343,7 +349,7 @@ func TestGetVacancies(t *testing.T) {
 				slug := "123534657548574856785785346346367542151341354756869568"
 				nr := httptest.NewRequest(
 					http.MethodGet,
-					fmt.Sprintf("/api/v1/employer/%s/vacancies", slug),
+					fmt.Sprintf("/api/v1/applicant/%s/cv", slug),
 					nil,
 				)
 				nw := httptest.NewRecorder()
@@ -364,13 +370,13 @@ func TestGetVacancies(t *testing.T) {
 
 				nr := httptest.NewRequest(
 					http.MethodGet,
-					fmt.Sprintf("/api/v1/employer/%d/vacancies", slug),
+					fmt.Sprintf("/api/v1/applicant/%d/cv", slug),
 					nil,
 				)
 				nw := httptest.NewRecorder()
-				usecase.profile.
+				usecase.cv.
 					EXPECT().
-					GetVacanciesByEmployerID(slug).
+					GetApplicantCVs(slug).
 					Return(nil, fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -387,25 +393,27 @@ func TestGetVacancies(t *testing.T) {
 			) (*httptest.ResponseRecorder, *http.Request) {
 				slug := uint64(1)
 
-				var vacancies = []*dto.JSONGetEmployerVacancy{
+				var vacancies = []*dto.JSONGetApplicantCV{
 					{
 						ID:                   1,
-						Position:             "chemist",
-						Salary:               1000,
-						Description:          "need a organic chemist",
-						Location:             "Texas",
-						PositionCategoryName: "chemist",
+						ApplicantID:          1,
+						PositionRu:           "химик",
+						PositionEn:           "chemist",
+						Description:          "нужен химик",
+						JobSearchStatus:      "searching",
+						WorkingExperience:    "1 year",
+						PositionCategoryName: "chemistry",
 					},
 				}
 				nr := httptest.NewRequest(
 					http.MethodGet,
-					fmt.Sprintf("/api/v1/employer/%d/vacancies", slug),
+					fmt.Sprintf("/api/v1/applicant/%d/cv", slug),
 					nil,
 				)
 				nw := httptest.NewRecorder()
-				usecase.profile.
+				usecase.cv.
 					EXPECT().
-					GetVacanciesByEmployerID(slug).
+					GetApplicantCVs(slug).
 					Return(vacancies, nil)
 				return nw, nr
 			},
@@ -418,7 +426,7 @@ func TestGetVacancies(t *testing.T) {
 			defer ctrl.Finish()
 
 			usecase := &usecase{
-				profile: vacancies_mock.NewMockIVacanciesUsecase(ctrl),
+				cv: cv_mock.NewMockICVsUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
 
@@ -426,8 +434,9 @@ func TestGetVacancies(t *testing.T) {
 				Logger:         logrus.New(),
 				BackendAddress: "http://localhost:8080",
 				Usecases: &internal.Usecases{
-					EmployerUsecase:    nil,
-					VacanciesUsecase:   usecase.profile,
+					ApplicantUsecase:   nil,
+					CVUsecase:          usecase.cv,
+					PortfolioUsecase:   nil,
 					FileLoadingUsecase: nil,
 				},
 				Microservices: &internal.Microservices{
@@ -435,13 +444,150 @@ func TestGetVacancies(t *testing.T) {
 				},
 			}
 
-			h := delivery.NewEmployerHandlers(app)
+			h := delivery.NewApplicantProfileHandlers(app)
 			require.NotNil(t, h)
 			require.NotNil(t, tt.r)
 			require.NotNil(t, tt.w)
 
 			r := mux.NewRouter()
-			r.HandleFunc("/api/v1/employer/{id:[0-9]+}/vacancies", h.GetEmployerVacancies).Methods(http.MethodGet)
+			r.HandleFunc("/api/v1/applicant/{id:[0-9]+}/cv", h.GetCVs).Methods(http.MethodGet)
+
+			r.ServeHTTP(tt.w, tt.r)
+
+			require.Equal(t, tt.codeExpected, tt.w.Code)
+		})
+	}
+}
+
+func TestGetPortfolios(t *testing.T) {
+	t.Parallel()
+	type usecase struct {
+		portfolio *portfolio_mock.MockIPortfolioUsecase
+	}
+	tests := []struct {
+		name         string
+		r            *http.Request
+		w            *httptest.ResponseRecorder
+		usecase      *usecase
+		codeExpected int
+
+		prepare func(
+			r *http.Request,
+			w *httptest.ResponseRecorder,
+			usecase *usecase,
+		) (*httptest.ResponseRecorder, *http.Request)
+	}{
+		{
+			name:         "GetPortfolio: bad slug",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				slug := "123534657548574856785785346346367542151341354756869568"
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/applicant/%s/portfolio", slug),
+					nil,
+				)
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+		{
+			name:         "GetPortfolio: bad usecase",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				slug := uint64(1)
+
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/applicant/%d/portfolio", slug),
+					nil,
+				)
+				nw := httptest.NewRecorder()
+				usecase.portfolio.
+					EXPECT().
+					GetApplicantPortfolios(gomock.Any(), slug).
+					Return(nil, fmt.Errorf("error"))
+				return nw, nr
+			},
+		},
+		{
+			name:         "GetPortfolio: ok",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusOK,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				slug := uint64(1)
+
+				var vacancies = []*dto.JSONGetApplicantPortfolio{
+					{
+						ID:          1,
+						ApplicantID: 1,
+						Name:        "bass guitar",
+						Description: "my best guitar",
+					},
+				}
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/applicant/%d/portfolio", slug),
+					nil,
+				)
+				nw := httptest.NewRecorder()
+				usecase.portfolio.
+					EXPECT().
+					GetApplicantPortfolios(gomock.Any(), slug).
+					Return(vacancies, nil)
+				return nw, nr
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			usecase := &usecase{
+				portfolio: portfolio_mock.NewMockIPortfolioUsecase(ctrl),
+			}
+			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
+
+			app := &internal.App{
+				Logger:         logrus.New(),
+				BackendAddress: "http://localhost:8080",
+				Usecases: &internal.Usecases{
+					ApplicantUsecase:   nil,
+					CVUsecase:          nil,
+					PortfolioUsecase:   usecase.portfolio,
+					FileLoadingUsecase: nil,
+				},
+				Microservices: &internal.Microservices{
+					Auth: nil,
+				},
+			}
+
+			h := delivery.NewApplicantProfileHandlers(app)
+			require.NotNil(t, h)
+			require.NotNil(t, tt.r)
+			require.NotNil(t, tt.w)
+
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/applicant/{id:[0-9]+}/portfolio", h.GetPortfolios).Methods(http.MethodGet)
 
 			r.ServeHTTP(tt.w, tt.r)
 
@@ -453,7 +599,7 @@ func TestGetVacancies(t *testing.T) {
 func TestRegistration(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
-		registration *mock.MockIEmployerUsecase
+		registration *mock.MockIApplicantUsecase
 		grpc         *grpc_mock.MockAuthorizationClient
 	}
 	tests := []struct {
@@ -488,7 +634,7 @@ func TestRegistration(t *testing.T) {
 				)
 				nr := httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/employer/registration",
+					"/api/v1/applicant/registration",
 					bytes.NewReader(jsonForm),
 				)
 				nw := httptest.NewRecorder()
@@ -505,15 +651,12 @@ func TestRegistration(t *testing.T) {
 				w *httptest.ResponseRecorder,
 				usecase *usecase,
 			) (*httptest.ResponseRecorder, *http.Request) {
-				form := &dto.JSONEmployerRegistrationForm{
-					FirstName:          "Ivan",
-					LastName:           "Ivanov",
-					Position:           "HR",
-					Company:            "Texas Instruments",
-					CompanyDescription: "Microelectronics company",
-					CompanyWebsite:     "texasinstruments.com",
-					Email:              "iY5sG@example.com",
-					Password:           "password",
+				form := &dto.JSONApplicantRegistrationForm{
+					FirstName: "Ivan",
+					LastName:  "Ivanov",
+					BirthDate: "2000-01-01",
+					Email:     "iY5sG@example.com",
+					Password:  "password",
 				}
 
 				jsonForm, _ := json.Marshal(form)
@@ -523,7 +666,7 @@ func TestRegistration(t *testing.T) {
 					Return(nil, errors.New("bad create usecase"))
 				nr := httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/employer/registration",
+					"/api/v1/applicant/registration",
 					bytes.NewReader(jsonForm),
 				)
 				nw := httptest.NewRecorder()
@@ -540,28 +683,25 @@ func TestRegistration(t *testing.T) {
 				w *httptest.ResponseRecorder,
 				usecase *usecase,
 			) (*httptest.ResponseRecorder, *http.Request) {
-				form := &dto.JSONEmployerRegistrationForm{
-					FirstName:          "Ivan",
-					LastName:           "Ivanov",
-					Position:           "HR",
-					Company:            "Texas Instruments",
-					CompanyDescription: "Microelectronics company",
-					CompanyWebsite:     "texasinstruments.com",
-					Email:              "iY5sG@example.com",
-					Password:           "password",
+				form := &dto.JSONApplicantRegistrationForm{
+					FirstName: "Ivan",
+					LastName:  "Ivanov",
+					BirthDate: "2000-01-01",
+					Email:     "iY5sG@example.com",
+					Password:  "password",
 				}
 
 				requestID := "1234567890"
 				jsonForm, _ := json.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
-					UserType: dto.UserTypeEmployer,
-					Email:    form.Email,
-					Password: form.Password,
+					UserType:  dto.UserTypeApplicant,
+					Email:     form.Email,
+					Password:  form.Password,
 				}
 				user := &dto.JSONUser{
-					ID: 1,
-					UserType: dto.UserTypeEmployer,
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
 				}
 				usecase.registration.
 					EXPECT().
@@ -573,7 +713,7 @@ func TestRegistration(t *testing.T) {
 					Return(nil, errors.New("bad grpc"))
 				nr := httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/employer/registration",
+					"/api/v1/applicant/registration",
 					bytes.NewReader(jsonForm),
 				).WithContext(
 					context.WithValue(r.Context(), dto.RequestIDContextKey, requestID),
@@ -592,32 +732,29 @@ func TestRegistration(t *testing.T) {
 				w *httptest.ResponseRecorder,
 				usecase *usecase,
 			) (*httptest.ResponseRecorder, *http.Request) {
-				form := &dto.JSONEmployerRegistrationForm{
-					FirstName:          "Ivan",
-					LastName:           "Ivanov",
-					Position:           "HR",
-					Company:            "Texas Instruments",
-					CompanyDescription: "Microelectronics company",
-					CompanyWebsite:     "texasinstruments.com",
-					Email:              "iY5sG@example.com",
-					Password:           "password",
+				form := &dto.JSONApplicantRegistrationForm{
+					FirstName: "Ivan",
+					LastName:  "Ivanov",
+					BirthDate: "2000-01-01",
+					Email:     "iY5sG@example.com",
+					Password:  "password",
 				}
 
 				requestID := "1234567890"
 				jsonForm, _ := json.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
-					UserType: dto.UserTypeEmployer,
-					Email:    form.Email,
-					Password: form.Password,
+					UserType:  dto.UserTypeApplicant,
+					Email:     form.Email,
+					Password:  form.Password,
 				}
 				user := &dto.JSONUser{
-					ID: 1,
-					UserType: dto.UserTypeEmployer,
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
 				}
 				grpc_response := &auth_grpc.AuthResponse{
 					UserData: &auth_grpc.User{
-						UserType: dto.UserTypeEmployer,
+						UserType: dto.UserTypeApplicant,
 						ID:       user.ID,
 					},
 					Session: &auth_grpc.SessionToken{
@@ -634,7 +771,7 @@ func TestRegistration(t *testing.T) {
 					Return(grpc_response, nil)
 				nr := httptest.NewRequest(
 					http.MethodPost,
-					"/api/v1/employer/registration",
+					"/api/v1/applicant/registration",
 					bytes.NewReader(jsonForm),
 				).WithContext(
 					context.WithValue(r.Context(), dto.RequestIDContextKey, requestID),
@@ -651,7 +788,7 @@ func TestRegistration(t *testing.T) {
 			defer ctrl.Finish()
 
 			usecase := &usecase{
-				registration: mock.NewMockIEmployerUsecase(ctrl),
+				registration: mock.NewMockIApplicantUsecase(ctrl),
 				grpc:         grpc_mock.NewMockAuthorizationClient(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
@@ -660,8 +797,9 @@ func TestRegistration(t *testing.T) {
 				Logger:         logrus.New(),
 				BackendAddress: "http://localhost:8080",
 				Usecases: &internal.Usecases{
-					EmployerUsecase:    usecase.registration,
-					VacanciesUsecase:   nil,
+					ApplicantUsecase:   usecase.registration,
+					CVUsecase:          nil,
+					PortfolioUsecase:   nil,
 					FileLoadingUsecase: nil,
 				},
 				Microservices: &internal.Microservices{
@@ -669,13 +807,13 @@ func TestRegistration(t *testing.T) {
 				},
 			}
 
-			h := delivery.NewEmployerHandlers(app)
+			h := delivery.NewApplicantProfileHandlers(app)
 			require.NotNil(t, h)
 			require.NotNil(t, tt.r)
 			require.NotNil(t, tt.w)
 
 			r := mux.NewRouter()
-			r.HandleFunc("/api/v1/employer/registration", h.Registration).Methods(http.MethodPost)
+			r.HandleFunc("/api/v1/applicant/registration", h.ApplicantRegistration).Methods(http.MethodPost)
 
 			r.ServeHTTP(tt.w, tt.r)
 
