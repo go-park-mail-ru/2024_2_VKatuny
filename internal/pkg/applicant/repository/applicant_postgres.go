@@ -35,7 +35,7 @@ func (s *PostgreSQLApplicantStorage) GetByID(id uint64) (*models.Applicant, erro
 
 	//logger.DebugFmt("Built query\n\t"+boardSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 	row := s.db.QueryRow(`select applicant.id, first_name, last_name, city.city_name, birth_date, path_to_profile_avatar, contacts, 
-	education, email, password_hash, applicant.created_at, applicant.updated_at 
+	education, email, password_hash, applicant.created_at, applicant.updated_at, applicant.compressed_image
 	from applicant left join city on applicant.city_id = city.id where applicant.id = $1`, id)
 
 	var applicantWithNull dto.ApplicantWithNull
@@ -52,6 +52,7 @@ func (s *PostgreSQLApplicantStorage) GetByID(id uint64) (*models.Applicant, erro
 		&applicantWithNull.PasswordHash,
 		&applicantWithNull.CreatedAt,
 		&applicantWithNull.UpdatedAt,
+		&applicantWithNull.CompressedAvatar,
 	)
 	applicant := models.Applicant{
 		ID:                  applicantWithNull.ID,
@@ -66,6 +67,7 @@ func (s *PostgreSQLApplicantStorage) GetByID(id uint64) (*models.Applicant, erro
 		PasswordHash:        applicantWithNull.PasswordHash,
 		CreatedAt:           applicantWithNull.CreatedAt,
 		UpdatedAt:           applicantWithNull.UpdatedAt,
+		CompressedAvatar:    applicantWithNull.CompressedAvatar.String,
 	}
 
 	if err != nil {
@@ -82,7 +84,7 @@ func (s *PostgreSQLApplicantStorage) GetByEmail(email string) (*models.Applicant
 	//log.Println("Built query:", sql, "\nwith args:", args)
 
 	row := s.db.QueryRow(`select applicant.id, first_name, last_name, city.city_name, birth_date, path_to_profile_avatar, contacts, 
-	education, email, password_hash, applicant.created_at, applicant.updated_at 
+	education, email, password_hash, applicant.created_at, applicant.updated_at, applicant.compressed_image
 	from applicant left join city on applicant.city_id = city.id where applicant.email=$1`, email)
 
 	var applicantWithNull dto.ApplicantWithNull
@@ -99,6 +101,7 @@ func (s *PostgreSQLApplicantStorage) GetByEmail(email string) (*models.Applicant
 		&applicantWithNull.PasswordHash,
 		&applicantWithNull.CreatedAt,
 		&applicantWithNull.UpdatedAt,
+		&applicantWithNull.CompressedAvatar,
 	)
 	applicant := models.Applicant{
 		ID:                  applicantWithNull.ID,
@@ -113,6 +116,7 @@ func (s *PostgreSQLApplicantStorage) GetByEmail(email string) (*models.Applicant
 		PasswordHash:        applicantWithNull.PasswordHash,
 		CreatedAt:           applicantWithNull.CreatedAt,
 		UpdatedAt:           applicantWithNull.UpdatedAt,
+		CompressedAvatar:    applicantWithNull.CompressedAvatar.String,
 	}
 	//log.Println(user)
 	//log.Println(err)
@@ -125,7 +129,7 @@ func (s *PostgreSQLApplicantStorage) GetByEmail(email string) (*models.Applicant
 
 func (s *PostgreSQLApplicantStorage) Create(applicantInput *dto.ApplicantInput) (*models.Applicant, error) {
 	row := s.db.QueryRow(`insert into applicant (first_name, last_name, birth_date, education, email, password_hash) VALUES ($1, $2, $3, $4, $5, $6)
-	returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at`,
+	returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at, compressed_image`,
 		applicantInput.FirstName, applicantInput.LastName, applicantInput.BirthDate, applicantInput.Education, applicantInput.Email, applicantInput.Password)
 
 	var applicantWithNull dto.ApplicantWithNull
@@ -141,6 +145,7 @@ func (s *PostgreSQLApplicantStorage) Create(applicantInput *dto.ApplicantInput) 
 		&applicantWithNull.PasswordHash,
 		&applicantWithNull.CreatedAt,
 		&applicantWithNull.UpdatedAt,
+		&applicantWithNull.CompressedAvatar,
 	)
 	applicant := models.Applicant{
 		ID:                  applicantWithNull.ID,
@@ -154,6 +159,7 @@ func (s *PostgreSQLApplicantStorage) Create(applicantInput *dto.ApplicantInput) 
 		PasswordHash:        applicantWithNull.PasswordHash,
 		CreatedAt:           applicantWithNull.CreatedAt,
 		UpdatedAt:           applicantWithNull.UpdatedAt,
+		CompressedAvatar:    applicantWithNull.CompressedAvatar.String,
 	}
 	applicant.CityName = applicantInput.CityName
 
@@ -179,13 +185,13 @@ func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSO
 	if newApplicantData.Avatar == "" {
 		row = s.db.QueryRow(`update applicant
 		set first_name = $1, last_name = $2, city_id = $3, birth_date=$4,
-		contacts = $5, education = $6 where id=$7 returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at`,
+		contacts = $5, education = $6 where id=$7 returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at, compressed_image`,
 			newApplicantData.FirstName, newApplicantData.LastName, CityId, newApplicantData.BirthDate, newApplicantData.Contacts, newApplicantData.Education, ID)
 	} else {
 		row = s.db.QueryRow(`update applicant
 		set first_name = $1, last_name = $2, city_id = $3, birth_date=$4,
-		contacts = $5, education = $6, path_to_profile_avatar=$7 where id=$8 returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at`,
-			newApplicantData.FirstName, newApplicantData.LastName, CityId, newApplicantData.BirthDate, newApplicantData.Contacts, newApplicantData.Education, newApplicantData.Avatar, ID)
+		contacts = $5, education = $6, path_to_profile_avatar=$7, compressed_image=$8 where id=$9 returning id, first_name, last_name, birth_date, path_to_profile_avatar, contacts, education, email, password_hash, created_at, updated_at, compressed_image`,
+			newApplicantData.FirstName, newApplicantData.LastName, CityId, newApplicantData.BirthDate, newApplicantData.Contacts, newApplicantData.Education, newApplicantData.Avatar, newApplicantData.CompressedAvatar, ID)
 	}
 	var applicantWithNull dto.ApplicantWithNull
 	err := row.Scan(
@@ -200,6 +206,7 @@ func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSO
 		&applicantWithNull.PasswordHash,
 		&applicantWithNull.CreatedAt,
 		&applicantWithNull.UpdatedAt,
+		&applicantWithNull.CompressedAvatar,
 	)
 	applicant := models.Applicant{
 		ID:                  applicantWithNull.ID,
@@ -213,6 +220,7 @@ func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSO
 		PasswordHash:        applicantWithNull.PasswordHash,
 		CreatedAt:           applicantWithNull.CreatedAt,
 		UpdatedAt:           applicantWithNull.UpdatedAt,
+		CompressedAvatar:    applicantWithNull.CompressedAvatar.String,
 	}
 	applicant.CityName = newApplicantData.City
 

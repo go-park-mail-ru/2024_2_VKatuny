@@ -6,8 +6,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	authClient "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,6 +17,7 @@ type App struct {
 	BackendAddress string
 	Repositories   *Repositories
 	Usecases       *Usecases
+	Microservices  *Microservices
 }
 
 type Repositories struct {
@@ -24,8 +26,6 @@ type Repositories struct {
 	PortfolioRepository        portfolio.IPortfolioRepository
 	CVRepository               cvs.ICVsRepository
 	VacanciesRepository        vacancies.IVacanciesRepository
-	SessionApplicantRepository session.ISessionRepository
-	SessionEmployerRepository  session.ISessionRepository
 	FileLoadingRepository      fileloading.IFileLoadingRepository
 }
 
@@ -35,8 +35,12 @@ type Usecases struct {
 	PortfolioUsecase   portfolio.IPortfolioUsecase
 	CVUsecase          cvs.ICVsUsecase
 	VacanciesUsecase   vacancies.IVacanciesUsecase
-	SessionUsecase     session.ISessionUsecase
 	FileLoadingUsecase fileloading.IFileLoadingUsecase
+}
+
+type Microservices struct {
+	Auth     authClient.AuthorizationClient
+	Compress compressmicroservice.CompressServiceClient
 }
 
 // type Handlers struct {

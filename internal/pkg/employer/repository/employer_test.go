@@ -193,9 +193,9 @@ func TestPostgresCreate(t *testing.T) {
 							args.employer.Password,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "first_name", "last_name",
-							"position", "company_description", "company_website", "path_to_profile_avatar", "contacts", "email", "password_hash", "employer.created_at", "employer.updated_at"}).
+							"position", "company_description", "company_website", "path_to_profile_avatar", "contacts", "email", "password_hash", "employer.created_at", "employer.updated_at", "employer.compressed_image"}).
 							AddRow(1, "Иван", "Иванов", "Должность", "Описание компании", "Сайт компании", "/src",
-								"tg - ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+								"tg - ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "compressed_image"))
 				},
 			},
 			wantErr: false,
@@ -272,9 +272,9 @@ func TestPostgresUpdate(t *testing.T) {
 							args.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "first_name", "last_name",
-							"position", "company_description", "company_website", "path_to_profile_avatar", "contacts", "email", "password_hash", "employer.created_at", "employer.updated_at"}).
+							"position", "company_description", "company_website", "path_to_profile_avatar", "contacts", "email", "password_hash", "employer.created_at", "employer.updated_at", "employer.compressed_image"}).
 							AddRow(1, "Иван", "Иванов", "Должность", "Описание компании", "Сайт компании", "/src",
-								"tg - ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+								"tg - ", "a@mail.ru", "hash", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "compressed_image"))
 				},
 			},
 			wantErr: false,

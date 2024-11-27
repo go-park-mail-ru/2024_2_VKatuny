@@ -1,0 +1,28 @@
+syntax = "proto3";
+package compressmicroservice;
+
+// import "common/common.proto";
+// import "google/protobuf/empty.proto";
+// import "google/protobuf/timestamp.proto";
+// import "google/protobuf/duration.proto";
+
+// protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
+option go_package = "./;compressmicroservice";
+
+message Nothing {
+}
+
+message CompressAndSaveFileInput {
+  string fileName = 1;
+  string fileType = 2;
+  bytes file = 3;
+}
+
+message DeleteFileInput {
+  string fileName = 1;
+}
+
+service CompressService {
+	rpc CompressAndSaveFile (CompressAndSaveFileInput) returns (Nothing) {}
+	rpc DeleteFile (DeleteFileInput) returns (Nothing) {}
+}

@@ -15,7 +15,7 @@ func (u *ApplicantUsecase) Create(ctx context.Context, form *dto.JSONApplicantRe
 	u.logger.Debugf("%s: entering", fn)
 
 	_, err := u.applicantRepo.GetByEmail(form.Email)
-	if err != nil && err.Error() != "sql: no rows in result set" {
+	if err != nil {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgUserAlreadyExists)
 	}
@@ -66,5 +66,6 @@ func (u *ApplicantUsecase) GetByID(ctx context.Context, ID uint64) (*dto.JSONApp
 		Education:    applicantModel.Education,
 		UpdatedAt:    applicantModel.UpdatedAt,
 		CreatedAt:    applicantModel.CreatedAt,
+		CompressedAvatar: applicantModel.CompressedAvatar,
 	}, nil	
 }

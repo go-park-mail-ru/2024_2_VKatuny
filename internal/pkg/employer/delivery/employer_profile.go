@@ -9,13 +9,14 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/session"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
+	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 )
 
 type EmployerHandlers struct {
@@ -23,8 +24,9 @@ type EmployerHandlers struct {
 	backendAddress     string
 	employerUsecase    employer.IEmployerUsecase
 	vacanciesUsecase   vacancies.IVacanciesUsecase
-	sessionUsecase     session.ISessionUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
+	authGRPC           auth_grpc.AuthorizationClient
+	CompressGRPC       compressmicroservice.CompressServiceClient
 }
 
 func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
@@ -33,8 +35,9 @@ func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
 		backendAddress:     app.BackendAddress,
 		employerUsecase:    app.Usecases.EmployerUsecase,
 		vacanciesUsecase:   app.Usecases.VacanciesUsecase,
-		sessionUsecase:     app.Usecases.SessionUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
+		authGRPC:           app.Microservices.Auth,
+		CompressGRPC:       app.Microservices.Compress,
 	}
 }
 
@@ -127,7 +130,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -136,6 +139,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 			return
 		}
 		newProfileData.Avatar = fileAddress
+		newProfileData.CompressedAvatar = compressedFileAddress
 	}
 
 	h.logger.Debugf("function %s: new profile data MultiPart parsed: %v", fn, newProfileData)

@@ -143,7 +143,7 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 	}
 	row = s.db.QueryRow(`insert into employer (first_name, last_name, position, company_name_id, company_description, company_website, email, password_hash)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) returning id, first_name, last_name, position, company_description, 
-		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at`,
+		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at, compressed_image`,
 		employerInput.FirstName, employerInput.LastName, employerInput.Position, CompanyNameId, employerInput.CompanyDescription,
 		employerInput.CompanyWebsite, employerInput.Email, employerInput.Password)
 
@@ -161,6 +161,7 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 		&employerWithNull.PasswordHash,
 		&employerWithNull.CreatedAt,
 		&employerWithNull.UpdatedAt,
+		&employerWithNull.CompressedAvatar,
 	)
 	employer := models.Employer{
 		ID:                  employerWithNull.ID,
@@ -175,6 +176,7 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 		PasswordHash:        employerWithNull.PasswordHash,
 		CreatedAt:           employerWithNull.CreatedAt,
 		UpdatedAt:           employerWithNull.UpdatedAt,
+		CompressedAvatar:    employerWithNull.CompressedAvatar.String,
 	}
 	employer.CityName = employerInput.CityName
 	employer.CompanyName = employerInput.CompanyName
@@ -203,14 +205,14 @@ func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONU
 		row = s.db.QueryRow(`update employer
 		set first_name = $1, last_name = $2, city_id = $3,
 		contacts = $4 where id=$5 returning id, first_name, last_name, position, company_description, 
-		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at`,
+		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at, employer.compressed_image`,
 			newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, ID)
 	} else {
 		row = s.db.QueryRow(`update employer
 		set first_name = $1, last_name = $2, city_id = $3,
-		contacts = $4, path_to_profile_avatar=$5 where id=$6 returning id, first_name, last_name, position, company_description, 
-		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at`,
-			newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, newEmployerData.Avatar, ID)
+		contacts = $4, path_to_profile_avatar=$5, compressed_image=$6 where id=$7 returning id, first_name, last_name, position, company_description, 
+		company_website, path_to_profile_avatar, contacts, email, password_hash, employer.created_at, employer.updated_at, employer.compressed_image`,
+			newEmployerData.FirstName, newEmployerData.LastName, CityId, newEmployerData.Contacts, newEmployerData.Avatar, newEmployerData.CompressedAvatar, ID)
 	}
 	var employerWithNull dto.EmployerWithNull
 	err := row.Scan(
@@ -226,6 +228,7 @@ func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONU
 		&employerWithNull.PasswordHash,
 		&employerWithNull.CreatedAt,
 		&employerWithNull.UpdatedAt,
+		&employerWithNull.CompressedAvatar,
 	)
 	employer := models.Employer{
 		ID:                  employerWithNull.ID,
@@ -240,6 +243,7 @@ func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONU
 		PasswordHash:        employerWithNull.PasswordHash,
 		CreatedAt:           employerWithNull.CreatedAt,
 		UpdatedAt:           employerWithNull.UpdatedAt,
+		CompressedAvatar:    employerWithNull.CompressedAvatar.String,
 	}
 	employer.CityName = newEmployerData.City
 	//log.Println(user)

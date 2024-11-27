@@ -6,7 +6,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -17,7 +19,7 @@ type ApplicantUsecase struct {
 
 func NewApplicantUsecase(logger *logrus.Logger, repositories *internal.Repositories) *ApplicantUsecase {
 	return &ApplicantUsecase{
-		logger:        &logrus.Entry{Logger: logger},
+		logger:        logrus.NewEntry(logger),
 		applicantRepo: repositories.ApplicantRepository,
 	}
 }
@@ -39,14 +41,15 @@ func (au *ApplicantUsecase) GetApplicantProfile(ctx context.Context, userID uint
 	}
 	au.logger.Debugf("function: %s; successfully got applicant profile: %v", fn, applicantModel)
 	return &dto.JSONGetApplicantProfile{
-		ID:        applicantModel.ID,
-		FirstName: applicantModel.FirstName,
-		LastName:  applicantModel.LastName,
-		City:      applicantModel.CityName,
-		BirthDate: applicantModel.BirthDate,
-		Contacts:  applicantModel.Contacts,
-		Education: applicantModel.Education,
-		Avatar:    applicantModel.PathToProfileAvatar,
+		ID:               applicantModel.ID,
+		FirstName:        applicantModel.FirstName,
+		LastName:         applicantModel.LastName,
+		City:             applicantModel.CityName,
+		BirthDate:        applicantModel.BirthDate,
+		Contacts:         applicantModel.Contacts,
+		Education:        applicantModel.Education,
+		Avatar:           applicantModel.PathToProfileAvatar,
+		CompressedAvatar: applicantModel.CompressedAvatar,
 	}, nil
 }
 
@@ -61,11 +64,18 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(ctx context.Context, applican
 	au.logger.Debugf("function: %s; applicant id: %d. Trying to update applicant profile", fn, applicantID)
 
 	_, err := au.applicantRepo.Update(applicantID, newProfileData)
-
 	if err != nil {
 		au.logger.Errorf("function: %s; got err: %s", fn, err)
 		return err
 	}
+	au.logger.Debug("compress")
+	// TODO: add microservice
+
+	// if err != nil {
+	// 	au.logger.Errorf("fail compress microservice")
+	// 	return err
+	// }
+
 	au.logger.Debugf("function: %s; successfully updated applicant profile", fn)
 	return nil
 }
