@@ -43,7 +43,7 @@ func (u *EmployerUsecase) Create(ctx context.Context, form *dto.JSONEmployerRegi
 
 	return &dto.JSONUser{
 		ID:       employerModel.ID,
-		UserType: dto.UserTypeApplicant,
+		UserType: dto.UserTypeEmployer,
 	}, nil
 }
 

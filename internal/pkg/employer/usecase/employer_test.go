@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/usecase"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/mock"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
 	"github.com/sirupsen/logrus"
@@ -21,24 +21,24 @@ import (
 func TestGet(t *testing.T) {
 	t.Parallel()
 	type repo struct {
-		applicant *mock.MockIApplicantRepository
+		employer *mock.MockIEmployerRepository
 	}
 	tests := []struct {
 		name    string
-		profile *dto.JSONGetApplicantProfile
+		profile *dto.JSONGetEmployerProfile
 		prepare func(
 			repo *repo,
-			profile *dto.JSONGetApplicantProfile,
-		) (uint64, *dto.JSONGetApplicantProfile)
+			profile *dto.JSONGetEmployerProfile,
+		) (uint64, *dto.JSONGetEmployerProfile)
 	}{
 		{
 			name:    "Create: bad repository",
 			profile: nil,
 			prepare: func(
 				repo *repo,
-				profile *dto.JSONGetApplicantProfile) (uint64, *dto.JSONGetApplicantProfile) {
+				profile *dto.JSONGetEmployerProfile) (uint64, *dto.JSONGetEmployerProfile) {
 				userID := uint64(1)
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					GetByID(userID).
 					Return(nil, errors.New("bad repository"))
@@ -47,23 +47,23 @@ func TestGet(t *testing.T) {
 		},
 		{
 			name:    "Create: ok",
-			profile: new(dto.JSONGetApplicantProfile),
+			profile: new(dto.JSONGetEmployerProfile),
 			prepare: func(
 				repo *repo,
-				profile *dto.JSONGetApplicantProfile) (uint64, *dto.JSONGetApplicantProfile) {
+				profile *dto.JSONGetEmployerProfile) (uint64, *dto.JSONGetEmployerProfile) {
 				userID := uint64(1)
-				model := &models.Applicant{
+				model := &models.Employer{
 					ID:        userID,
 					FirstName: "Ivan",
 					LastName:  "Ivanov",
 					CityName:  "Moscow",
 				}
 
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					GetByID(userID).
 					Return(model, nil)
-				rprofile := &dto.JSONGetApplicantProfile{
+				rprofile := &dto.JSONGetEmployerProfile{
 					ID:        model.ID,
 					FirstName: model.FirstName,
 					LastName:  model.LastName,
@@ -79,16 +79,16 @@ func TestGet(t *testing.T) {
 		defer ctrl.Finish()
 
 		repo := &repo{
-			applicant: mock.NewMockIApplicantRepository(ctrl),
+			employer: mock.NewMockIEmployerRepository(ctrl),
 		}
 		var userID uint64
 		userID, tt.profile = tt.prepare(repo, tt.profile)
 
 		repositories := &internal.Repositories{
-			ApplicantRepository: repo.applicant,
+			EmployerRepository: repo.employer,
 		}
-		uc := usecase.NewApplicantUsecase(logrus.New(), repositories)
-		profile, _ := uc.GetApplicantProfile(context.Background(), userID)
+		uc := usecase.NewEmployerUsecase(logrus.New(), repositories)
+		profile, _ := uc.GetEmployerProfile(context.Background(), userID)
 
 		require.Equal(t, tt.profile, profile)
 	}
@@ -97,16 +97,16 @@ func TestGet(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	t.Parallel()
 	type repo struct {
-		applicant *mock.MockIApplicantRepository
+		employer *mock.MockIEmployerRepository
 	}
 	tests := []struct {
 		name    string
-		profile *dto.JSONUpdateApplicantProfile
+		profile *dto.JSONUpdateEmployerProfile
 		expected error
 		prepare func(
 			repo *repo,
-			profile *dto.JSONUpdateApplicantProfile,
-		) (uint64, *dto.JSONUpdateApplicantProfile)
+			profile *dto.JSONUpdateEmployerProfile,
+		) (uint64, *dto.JSONUpdateEmployerProfile)
 	}{
 		{
 			name:    "Create: bad repository",
@@ -114,9 +114,9 @@ func TestUpdate(t *testing.T) {
 			expected: errors.New("bad repository"),
 			prepare: func(
 				repo *repo,
-				profile *dto.JSONUpdateApplicantProfile) (uint64, *dto.JSONUpdateApplicantProfile) {
+				profile *dto.JSONUpdateEmployerProfile) (uint64, *dto.JSONUpdateEmployerProfile) {
 				userID := uint64(1)
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					Update(userID, gomock.Any()).
 					Return(nil, errors.New("bad repository"))
@@ -125,24 +125,24 @@ func TestUpdate(t *testing.T) {
 		},
 		{
 			name:    "Create: ok",
-			profile: new(dto.JSONUpdateApplicantProfile),
+			profile: new(dto.JSONUpdateEmployerProfile),
 			expected: nil,
 			prepare: func(
 				repo *repo,
-				profile *dto.JSONUpdateApplicantProfile) (uint64, *dto.JSONUpdateApplicantProfile) {
+				profile *dto.JSONUpdateEmployerProfile) (uint64, *dto.JSONUpdateEmployerProfile) {
 				userID := uint64(1)
-				model := &models.Applicant{
+				model := &models.Employer{
 					ID:        userID,
 					FirstName: "Ivan",
 					LastName:  "Ivanov",
 					CityName:  "Moscow",
 				}
 
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					Update(userID, gomock.Any()).
 					Return(nil, nil)
-				rprofile := &dto.JSONUpdateApplicantProfile{
+				rprofile := &dto.JSONUpdateEmployerProfile{
 					FirstName: model.FirstName,
 					LastName:  model.LastName,
 					City:      model.CityName,
@@ -157,16 +157,16 @@ func TestUpdate(t *testing.T) {
 		defer ctrl.Finish()
 
 		repo := &repo{
-			applicant: mock.NewMockIApplicantRepository(ctrl),
+			employer: mock.NewMockIEmployerRepository(ctrl),
 		}
 		var userID uint64
 		userID, tt.profile = tt.prepare(repo, tt.profile)
 
 		repositories := &internal.Repositories{
-			ApplicantRepository: repo.applicant,
+			EmployerRepository: repo.employer,
 		}
-		uc := usecase.NewApplicantUsecase(logrus.New(), repositories)
-		err := uc.UpdateApplicantProfile(context.Background(), userID, tt.profile)
+		uc := usecase.NewEmployerUsecase(logrus.New(), repositories)
+		err := uc.UpdateEmployerProfile(context.Background(), userID, tt.profile)
 
 		require.Equal(t, tt.expected ,err)
 	}
@@ -175,94 +175,92 @@ func TestUpdate(t *testing.T) {
 func TestCreate(t *testing.T) {
 	t.Parallel()
 	type repo struct {
-		applicant *mock.MockIApplicantRepository
+		employer *mock.MockIEmployerRepository
 	} 
 	tests := []struct {
 		name    string
-		form *dto.JSONApplicantRegistrationForm
+		form *dto.JSONEmployerRegistrationForm
 		user *dto.JSONUser
 		prepare func(
 			repo *repo,
-			form *dto.JSONApplicantRegistrationForm,
+			form *dto.JSONEmployerRegistrationForm,
 			user *dto.JSONUser,
-		) (*dto.JSONApplicantRegistrationForm, *dto.JSONUser)
+		) (*dto.JSONEmployerRegistrationForm, *dto.JSONUser)
 	}{
 		{
 			name:    "Create: bad repository get",
-			form: new(dto.JSONApplicantRegistrationForm),
+			form: new(dto.JSONEmployerRegistrationForm),
 			user: new(dto.JSONUser),
 			prepare: func(
 				repo *repo,
-				form *dto.JSONApplicantRegistrationForm,
+				form *dto.JSONEmployerRegistrationForm,
 				user *dto.JSONUser,
-			) (*dto.JSONApplicantRegistrationForm, *dto.JSONUser) {
-				repo.applicant.
+			) (*dto.JSONEmployerRegistrationForm, *dto.JSONUser) {
+				repo.employer.
 					EXPECT().
 					GetByEmail(form.Email).
-					Return(nil, errors.New("sql: no rows in result set"))
+					Return(nil, errors.New("sql: no rows in result sett"))
 				return form, nil
 			},
 		},
 		{
 			name:    "Create: bad repository create",
-			form: new(dto.JSONApplicantRegistrationForm),
+			form: new(dto.JSONEmployerRegistrationForm),
 			user: new(dto.JSONUser),
 			prepare: func(
 				repo *repo,
-				form *dto.JSONApplicantRegistrationForm,
+				form *dto.JSONEmployerRegistrationForm,
 				user *dto.JSONUser,
-			) (*dto.JSONApplicantRegistrationForm, *dto.JSONUser) {
-				form = &dto.JSONApplicantRegistrationForm{
+			) (*dto.JSONEmployerRegistrationForm, *dto.JSONUser) {
+				form = &dto.JSONEmployerRegistrationForm{
 					FirstName: "Ivan",
 					LastName:  "Ivanov",
-					BirthDate: "2000-01-01",
 					Email:     "ivanov@ya.ru",
 					Password:  "123456",
 				}
-				applicant := &models.Applicant{
+				employer := &models.Employer{
 					ID:        1,
 				}
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					GetByEmail(form.Email).
 					Return(nil, nil)
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					Create(gomock.Any()).
-					Return(applicant, errors.New("bad repository"))
+					Return(employer, errors.New("bad repository"))
 				return form, nil
 			},
 		},
 		{
 			name:    "Create: ok",
-			form: new(dto.JSONApplicantRegistrationForm),
+			form: new(dto.JSONEmployerRegistrationForm),
 			user: new(dto.JSONUser),
 			prepare: func(
 				repo *repo,
-				form *dto.JSONApplicantRegistrationForm,
+				form *dto.JSONEmployerRegistrationForm,
 				user *dto.JSONUser,
-			) (*dto.JSONApplicantRegistrationForm, *dto.JSONUser) {
-				form = &dto.JSONApplicantRegistrationForm{
+			) (*dto.JSONEmployerRegistrationForm, *dto.JSONUser) {
+				form = &dto.JSONEmployerRegistrationForm{
 					FirstName: "Ivan",
 					LastName:  "Ivanov",
-					BirthDate: "2000-01-01",
 					Email:     "ivanov@ya.ru",
 					Password:  "123456",
 				}
-				applicant := &models.Applicant{
+				employer := &models.Employer{
 					ID:        1,
 				}
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					GetByEmail(form.Email).
 					Return(nil, nil)
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					Create(gomock.Any()).
-					Return(applicant, nil)
+					Return(employer, nil)
 				user = &dto.JSONUser{
-					ID:        applicant.ID,
-					UserType:  dto.UserTypeApplicant,
+					ID:        employer.ID,
+					UserType:  dto.UserTypeEmployer,
 				}
 				return form, user
 			},
@@ -275,14 +273,14 @@ func TestCreate(t *testing.T) {
 		defer ctrl.Finish()
 
 		repo := &repo{
-			applicant: mock.NewMockIApplicantRepository(ctrl),
+			employer: mock.NewMockIEmployerRepository(ctrl),
 		}
 		tt.form, tt.user =tt.prepare(repo, tt.form, tt.user)
 
 		repositories := &internal.Repositories{
-			ApplicantRepository: repo.applicant,
+			EmployerRepository: repo.employer,
 		}
-		uc := usecase.NewApplicantUsecase(logrus.New(), repositories)
+		uc := usecase.NewEmployerUsecase(logrus.New(), repositories)
 		user, _ := uc.Create(context.Background(), tt.form)
 
 		require.Equal(t, tt.user, user)
@@ -292,55 +290,55 @@ func TestCreate(t *testing.T) {
 func TestGetByID(t *testing.T) {
 	t.Parallel()
 	type repo struct {
-		applicant *mock.MockIApplicantRepository
+		employer *mock.MockIEmployerRepository
 	}
 	tests := []struct {
 		name    string
-		applicant *dto.JSONApplicantOutput
+		employer *dto.JSONEmployer
 		prepare func(
 			repo *repo,
-			applicant *dto.JSONApplicantOutput,
-		) (uint64, *dto.JSONApplicantOutput)
+			employer *dto.JSONEmployer,
+		) (uint64, *dto.JSONEmployer)
 	}{
 		{
 			name:    "Create: bad repository",
-			applicant: nil,
+			employer: nil,
 			prepare: func(
 				repo *repo,
-				applicant *dto.JSONApplicantOutput) (uint64, *dto.JSONApplicantOutput) {
+				employer *dto.JSONEmployer) (uint64, *dto.JSONEmployer) {
 				userID := uint64(1)
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					GetByID(userID).
 					Return(nil, errors.New("bad repository"))
-				return userID, applicant
+				return userID, employer
 			},
 		},
 		{
 			name:    "Create: bad repository",
-			applicant: new(dto.JSONApplicantOutput),
+			employer: new(dto.JSONEmployer),
 			prepare: func(
 				repo *repo,
-				applicant *dto.JSONApplicantOutput) (uint64, *dto.JSONApplicantOutput) {
+				employer *dto.JSONEmployer) (uint64, *dto.JSONEmployer) {
 				userID := uint64(1)
-				applicantModel := &models.Applicant{
+				EmployerModel := &models.Employer{
 					ID:        1,
 					FirstName: "Ivan",
 					LastName: "Ivanov",
 					CityName: "Moscow",
 				}
-				applicant = &dto.JSONApplicantOutput{
-					UserType:  dto.UserTypeApplicant,
-					ID:        applicantModel.ID,
-					FirstName: applicantModel.FirstName,
-					LastName:  applicantModel.LastName,
-					CityName:  applicantModel.CityName,
+				employer = &dto.JSONEmployer{
+					UserType:  dto.UserTypeEmployer,
+					ID:        EmployerModel.ID,
+					FirstName: EmployerModel.FirstName,
+					LastName:  EmployerModel.LastName,
+					CityName:  EmployerModel.CityName,
 				}
-				repo.applicant.
+				repo.employer.
 					EXPECT().
 					GetByID(userID).
-					Return(applicantModel, nil)
-				return userID, applicant
+					Return(EmployerModel, nil)
+				return userID, employer
 			},
 		},
 	}
@@ -350,17 +348,17 @@ func TestGetByID(t *testing.T) {
 		defer ctrl.Finish()
 
 		repo := &repo{
-			applicant: mock.NewMockIApplicantRepository(ctrl),
+			employer: mock.NewMockIEmployerRepository(ctrl),
 		}
 		var userID uint64
-		userID, tt.applicant = tt.prepare(repo, tt.applicant)
+		userID, tt.employer = tt.prepare(repo, tt.employer)
 
 		repositories := &internal.Repositories{
-			ApplicantRepository: repo.applicant,
+			EmployerRepository: repo.employer,
 		}
-		uc := usecase.NewApplicantUsecase(logrus.New(), repositories)
-		applicant, _ := uc.GetByID(context.Background(), userID)
+		uc := usecase.NewEmployerUsecase(logrus.New(), repositories)
+		employer, _ := uc.GetByID(context.Background(), userID)
 
-		require.Equal(t, tt.applicant, applicant)
+		require.Equal(t, tt.employer, employer)
 	}
 }
