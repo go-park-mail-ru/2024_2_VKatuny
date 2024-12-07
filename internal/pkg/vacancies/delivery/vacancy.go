@@ -53,11 +53,11 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newVacancy := &dto.JSONVacancy{}
 	newVacancy.Position = r.FormValue("position")
-	newVacancy.Location = r.FormValue("location")
-	newVacancy.Description = r.FormValue("description")
-	newVacancy.WorkType = r.FormValue("workType")
-	newVacancy.CompanyName = r.FormValue("companyName")
-	newVacancy.PositionCategoryName = r.FormValue("group")
+	newVacancy.Location = utils.SanitizeString(r.FormValue("location"))
+	newVacancy.Description = utils.SanitizeString(r.FormValue("description"))
+	newVacancy.WorkType = utils.SanitizeString(r.FormValue("workType"))
+	newVacancy.CompanyName = utils.SanitizeString(r.FormValue("companyName"))
+	newVacancy.PositionCategoryName = utils.SanitizeString(r.FormValue("group"))
 	temp, err := strconv.Atoi(r.FormValue("salary"))
 
 	if err != nil {
@@ -96,7 +96,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	}
 
 	h.logger.Debug(newVacancy)
-	wroteVacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
+	vacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -107,7 +107,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       wroteVacancy,
+		Body:       vacancy,
 	})
 }
 
@@ -239,7 +239,6 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 		updatedVacancy.Avatar = fileAddress
 		updatedVacancy.CompressedAvatar = compressedFileAddress
 	}
-
 	
 	wroteVacancy, err := h.vacanciesUsecase.UpdateVacancy(vacancyID, updatedVacancy, currentUser)
 	if err != nil {

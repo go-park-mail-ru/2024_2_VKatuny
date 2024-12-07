@@ -28,7 +28,7 @@ type ApplicantHandlers struct {
 	cvUsecase          cvs.ICVsUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
 	authGRPC           auth_grpc.AuthorizationClient
-	CompressGRPC       compressmicroservice.CompressServiceClient
+	compressGRPC       compressmicroservice.CompressServiceClient
 }
 
 func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
@@ -40,7 +40,7 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 		cvUsecase:          app.Usecases.CVUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
 		authGRPC:           app.Microservices.Auth,
-		CompressGRPC:       app.Microservices.Compress,
+		compressGRPC:       app.Microservices.Compress,
 	}
 }
 
@@ -124,12 +124,12 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	}
 
 	newProfileData := &dto.JSONUpdateApplicantProfile{}
-	newProfileData.FirstName = r.FormValue("firstName")
-	newProfileData.LastName = r.FormValue("lastName")
-	newProfileData.City = r.FormValue("city")
-	newProfileData.BirthDate = r.FormValue("birthDate")
-	newProfileData.Contacts = r.FormValue("contacts")
-	newProfileData.Education = r.FormValue("education")
+	newProfileData.FirstName = utils.SanitizeString(r.FormValue("firstName"))
+	newProfileData.LastName = utils.SanitizeString(r.FormValue("lastName"))
+	newProfileData.City = utils.SanitizeString(r.FormValue("city"))
+	newProfileData.BirthDate = utils.SanitizeString(r.FormValue("birthDate"))
+	newProfileData.Contacts = utils.SanitizeString(r.FormValue("contacts"))
+	newProfileData.Education = utils.SanitizeString(r.FormValue("education"))
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
