@@ -7,6 +7,4 @@ RUN  apt-get update \
 && apt-get install -y myspell-ru \
 && iconv -f koi8-r -t utf-8 -o russian.affix ${DICT}.aff \
 && iconv -f koi8-r -t utf-8 -o russian.dict  ${DICT}.dic
-
 EXPOSE 5432
-
