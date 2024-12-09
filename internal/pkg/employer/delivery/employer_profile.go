@@ -79,7 +79,7 @@ func (h *EmployerHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
+	employerProfile.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(employerProfile.Avatar)
 	h.logger.Debugf("function %s: success, got profile %v", fn, employerProfile)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,

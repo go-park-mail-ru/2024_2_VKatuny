@@ -3,7 +3,9 @@ package usecase
 import (
 	"fmt"
 	"mime/multipart"
+	"os"
 	"slices"
+	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
@@ -45,6 +47,28 @@ func (vu *FileLoadingUsecase) WriteImage(file multipart.File, header *multipart.
 	if err != nil {
 		return "", "", err
 	}
+	return dir + fileAddress, vu.FindCompressedFile(fileAddress), nil
+}
 
-	return dir + fileAddress, vu.conf.CompressMicroservice.CompressedMediaDir + fileAddress, nil
+func (vu *FileLoadingUsecase) FindCompressedFile(filename string) string {
+	for true {
+		x := strings.Index(filename, "/")
+		if x != -1 {
+			filename = filename[x+1:]
+		} else {
+			break
+		}
+	}
+	fmt.Println("!!!!!", filename)
+	dir := vu.conf.CompressMicroservice.CompressedMediaDir
+	compressed, err := os.ReadDir(dir)
+	if err != nil {
+		return ""
+	}
+	for _, file := range compressed {
+		if file.Name()[:strings.Index(file.Name(), ".")] == filename[:strings.Index(filename, ".")] {
+			return dir + file.Name()
+		}
+	}
+	return ""
 }
