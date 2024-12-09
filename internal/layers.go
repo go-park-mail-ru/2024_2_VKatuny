@@ -15,18 +15,19 @@ import (
 type App struct {
 	Logger         *logrus.Logger
 	BackendAddress string
+	CSRFSecret     string
 	Repositories   *Repositories
 	Usecases       *Usecases
 	Microservices  *Microservices
 }
 
 type Repositories struct {
-	EmployerRepository         employer.IEmployerRepository
-	ApplicantRepository        applicant.IApplicantRepository
-	PortfolioRepository        portfolio.IPortfolioRepository
-	CVRepository               cvs.ICVsRepository
-	VacanciesRepository        vacancies.IVacanciesRepository
-	FileLoadingRepository      fileloading.IFileLoadingRepository
+	EmployerRepository    employer.IEmployerRepository
+	ApplicantRepository   applicant.IApplicantRepository
+	PortfolioRepository   portfolio.IPortfolioRepository
+	CVRepository          cvs.ICVsRepository
+	VacanciesRepository   vacancies.IVacanciesRepository
+	FileLoadingRepository fileloading.IFileLoadingRepository
 }
 
 type Usecases struct {
