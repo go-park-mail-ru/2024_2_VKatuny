@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -79,14 +80,13 @@ func main() {
 	defer connAuthGRPC.Close()
 	logger.Infof("Compress gRPC client started at %s", conf.CompressMicroservice.Server.GetAddress())
 
-
 	repositories := &internal.Repositories{
-		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
-		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection),
-		CVRepository:               cvRepository.NewCVStorage(dbConnection),
-		VacanciesRepository:        vacancies_repository.NewVacanciesStorage(dbConnection),
-		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
-		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.MediaDir),
+		ApplicantRepository:   applicant_repository.NewApplicantStorage(dbConnection),
+		PortfolioRepository:   portfolioRepository.NewPortfolioStorage(dbConnection),
+		CVRepository:          cvRepository.NewCVStorage(dbConnection),
+		VacanciesRepository:   vacancies_repository.NewVacanciesStorage(dbConnection),
+		EmployerRepository:    employer_repository.NewEmployerStorage(dbConnection),
+		FileLoadingRepository: file_loading_repository.NewFileLoadingStorage(conf.Server.MediaDir),
 	}
 	microservices := &internal.Microservices{
 		Auth:     grpc_auth.NewAuthorizationClient(connAuthGRPC),
@@ -100,7 +100,7 @@ func main() {
 		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices, conf),
 	}
-	
+
 	app := &internal.App{
 		Logger:        logger,
 		Repositories:  repositories,
@@ -116,6 +116,15 @@ func main() {
 	handlers = middleware.AccessLogger(handlers, logger)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
+
+	logger.Debugf("Starting compress demon")
+	_, err = microservices.Compress.StartScanCompressDemon(
+		context.Background(),
+		&compressmicroservice.Nothing{},
+	)
+	if err != nil {
+		logger.Fatal(err)
+	}
 	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
 	err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
 	if err != nil {

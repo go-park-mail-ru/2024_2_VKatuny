@@ -2,6 +2,7 @@ package compressmicroservice
 
 import (
 	"context"
+	"time"
 
 	compressinterfaces "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/compress"
 	compress "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
@@ -38,5 +39,19 @@ func (cm *CompressManager) DeleteFile(ctx context.Context, in *compress.DeleteFi
 		return &compress.Nothing{}, compressinterfaces.WrongData
 	}
 	err := cm.compressUsecase.DeleteFile(in.FileName)
+	return &compress.Nothing{}, err
+}
+
+func (cm *CompressManager) StartScanCompressDemon(ctx context.Context, in *compress.Nothing) (*compress.Nothing, error) {
+	var err error
+	go func() {
+		for true {
+			err = cm.compressUsecase.ScanDir()
+			if err != nil {
+				break
+			}
+			time.Sleep(time.Hour)
+		}
+	}()
 	return &compress.Nothing{}, err
 }

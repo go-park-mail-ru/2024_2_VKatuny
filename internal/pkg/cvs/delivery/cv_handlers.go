@@ -38,7 +38,9 @@ func (h *CVsHandler) SearchCVs(w http.ResponseWriter, r *http.Request) {
 	group := queryParams.Get("group")
 	searchBy := queryParams.Get("searchBy")
 	CVs, err := h.cvsUsecase.SearchCVs(offsetStr, numStr, searchStr, group, searchBy)
-
+	for _, cv := range CVs {
+		cv.CompressedAvatar  = h.fileLoadingUsecase.FindCompressedFile(cv.Avatar)
+	}
 	if err != nil {
 		h.logger.Errorf("function: %s; got err while reading CVs from db %s", fn, err)
 		middleware.UniversalMarshal(
