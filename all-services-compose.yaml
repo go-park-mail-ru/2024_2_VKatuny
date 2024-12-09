@@ -10,7 +10,7 @@ volumes:
 services:
   auth_microservice:
     build:
-      context: ../
+      context: ./
       dockerfile: ./build/services/auth/Dockerfile
     restart: unless-stopped
     volumes:
@@ -25,7 +25,7 @@ services:
 
   compress_microservice:
     build:
-      context: ../
+      context: ./
       dockerfile: ./build/services/compress_microservice/Dockerfile
     restart: unless-stopped
     volumes:
@@ -33,7 +33,7 @@ services:
 
   main_service:
     build:
-      context: ../
+      context: ./
       dockerfile: ./build/services/app/Dockerfile
     ports:
       - "8082:8001"
@@ -68,7 +68,7 @@ services:
 
   db_postgresql:
     build:
-      context: ../
+      context: ./
       dockerfile: ./build/db/Dockerfile
     ports:
       - "127.0.0.1:8083:5432"
@@ -80,7 +80,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_SCHEMA: ${POSTGRES_SCHEMA}
     volumes:
-      - /var/lib/postgres/container_data:/var/lib/postgresql
+      - /var/lib/postgresql/container_data:/var/lib/postgresql
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
