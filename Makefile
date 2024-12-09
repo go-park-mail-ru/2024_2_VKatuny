@@ -8,7 +8,10 @@ SRC_DIR=./cmd/app
 BUILD_FLAGS=
 
 # domain dirs in internal/pkg
-DOMAINS=applicant cvs employer portfolio session vacancies
+DOMAINS=applicant cvs employer portfolio session vacancies file_loading
+
+
+
 
 .PHONY: mock-gen api
 
@@ -33,7 +36,7 @@ lint:
 	revive -config reviveconfig.toml -formatter friendly ./...
 
 api:
-	swag init --generalInfo ./cmd/app/main.go --output api/
+	swag init --parseInternal --pd --dir cmd/myapp/,delivery/handler/ --output api/
 	node ./api/server.js
 
 mock-gen:
