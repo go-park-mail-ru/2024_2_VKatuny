@@ -7,7 +7,9 @@ import (
 	"log"
 	"os"
 	"slices"
+	"strings"
 
+	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/sirupsen/logrus"
 )
 
@@ -65,14 +67,18 @@ func (cr *CompressRepository) ScanDir() error {
 		cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
 	}
 	compressedList := []string{}
+	cutCompressedList := []string{}
 	uncompressedList := []string{}
+	cutUncompressedList := []string{}
 	for _, file := range compressed {
 		if !file.IsDir() {
+			cutCompressedList = append(cutCompressedList, Cut(file.Name()))
 			compressedList = append(compressedList, file.Name())
 		}
 	}
 	for _, file := range uncompressed {
 		if !file.IsDir() {
+			cutUncompressedList = append(cutUncompressedList, Cut(file.Name()))
 			uncompressedList = append(uncompressedList, file.Name())
 		}
 	}
@@ -82,20 +88,20 @@ func (cr *CompressRepository) ScanDir() error {
 		cr.logger.Debugf("%s: Nothing to compress or delete", funcName)
 		return nil
 	} else {
-		newCompressedList := []string{}
+		cutNewCompressedList := []string{}
 		for _, file := range compressedList {
-			if !slices.Contains(uncompressedList, file) {
+			if !slices.Contains(cutUncompressedList, Cut(file)) {
 				err := cr.DeleteFile(cr.compressedDir + file)
 				if err != nil {
 					cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
 				}
 			} else {
-				newCompressedList = append(newCompressedList, file)
+				cutNewCompressedList = append(cutNewCompressedList, Cut(file))
 			}
 		}
 		for _, file := range uncompressedList {
-			if !slices.Contains(newCompressedList, file) {
-				err := cr.CompressAndWriteFile(cr.uncompressedDir + file)
+			if !slices.Contains(cutNewCompressedList, Cut(file)) {
+				err := cr.CompressAndWriteFile(cr.uncompressedDir+file, cr.compressedDir+file)
 				if err != nil {
 					cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
 				}
@@ -105,10 +111,28 @@ func (cr *CompressRepository) ScanDir() error {
 	return nil
 }
 
-func (cr *CompressRepository) CompressAndWriteFile(filePath string) error {
+func (cr *CompressRepository) CompressAndWriteFile(filePath string, newfilePath string) error {
 	funcName := "CompressRepository.CompressAndWriteFile"
 	cr.logger.Debugf("%s: got request: %s", funcName, filePath)
 
-	cr.logger.Errorf("%s: file %s compressed", funcName, filePath)
+	image1, err := vips.NewImageFromFile(filePath)
+	if err != nil {
+		return err
+	}
+	// Rotate the picture upright and reset EXIF orientation tag
+	//err = image1.AutoRotate()
+	bufer, _, err := image1.ExportWebp(&vips.WebpExportParams{MinSize: true})
+	err = os.WriteFile(Cut(newfilePath)+".webp", bufer, 0644)
+
+	//err = image1.
+	if err != nil {
+		return err
+	}
+
+	cr.logger.Debugf("%s: file %s compressed", funcName, newfilePath)
 	return nil
+}
+
+func Cut(name string) string {
+	return name[:strings.Index(name, ".")]
 }
