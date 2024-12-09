@@ -25,4 +25,5 @@ message DeleteFileInput {
 service CompressService {
 	rpc CompressAndSaveFile (CompressAndSaveFileInput) returns (Nothing) {}
 	rpc DeleteFile (DeleteFileInput) returns (Nothing) {}
+  rpc StartScanCompressDemon (Nothing) returns (Nothing) {}
 }
