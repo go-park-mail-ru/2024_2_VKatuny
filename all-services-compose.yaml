@@ -39,7 +39,7 @@ services:
       - "8082:8001"
     restart: unless-stopped
     volumes:
-      - ../configs/:/build/configs
+      - ./configs/:/build/configs
     depends_on:
       db_postgresql:
         condition: service_started
