@@ -60,7 +60,7 @@ func main() {
 	defer dbConnection.Close()
 
 	connAuthGRPC, err := grpc.NewClient(
-		conf.AuthMicroservice.Server.GetAddress(),
+		conf.Server.GetAuthServiceLocation(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -100,7 +100,7 @@ func main() {
 		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices, conf),
 	}
-	
+
 	app := &internal.App{
 		Logger:        logger,
 		Repositories:  repositories,
