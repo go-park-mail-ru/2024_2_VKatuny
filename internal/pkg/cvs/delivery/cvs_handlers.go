@@ -10,9 +10,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 )
@@ -70,12 +70,12 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
-	newCV.PositionRu = r.FormValue("positionRu")
-	newCV.PositionEn = r.FormValue("positionEn")
-	newCV.Description = r.FormValue("description")
-	newCV.JobSearchStatusName = r.FormValue("jobSearchStatus")
-	newCV.WorkingExperience = r.FormValue("workingExperience")
-	newCV.PositionCategoryName = r.FormValue("group")
+	newCV.PositionRu = utils.SanitizeString(r.FormValue("positionRu"))
+	newCV.PositionEn = utils.SanitizeString(r.FormValue("positionEn"))
+	newCV.Description = utils.SanitizeString(r.FormValue("description"))
+	newCV.JobSearchStatusName = utils.SanitizeString(r.FormValue("jobSearchStatus"))
+	newCV.WorkingExperience = utils.SanitizeString(r.FormValue("workingExperience"))
+	newCV.PositionCategoryName = utils.SanitizeString(r.FormValue("group"))
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
@@ -222,12 +222,12 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
-	newCV.PositionRu = r.FormValue("positionRu")
-	newCV.PositionEn = r.FormValue("positionEn")
-	newCV.Description = r.FormValue("description")
-	newCV.JobSearchStatusName = r.FormValue("jobSearchStatus")
-	newCV.WorkingExperience = r.FormValue("workingExperience")
-	newCV.PositionCategoryName = r.FormValue("group")
+	newCV.PositionRu = utils.SanitizeString(r.FormValue("positionRu"))
+	newCV.PositionEn = utils.SanitizeString(r.FormValue("positionEn"))
+	newCV.Description = utils.SanitizeString(r.FormValue("description"))
+	newCV.JobSearchStatusName = utils.SanitizeString(r.FormValue("jobSearchStatus"))
+	newCV.WorkingExperience = utils.SanitizeString(r.FormValue("workingExperience"))
+	newCV.PositionCategoryName = utils.SanitizeString(r.FormValue("group"))
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {

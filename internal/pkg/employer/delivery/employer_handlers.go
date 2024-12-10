@@ -40,6 +40,20 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 		})
 		return
 	}
+	employerRegistrationForm.FirstName =
+		utils.SanitizeString(employerRegistrationForm.FirstName)
+	employerRegistrationForm.LastName =
+		utils.SanitizeString(employerRegistrationForm.LastName)
+	employerRegistrationForm.Position =	
+		utils.SanitizeString(employerRegistrationForm.Position)
+	employerRegistrationForm.Company =
+		utils.SanitizeString(employerRegistrationForm.Company)
+	employerRegistrationForm.CompanyDescription =
+		utils.SanitizeString(employerRegistrationForm.CompanyDescription)
+	employerRegistrationForm.Email =
+		utils.SanitizeString(employerRegistrationForm.Email)
+	employerRegistrationForm.Password =
+		utils.SanitizeString(employerRegistrationForm.Password)
 	h.logger.Debugf("%s: json decoded successfully: %v", fn, employerRegistrationForm)
 
 	// TODO: implement usecase for validate registration data
@@ -76,6 +90,7 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 		ID:       grpc_response.UserData.ID,
 		UserType: grpc_response.UserData.UserType,
 	}
+	user.UserType = utils.SanitizeString(user.UserType)
 	h.logger.Debugf("%s: employer logged in successfully: %v", fn, user)
 
 	cookie := utils.MakeAuthCookie(grpc_response.Session.ID, h.backendAddress)

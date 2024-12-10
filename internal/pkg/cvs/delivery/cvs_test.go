@@ -28,12 +28,12 @@ func createMultipartFormJSONCV(jsonForm *dto.JSONCv) (*bytes.Buffer, string) {
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 	defer writer.Close()
-	_ = writer.WriteField("positionRu", jsonForm.PositionRu)
-	_ = writer.WriteField("positionEn", jsonForm.PositionEn)
-	_ = writer.WriteField("description", jsonForm.Description)
-	_ = writer.WriteField("jobSearchStatus", jsonForm.JobSearchStatusName)
-	_ = writer.WriteField("workingExperience", jsonForm.WorkingExperience)
-	_ = writer.WriteField("group", jsonForm.PositionCategoryName)
+	writer.WriteField("positionRu", jsonForm.PositionRu)
+	writer.WriteField("positionEn", jsonForm.PositionEn)
+	writer.WriteField("description", jsonForm.Description)
+	writer.WriteField("jobSearchStatus", jsonForm.JobSearchStatusName)
+	writer.WriteField("workingExperience", jsonForm.WorkingExperience)
+	writer.WriteField("group", jsonForm.PositionCategoryName)
 	return &buf, writer.FormDataContentType()
 }
 
