@@ -8,12 +8,11 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	"github.com/sirupsen/logrus"
 )
 
-type HandlerFunc func(w http.ResponseWriter, r *http.Request)
-
-func CSRFProtection(next HandlerFunc, app *internal.App) HandlerFunc {
+func CSRFProtection(next dto.HandlerFunc, app *internal.App) dto.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn := "middleware.CSRFProtection"
 		logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
@@ -22,22 +21,40 @@ func CSRFProtection(next HandlerFunc, app *internal.App) HandlerFunc {
 		}
 		logger.Debugf("%s: got logger from context", fn)
 
-		user, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
-		if !ok {
-			logger.Errorf("%s: got err %s", fn, "failed to get user from context")
-			UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-				HTTPStatus: http.StatusInternalServerError,
-				Error:      "failed to get user from context",
-			})
-			return
-		}
-		logger.Debugf("%s: got user from context: %v", fn, user)
-
 		session, err := r.Cookie(dto.SessionIDName)
 		if err == http.ErrNoCookie || session.Value == "" {
 			logger.Errorf("checking session: got err %s", err)
-			UniversalMarshal(w, http.StatusForbidden, dto.JSONResponse{
-				HTTPStatus: http.StatusForbidden,
+			UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+				HTTPStatus: http.StatusUnauthorized,
+				Error:      err.Error(),
+			})
+			return
+		}
+
+		// Getting userType from session
+		userTypeGot, err := utils.CheckToken(session.Value)
+		logger.Debugf("got user type %s with token %s", userTypeGot, session.Value)
+
+		if err != nil {
+			logger.Errorf("got err %s", err)
+			UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+				HTTPStatus: http.StatusUnauthorized,
+				Error:      err.Error(),
+			})
+			return
+		}
+
+		grpc_request := &grpc_auth.CheckAuthRequest{
+			RequestID: r.Context().Value(dto.RequestIDContextKey).(string),
+			Session: &grpc_auth.SessionToken{
+				ID: session.Value,
+			},
+		}
+		grpc_response, err := app.Microservices.Auth.CheckAuth(r.Context(), grpc_request)
+		if err != nil {
+			logger.Errorf("got err %s", err)
+			UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
 				Error:      err.Error(),
 			})
 			return
@@ -55,7 +72,12 @@ func CSRFProtection(next HandlerFunc, app *internal.App) HandlerFunc {
 		logger.Debugf("%s: got token: %s", fn, token)
 
 		cryptToken := utils.NewCryptToken(app.CSRFSecret)
-		ok, err = cryptToken.Check(user.ID, user.UserType, session.Value, token)
+		ok, err = cryptToken.Check(
+			grpc_response.UserData.ID,
+			grpc_response.UserData.UserType,
+			session.Value,
+			token,
+		)
 		if err != nil {
 			errMsg := commonerrors.ErrUncoveredError
 			if err == utils.ErrTokenExpired {
