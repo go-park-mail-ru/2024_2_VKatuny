@@ -25,6 +25,7 @@ type ServerConfig struct {
 	Port     int    `yaml:"port"`
 	Front    string `yaml:"frontURI"`
 	MediaDir string `yaml:"mediadir"`
+	CSRFSecret string `yaml:"csrf_secret"`
 }
 
 type DataBaseConfig struct {
