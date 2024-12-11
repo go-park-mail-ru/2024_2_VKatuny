@@ -6,7 +6,6 @@ volumes:
   prometheus_data: {}
   grafana-storage: {}
 
-
 services:
   auth_microservice:
     build:
@@ -100,7 +99,7 @@ services:
     ports:
       - "127.0.0.1:9090:9090"
     volumes:
-      - "../configs/:/etc/prometheus"
+      - "./configs/:/etc/prometheus"
       - "prometheus_data:/prometheus"
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -113,6 +112,6 @@ services:
     volumes:
       - grafana-storage:/var/lib/grafana
     ports:
-      - '127.0.0.1:3000:3000'
+      - "127.0.0.1:3000:3000"
     networks:
       - monitoring
