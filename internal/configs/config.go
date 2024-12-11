@@ -25,6 +25,8 @@ type ServerConfig struct {
 	Port     int    `yaml:"port"`
 	Front    string `yaml:"frontURI"`
 	MediaDir string `yaml:"mediadir"`
+	AuthPort string `yaml:"auth_port"`
+	AuthHost string `yaml:"auth_host"`
 }
 
 type DataBaseConfig struct {
@@ -57,6 +59,7 @@ type Microservice struct {
 type Redis struct {
 	Host     string `yaml:"host"`
 	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 }
 
@@ -102,6 +105,10 @@ func (d *DataBaseConfig) GetDSN() string {
 		d.Port,
 		d.SSLMode,
 	)
+}
+
+func (s *ServerConfig) GetAuthServiceLocation() string {
+	return s.AuthHost + ":" + s.AuthPort
 }
 
 func (m *Microservice) GetAddress() string {
