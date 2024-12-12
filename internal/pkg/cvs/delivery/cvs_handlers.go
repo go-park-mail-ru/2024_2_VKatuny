@@ -319,3 +319,62 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 		HTTPStatus: http.StatusOK,
 	})
 }
+
+// @Tags CV
+// @Summary Delete cv
+// @Description Delete cv
+// @Accept json
+// @Produce json
+// @Param id path uint64 true "id of cv"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 401 {object} dto.JSONResponse
+// @Failure 404 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/cv/{id} [delete]
+func (h *CVsHandler) CVtoPDF(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "CVsHandler.CVtoPDF"
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
+
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	cvID, err := strconv.ParseUint(slug, 10, 64)
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
+	if !ok {
+		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnableToGetUserFromContext,
+		})
+		return
+	}
+
+	name, err := h.fileLoadingUsecase.CVtoPDF(cvID, currentUser)
+ 	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       name,
+	})
+}

@@ -9,18 +9,20 @@ import (
 )
 
 type FileLoadingStorage struct {
-	dir string
+	mediaDir string
+	cvinPDFdir string
 }
 
-func NewFileLoadingStorage(dir string) *FileLoadingStorage {
+func NewFileLoadingStorage(mediaDir, CVinPDFDir string) *FileLoadingStorage {
 	return &FileLoadingStorage{
-		dir: dir,
+		mediaDir: mediaDir,
+		cvinPDFdir: CVinPDFDir,
 	}
 }
 
 func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error) {
-	fmt.Println(s.dir + filename + header.Filename)
-	dst, err := os.Create(s.dir + filename + header.Filename)
+	fmt.Println(s.mediaDir + filename + header.Filename)
+	dst, err := os.Create(s.mediaDir + filename + header.Filename)
 	if err != nil {
 		log.Println("error creating file", err)
 		return "", "", fmt.Errorf("error creating file")
@@ -29,5 +31,9 @@ func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.
 	if _, err := io.Copy(dst, file); err != nil {
 		return "", "", fmt.Errorf("error copying file")
 	}
-	return s.dir, filename + header.Filename, nil
+	return s.mediaDir, filename + header.Filename, nil
+}
+
+func (s *FileLoadingStorage) CVtoPDF(cvID uint64) (string, error) {
+	return s.cvinPDFdir, nil
 }

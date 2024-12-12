@@ -25,6 +25,7 @@ type ServerConfig struct {
 	Port     int    `yaml:"port"`
 	Front    string `yaml:"frontURI"`
 	MediaDir string `yaml:"mediadir"`
+	CVinPDFDir string `yaml:"cvpdfdir"`
 }
 
 type DataBaseConfig struct {

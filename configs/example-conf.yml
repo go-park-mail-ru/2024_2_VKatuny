@@ -4,6 +4,7 @@ server:
   port: 8090
   frontURI: "http://192.168.77.130:8000"
   mediadir: "media/UnCompressed/"
+  cvpdfdir: "media/CVtoPDF/""
   
 
 database:
