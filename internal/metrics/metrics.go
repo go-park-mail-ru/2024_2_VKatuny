@@ -19,9 +19,18 @@ func NewMetrics() *Metrics {
 			},
 			[]string{"method", "path", "status"},
 		),
+		Timings: prometheus.NewHistogramVec(
+			prometheus.HistogramOpts{
+				Name:    "timings",
+				Help:    "Request duration in seconds",
+				Buckets: prometheus.DefBuckets,
+			},
+			[]string{"method", "path"},
+		),
 	}
 }
 
 func InitMetrics(metrics *Metrics) {
 	prometheus.MustRegister(metrics.Hits)
+	prometheus.MustRegister(metrics.Timings)
 }
