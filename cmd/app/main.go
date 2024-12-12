@@ -9,6 +9,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/metrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -79,6 +81,8 @@ func main() {
 	defer connAuthGRPC.Close()
 	logger.Infof("Compress gRPC client started at %s", conf.CompressMicroservice.Server.GetAddress())
 
+	Metrics := metrics.NewMetrics()
+	metrics.InitMetrics(Metrics)
 
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
@@ -106,9 +110,12 @@ func main() {
 		Repositories:  repositories,
 		Usecases:      usecases,
 		Microservices: microservices,
+		Metrics:       Metrics,
 	}
 
 	Mux := mux.Init(app)
+
+	Mux.Handle("/metrics", promhttp.Handler())
 
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap

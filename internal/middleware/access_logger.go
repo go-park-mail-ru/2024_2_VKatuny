@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/crw"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,6 +23,8 @@ func AccessLogger(next http.Handler, logger *logrus.Logger) http.Handler {
 		} 
 		ctx = context.WithValue(ctx, dto.RequestIDContextKey, requestID)
 
+		ws := crw.NewResponseWriterStatus(w)
+
 		logger.WithFields(logrus.Fields{
 			"method": r.Method,
 			"path":   r.URL.Path,
@@ -29,13 +32,14 @@ func AccessLogger(next http.Handler, logger *logrus.Logger) http.Handler {
 		}).Info("Request received")
 
 		start := time.Now()
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next.ServeHTTP(ws, r.WithContext(ctx))
 
 		logger.WithFields(logrus.Fields{
 			"method": r.Method,
 			"path":   r.URL.Path,
 			"request_id": requestID,
 			"elapsed": time.Since(start),
+			"status": ws.Status(),
 		}).Info("Response")
 	})
 }
