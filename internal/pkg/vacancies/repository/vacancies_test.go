@@ -261,12 +261,12 @@ func TestPostgresCreate(t *testing.T) {
 			name: "TestOk",
 			args: args{
 				vacancy: dto.JSONVacancy{
-					EmployerID:  1,
-					Salary:      10000,
-					Position:    "Position",
-					Location:    "Location",
-					Description: "Description",
-					WorkType:    "WorkType",
+					EmployerID:       1,
+					Salary:           10000,
+					Position:         "Position",
+					Location:         "Location",
+					Description:      "Description",
+					WorkType:         "WorkType",
 					CompressedAvatar: "CompressedAvatar",
 				},
 				worTypeId:  1,
@@ -357,12 +357,12 @@ func TestPostgresUpdate(t *testing.T) {
 			args: args{
 				ID: 1,
 				vacancy: dto.JSONVacancy{
-					EmployerID:  1,
-					Salary:      10000,
-					Position:    "Position",
-					Location:    "Location",
-					Description: "Description",
-					WorkType:    "WorkType",
+					EmployerID:       1,
+					Salary:           10000,
+					Position:         "Position",
+					Location:         "Location",
+					Description:      "Description",
+					WorkType:         "WorkType",
 					CompressedAvatar: "CompressedAvatar",
 				},
 				worTypeId:  1,
@@ -762,6 +762,150 @@ func TestPostgresUnsubscribe(t *testing.T) {
 			s := NewVacanciesStorage(db)
 
 			if err := s.Unsubscribe(tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
+				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestGetApplicantFavoriteVacancies(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ID    uint64
+		query func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "TestOk",
+			args: args{
+				ID: 1,
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
+		company.company_name, position_category.category_name, vacancy.compressed_image from vacancy
+		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
+		left join position_category on vacancy.position_category_id = position_category.id
+		left join favorite_vacancy on favorite_vacancy.vacancy_id = vacancy.id
+		left join applicant on applicant.id = favorite_vacancy.applicant_id 
+		where applicant.id = (.+)`).
+						WithArgs(
+							args.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
+							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name", "category_name", "compressed_image"}).
+							AddRow(1, "Moscow", "Скульптор", "Требуется скульптор без опыта работы", 90000, 1,
+								"Полная занятость", "", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "Мэрия Москвы", "Творец", "test"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestFailZeroID",
+			args: args{
+				ID: 0,
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
+		company.company_name, position_category.category_name, vacancy.compressed_image from vacancy
+		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
+		left join position_category on vacancy.position_category_id = position_category.id
+		left join favorite_vacancy on favorite_vacancy.vacancy_id = vacancy.id
+		left join applicant on applicant.id = favorite_vacancy.applicant_id 
+		where applicant.id = (.+)`).
+						WithArgs(
+							args.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "position", "vacancy_description",
+							"salary", "employer_id", "work_type_name", "path_to_company_avatar", "created_at", "updated_at", "company_name", "category_name", "compressed_image"}).
+							AddRow(1, nil, nil, nil, nil, nil,
+								nil, nil, nil, nil, nil, nil, nil))
+				},
+			},
+			wantErr: true,
+			err:     nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			s := NewVacanciesStorage(db)
+
+			if _, err := s.GetApplicantFavoriteVacancies(tt.args.ID); (err != nil) != tt.wantErr {
+				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresMakeFavorite(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ID          uint64
+		applicantID uint64
+		query       func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "TestOk",
+			args: args{
+				ID:          1,
+				applicantID: 1,
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec(`insert into favorite_vacancy (.+)`).
+						WithArgs(
+							args.ID,
+							args.applicantID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 0))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			s := NewVacanciesStorage(db)
+
+			if err := s.MakeFavorite(tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 

@@ -1740,3 +1740,196 @@ func TestGetVacancySubscribers(t *testing.T) {
 		})
 	}
 }
+
+func TestAddVacancyIntoFavorite(t *testing.T) {
+	t.Parallel()
+
+	type in struct {
+		slug string
+		user *dto.UserFromSession
+	}
+	type outExpected struct {
+		response *dto.JSONResponse
+		status   int
+	}
+	type usecaseMock struct {
+		vacanciesUsecase *vacancies_mock.MockIVacanciesUsecase
+	}
+	type args struct {
+		r *http.Request
+		w *httptest.ResponseRecorder
+	}
+	tests := []struct {
+		name    string
+		prepare func(in *in, out *outExpected, usecase *usecaseMock, args *args)
+	}{
+		{
+			name: "VacancyHandler.GetVacancyFavorite success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
+				}
+
+				out.status = http.StatusOK
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					AddIntoFavorite(uint64(slugInt), in.user).
+					Return(nil)
+
+				args.r = httptest.NewRequest(
+					http.MethodPost,
+					fmt.Sprintf("/api/v1/applicant/%s/favorite-vacancy", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancyFavorite bad slug",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "142526575673463457814521467851672457"
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+				}
+
+				args.r = httptest.NewRequest(
+					"",
+					fmt.Sprintf("/api/v1/applicant/142526575673463457814521467851672457/favorite-vacancy"),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancyFavorite no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+
+				out.status = http.StatusUnauthorized
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgUnableToGetUserFromContext,
+				}
+
+				args.r = httptest.NewRequest(
+					http.MethodPost,
+					fmt.Sprintf("/api/v1/applicant/%s/favorite-vacancy", in.slug),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.DeleteVacancyHandler no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeEmployer,
+				}
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgDataBaseError,
+				}
+
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.vacanciesUsecase.
+					EXPECT().
+					AddIntoFavorite(uint64(slugInt), in.user).
+					Return(fmt.Errorf(dto.MsgDataBaseError))
+
+				args.r = httptest.NewRequest(
+					http.MethodPost,
+					fmt.Sprintf("/api/v1/applicant/%s/favorite-vacancy", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			in, out, usecase, args := new(in), new(outExpected), new(usecaseMock), new(args)
+
+			usecase.vacanciesUsecase = vacancies_mock.NewMockIVacanciesUsecase(ctrl)
+
+			tt.prepare(in, out, usecase, args)
+
+			logger := logrus.New()
+			logger.Out = io.Discard
+
+			app := &internal.App{
+				Logger: logger,
+				Usecases: &internal.Usecases{
+					VacanciesUsecase: usecase.vacanciesUsecase,
+				},
+				Repositories: &internal.Repositories{},
+                Microservices: &internal.Microservices{
+					Compress: nil,
+				},
+			}
+
+			testMux := mux.NewRouter()
+			h := delivery.NewVacanciesHandlers(app)
+			testMux.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", h.AddVacancyIntoFavorite)
+
+			require.NotNil(t, args.r, "request is nil")
+			require.NotNil(t, args.w, "response is nil")
+
+			testMux.ServeHTTP(args.w, args.r)
+
+			require.EqualValuesf(t, out.status, args.w.Result().StatusCode,
+				"got status %d, expected %d",
+				args.w.Result().StatusCode,
+				out.status,
+			)
+
+			jsonResonse := new(dto.JSONResponse)
+			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			require.NoError(t, err)
+
+			require.Equalf(t, out.response, jsonResonse,
+				"got response %v, expected %v",
+				jsonResonse,
+				out.response,
+			)
+		})
+	}
+}

@@ -20,6 +20,8 @@ type IVacanciesRepository interface {
 	GetSubscribersCount(ID uint64) (uint64, error)
 	GetSubscribersList(ID uint64) ([]*models.Applicant, error)
 	Unsubscribe(ID uint64, applicantID uint64) error
+	GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONVacancy, error)
+	MakeFavorite(ID uint64, applicantID uint64) error
 }
 
 type IVacanciesUsecase interface {
@@ -34,4 +36,6 @@ type IVacanciesUsecase interface {
 	GetSubscriptionInfo(ID uint64, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error)
 	SearchVacancies(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error)
 	GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error)
+	GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONGetEmployerVacancy, error)
+	AddIntoFavorite(ID uint64, currentUser *dto.UserFromSession) error
 }

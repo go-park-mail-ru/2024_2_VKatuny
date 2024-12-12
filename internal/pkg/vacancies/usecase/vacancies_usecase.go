@@ -260,3 +260,45 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.Us
 		Subscribers: subscribers,
 	}, nil
 }
+
+func (vu *VacanciesUsecase) GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
+	fn := "VacanciesUsecase.GetApplicantFavoriteVacancies"
+	vacanciesModels, err := vu.vacanciesRepository.GetApplicantFavoriteVacancies(applicantID)
+	if err != nil {
+		vu.logger.Errorf("function %s: unable to get vacancies: %s", fn, err)
+		return nil, fmt.Errorf(dto.MsgDataBaseError)
+	}
+
+	vacancies := make([]*dto.JSONGetEmployerVacancy, 0, len(vacanciesModels))
+	for _, vacancyModel := range vacanciesModels {
+		vacancies = append(vacancies, &dto.JSONGetEmployerVacancy{
+			ID:                   vacancyModel.ID,
+			EmployerID:           vacancyModel.EmployerID,
+			Salary:               vacancyModel.Salary,
+			Position:             vacancyModel.Position,
+			Description:          vacancyModel.Description,
+			WorkType:             vacancyModel.WorkType,
+			Avatar:               vacancyModel.Avatar,
+			PositionCategoryName: vacancyModel.PositionCategoryName,
+			CreatedAt:            vacancyModel.CreatedAt,
+			UpdatedAt:            vacancyModel.UpdatedAt,
+			CompressedAvatar:     vacancyModel.CompressedAvatar,
+		})
+	}
+	return vacancies, nil
+}
+
+func (vu *VacanciesUsecase) AddIntoFavorite(ID uint64, currentUser *dto.UserFromSession) error {
+	if currentUser == nil {
+		vu.logger.Errorf("user is not provided")
+		return fmt.Errorf(dto.MsgUnauthorized)
+	}
+
+	err := vu.vacanciesRepository.MakeFavorite(ID, currentUser.ID)
+	if err != nil {
+		vu.logger.Errorf("while adding into favorite on db got err %s", err)
+		return fmt.Errorf(dto.MsgDataBaseError)
+	}
+	vu.logger.Debugf("successfully adding into favorite on vacancy with ID: %d", ID)
+	return nil
+}

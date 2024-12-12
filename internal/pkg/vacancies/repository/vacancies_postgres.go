@@ -340,15 +340,15 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 		&oneVacancy.CompressedAvatar,
 	)
 	VacancyOk := dto.JSONVacancy{
-		ID:                   oneVacancy.ID,
-		EmployerID:           oneVacancy.EmployerID,
-		Salary:               oneVacancy.Salary,
-		Position:             oneVacancy.Position,
-		Description:          oneVacancy.Description,
-		Avatar:               oneVacancy.Avatar,
-		CreatedAt:            oneVacancy.CreatedAt,
-		UpdatedAt:            oneVacancy.UpdatedAt,
-		CompressedAvatar:     oneVacancy.CompressedAvatar.String,
+		ID:               oneVacancy.ID,
+		EmployerID:       oneVacancy.EmployerID,
+		Salary:           oneVacancy.Salary,
+		Position:         oneVacancy.Position,
+		Description:      oneVacancy.Description,
+		Avatar:           oneVacancy.Avatar,
+		CreatedAt:        oneVacancy.CreatedAt,
+		UpdatedAt:        oneVacancy.UpdatedAt,
+		CompressedAvatar: oneVacancy.CompressedAvatar.String,
 	}
 	if err != nil {
 		return nil, err
@@ -437,5 +437,67 @@ func (s *PostgreSQLVacanciesStorage) GetSubscribersList(ID uint64) ([]*models.Ap
 
 func (s *PostgreSQLVacanciesStorage) Unsubscribe(ID uint64, applicantID uint64) error {
 	_, err := s.db.Exec(`delete from vacancy_subscriber where applicant_id=$1 and vacancy_id=$2`, applicantID, ID)
+	return err
+}
+
+func (s *PostgreSQLVacanciesStorage) GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONVacancy, error) {
+
+	Vacancies := make([]*dto.JSONVacancy, 0)
+
+	rows, err := s.db.Query(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
+		company.company_name, position_category.category_name, vacancy.compressed_image from vacancy
+		left join work_type on vacancy.work_type_id=work_type.id left join city on vacancy.city_id=city.id
+		left join employer on vacancy.employer_id=employer.id left join company on employer.company_name_id=company.id
+		left join position_category on vacancy.position_category_id = position_category.id
+		left join favorite_vacancy on favorite_vacancy.vacancy_id = vacancy.id
+		left join applicant on applicant.id = favorite_vacancy.applicant_id 
+		where applicant.id = $1`, applicantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var Vacancy dto.JSONVacancyWithNull
+		if err := rows.Scan(
+			&Vacancy.ID,
+			&Vacancy.Location,
+			&Vacancy.Position,
+			&Vacancy.Description,
+			&Vacancy.Salary,
+			&Vacancy.EmployerID,
+			&Vacancy.WorkType,
+			&Vacancy.Avatar,
+			&Vacancy.CreatedAt,
+			&Vacancy.UpdatedAt,
+			&Vacancy.CompanyName,
+			&Vacancy.PositionCategoryName,
+			&Vacancy.CompressedAvatar); err != nil {
+			return nil, err
+		}
+		VacancyOk := dto.JSONVacancy{
+			ID:                   Vacancy.ID,
+			EmployerID:           Vacancy.EmployerID,
+			Salary:               Vacancy.Salary,
+			Position:             Vacancy.Position,
+			Location:             Vacancy.Location,
+			Description:          Vacancy.Description,
+			WorkType:             Vacancy.WorkType,
+			Avatar:               Vacancy.Avatar,
+			CompanyName:          Vacancy.CompanyName,
+			PositionCategoryName: Vacancy.PositionCategoryName.String,
+			CompressedAvatar:     Vacancy.CompressedAvatar.String,
+			CreatedAt:            Vacancy.CreatedAt,
+			UpdatedAt:            Vacancy.UpdatedAt,
+		}
+		Vacancies = append(Vacancies, &VacancyOk)
+		fmt.Println(VacancyOk)
+	}
+	return Vacancies, nil
+}
+
+func (s *PostgreSQLVacanciesStorage) MakeFavorite(ID uint64, applicantID uint64) error {
+	fmt.Println(ID, applicantID)
+	_, err := s.db.Exec(`insert into favorite_vacancy (applicant_id, vacancy_id) VALUES ($1, $2)`, applicantID, ID)
 	return err
 }

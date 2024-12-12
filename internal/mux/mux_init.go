@@ -39,6 +39,8 @@ func Init(app *internal.App) *mux.Router {
 		Methods(http.MethodGet)
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/cv", applicantHandlers.GetCVs).
 		Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", applicantHandlers.GetFavoriteVacancies).
+		Methods(http.MethodGet)
 
 	employerHandlers := employer_delivery.NewEmployerHandlers(app)
 	router.HandleFunc("/api/v1/employer/registration", employerHandlers.Registration).
@@ -80,6 +82,9 @@ func Init(app *internal.App) *mux.Router {
 	deleteVacancy := middleware.RequireAuthorization(vacanciesHandlers.DeleteVacancy, app, dto.UserTypeEmployer)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}", deleteVacancy).
 		Methods(http.MethodDelete)
+	AddVacancyIntoFavorite := middleware.RequireAuthorization(vacanciesHandlers.AddVacancyIntoFavorite, app, dto.UserTypeApplicant)
+	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", AddVacancyIntoFavorite).
+		Methods(http.MethodPost)
 
 	subscribe := middleware.RequireAuthorization(vacanciesHandlers.SubscribeVacancy, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", subscribe).
