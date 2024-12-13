@@ -17,6 +17,7 @@ type IApplicantRepository interface { // TODO: rename to IApplicantRepository
 	Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) (*models.Applicant, error)
 	GetByID(ID uint64) (*models.Applicant, error)
 	GetByEmail(email string) (*models.Applicant, error)
+	GetAllCities(ctx context.Context) ([]*dto.City, error)
 }
 
 type IApplicantUsecase interface {
@@ -28,6 +29,7 @@ type IApplicantUsecase interface {
 		applicantID uint64,
 		newProfileData *dto.JSONUpdateApplicantProfile,
 	) error
+	GetAllCities(ctx context.Context) ([]*dto.City, error)
 }
 
 var (

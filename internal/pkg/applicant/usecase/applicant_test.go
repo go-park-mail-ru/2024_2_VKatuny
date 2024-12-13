@@ -364,3 +364,61 @@ func TestGetByID(t *testing.T) {
 		require.Equal(t, tt.applicant, applicant)
 	}
 }
+
+func TestGetAllCities(t *testing.T) {
+	t.Parallel()
+	type repo struct {
+		applicant *mock.MockIApplicantRepository
+	}
+	tests := []struct {
+		name    string
+		profile []*dto.City
+		prepare func(
+			repo *repo, profile []*dto.City,
+		) ([]*dto.City)
+	}{
+		{
+			name:    "Create: ok",
+			profile: make([]*dto.City, 0),
+			prepare: func(
+				repo *repo, profile []*dto.City) ([]*dto.City) {
+				model := []*dto.City{
+					&dto.City{
+						ID:   1,
+						CityName: "Moscow",
+					},
+				}
+
+				repo.applicant.
+					EXPECT().
+					GetAllCities(context.Background()).
+					Return(model, nil)
+				rprofile := []*dto.City{
+					&dto.City{
+						ID:   1,
+						CityName: "Moscow",
+					},
+				}
+				return rprofile
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		repo := &repo{
+			applicant: mock.NewMockIApplicantRepository(ctrl),
+		}
+		tt.profile = tt.prepare(repo, tt.profile)
+
+		repositories := &internal.Repositories{
+			ApplicantRepository: repo.applicant,
+		}
+		uc := usecase.NewApplicantUsecase(logrus.New(), repositories)
+		profile, _ := uc.GetAllCities(context.Background())
+
+		require.Equal(t, tt.profile, profile)
+	}
+}

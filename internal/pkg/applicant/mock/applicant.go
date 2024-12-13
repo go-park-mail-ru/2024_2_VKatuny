@@ -57,6 +57,21 @@ func (mr *MockIApplicantRepositoryMockRecorder) Create(applicant any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIApplicantRepository)(nil).Create), applicant)
 }
 
+// GetAllCities mocks base method.
+func (m *MockIApplicantRepository) GetAllCities(ctx context.Context) ([]*dto.City, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllCities", ctx)
+	ret0, _ := ret[0].([]*dto.City)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllCities indicates an expected call of GetAllCities.
+func (mr *MockIApplicantRepositoryMockRecorder) GetAllCities(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCities", reflect.TypeOf((*MockIApplicantRepository)(nil).GetAllCities), ctx)
+}
+
 // GetByEmail mocks base method.
 func (m *MockIApplicantRepository) GetByEmail(email string) (*models.Applicant, error) {
 	m.ctrl.T.Helper()
@@ -139,6 +154,21 @@ func (m *MockIApplicantUsecase) Create(ctx context.Context, applicant *dto.JSONA
 func (mr *MockIApplicantUsecaseMockRecorder) Create(ctx, applicant any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIApplicantUsecase)(nil).Create), ctx, applicant)
+}
+
+// GetAllCities mocks base method.
+func (m *MockIApplicantUsecase) GetAllCities(ctx context.Context) ([]*dto.City, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllCities", ctx)
+	ret0, _ := ret[0].([]*dto.City)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllCities indicates an expected call of GetAllCities.
+func (mr *MockIApplicantUsecaseMockRecorder) GetAllCities(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCities", reflect.TypeOf((*MockIApplicantUsecase)(nil).GetAllCities), ctx)
 }
 
 // GetApplicantProfile mocks base method.

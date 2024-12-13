@@ -39,6 +39,8 @@ func Init(app *internal.App) *mux.Router {
 		Methods(http.MethodGet)
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/cv", applicantHandlers.GetCVs).
 		Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/city", applicantHandlers.GetAllCities).
+		Methods(http.MethodGet)
 
 	employerHandlers := employer_delivery.NewEmployerHandlers(app)
 	router.HandleFunc("/api/v1/employer/registration", employerHandlers.Registration).

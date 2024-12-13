@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -225,4 +226,24 @@ func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSO
 	applicant.CityName = newApplicantData.City
 
 	return &applicant, err
+}
+
+func (s *PostgreSQLApplicantStorage) GetAllCities(ctx context.Context) ([]*dto.City, error) {
+	Cities := make([]*dto.City, 0)
+	rows, err := s.db.Query(`select city.id, city.city_name, city.created_at, city.updated_at from city`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var oneCity dto.City
+		if err := rows.Scan(&oneCity.ID, &oneCity.CityName, &oneCity.CreatedAt, &oneCity.UpdatedAt); err != nil {
+			return nil, err
+		}
+		Cities = append(Cities, &oneCity)
+		fmt.Println(oneCity)
+	}
+
+	return Cities, nil
 }
