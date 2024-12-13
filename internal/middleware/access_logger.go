@@ -45,6 +45,7 @@ func AccessLogger(next http.Handler, logger *logrus.Logger, metrics *metrics.Met
 			"status": ws.Status(),
 		}).Info("Response")
 		
+		logger.Debugf("metrics")
 		statusString := strconv.Itoa(ws.Status())
 		metrics.Hits.WithLabelValues(r.Method, r.URL.Path, statusString).Inc()
 		metrics.Timings.WithLabelValues(r.Method, r.URL.Path).Observe(end.Seconds())

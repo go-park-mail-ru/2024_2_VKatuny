@@ -21,6 +21,8 @@ services:
       redis:
         condition: service_started
         restart: true
+    networks:
+      - monitoring
 
   compress_microservice:
     build:
@@ -29,6 +31,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
+    networks:
+      - monitoring
 
   main_service:
     build:
@@ -43,6 +47,8 @@ services:
       db_postgresql:
         condition: service_started
         restart: true
+    networks:
+      - monitoring
 
   redis:
     image: redis:latest
@@ -64,6 +70,8 @@ services:
         redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
       '
     restart: unless-stopped
+    networks:
+      - monitoring
 
   db_postgresql:
     build:
@@ -80,6 +88,8 @@ services:
       POSTGRES_SCHEMA: ${POSTGRES_SCHEMA}
     volumes:
       - /var/lib/postgresql/container_data:/var/lib/postgresql
+    networks:
+      - monitoring
 
   node_exporter:
     image: quay.io/prometheus/node-exporter:latest
