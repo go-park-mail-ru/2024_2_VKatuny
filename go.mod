@@ -4,6 +4,7 @@ go 1.23.0
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.9.3
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.27.0
@@ -32,7 +33,7 @@ require (
 require (
 	github.com/gorilla/mux v1.8.1
 	github.com/sirupsen/logrus v1.9.3
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	google.golang.org/grpc v1.68.0
 	gopkg.in/yaml.v2 v2.4.0

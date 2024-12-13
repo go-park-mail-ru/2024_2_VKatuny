@@ -13,6 +13,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/sirupsen/logrus"
+
+	
 )
 
 type FileLoadingUsecase struct {
@@ -63,8 +65,8 @@ func (vu *FileLoadingUsecase) WriteImage(file multipart.File, header *multipart.
 	return dir + fileAddress, vu.conf.CompressMicroservice.CompressedMediaDir + fileAddress, nil
 }
 
-func (vu *FileLoadingUsecase) CVtoPDF(cvID uint64, currentUser *dto.UserFromSession) (*dto.CVPDFFile, error) {
-	name, err := vu.FileLoadingRepository.CVtoPDF(cvID)
+func (vu *FileLoadingUsecase) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (*dto.CVPDFFile, error) {
+	name, err := vu.FileLoadingRepository.CVtoPDF(CV, applicant)
 	if err != nil {
 		return nil, err
 	}

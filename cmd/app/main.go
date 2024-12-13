@@ -86,7 +86,7 @@ func main() {
 		CVRepository:               cvRepository.NewCVStorage(dbConnection),
 		VacanciesRepository:        vacancies_repository.NewVacanciesStorage(dbConnection),
 		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
-		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(conf.Server.MediaDir, conf.Server.CVinPDFDir),
+		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(logger, conf.Server.MediaDir, conf.Server.CVinPDFDir, conf.Server.TamplateDir),
 	}
 	microservices := &internal.Microservices{
 		Auth:     grpc_auth.NewAuthorizationClient(connAuthGRPC),

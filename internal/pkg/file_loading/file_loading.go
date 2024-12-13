@@ -8,10 +8,10 @@ import (
 
 type IFileLoadingRepository interface {
 	WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error)
-	CVtoPDF(cvID uint64) (string, error)
+	CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (string, error)
 }
 
 type IFileLoadingUsecase interface {
 	WriteImage(file multipart.File, header *multipart.FileHeader) (string, string, error)
-	CVtoPDF(cvID uint64, currentUser *dto.UserFromSession) (*dto.CVPDFFile, error)
+	CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (*dto.CVPDFFile, error)
 }
