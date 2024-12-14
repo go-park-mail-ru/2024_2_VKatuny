@@ -18,6 +18,7 @@ var ErrNumIsNotANumber = fmt.Errorf("query parameter num isn't a number")
 type VacanciesUsecase struct {
 	logger              *logrus.Logger
 	vacanciesRepository vacancies.IVacanciesRepository
+	
 }
 
 func NewVacanciesUsecase(logger *logrus.Logger, repositories *internal.Repositories) *VacanciesUsecase {

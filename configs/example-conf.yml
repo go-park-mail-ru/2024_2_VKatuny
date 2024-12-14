@@ -32,3 +32,9 @@ compress_microservice:
     host: "192.168.77.130"
     port: 8071
   CompressedMediaDir: "media/Compressed/"
+
+notifications_microservice:
+  server:
+    scheme: "http"
+    host: "192.168.77.130"
+    port: 8061

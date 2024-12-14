@@ -16,6 +16,7 @@ type Config struct {
 	DataBase             *DataBaseConfig       `yaml:"database"`
 	AuthMicroservice     *AuthMicroservice     `yaml:"auth_microservice"`
 	CompressMicroservice *CompressMicroservice `yaml:"compress_microservice"`
+	NotificationsMicroservice *NotificationsMicroservice `yaml:"notifications_microservice"`
 }
 
 // ServerConfig is a struct of server config block in .yaml
@@ -46,6 +47,11 @@ type AuthMicroservice struct {
 type CompressMicroservice struct {
 	Server             *Microservice `yaml:"server"`
 	CompressedMediaDir string        `yaml:"CompressedMediaDir"`
+}
+
+type NotificationsMicroservice struct {
+	Server   *Microservice `yaml:"server"`
+	//Database *Redis        `yaml:"database"`
 }
 
 type Microservice struct {
