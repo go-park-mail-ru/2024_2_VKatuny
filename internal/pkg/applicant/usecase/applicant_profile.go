@@ -80,12 +80,12 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(ctx context.Context, applican
 	return nil
 }
 
-func (au *ApplicantUsecase) GetAllCities(ctx context.Context) ([]*dto.City, error) {
+func (au *ApplicantUsecase) GetAllCities(ctx context.Context, namePat string) ([]string, error) {
 	fn := "ApplicantUsecase.GetAllCities"
 	au.logger = utils.SetLoggerRequestID(ctx, au.logger)
 	au.logger.Debugf("%s: entering", fn)
 
-	cities, err := au.applicantRepo.GetAllCities(ctx)
+	cities, err := au.applicantRepo.GetAllCities(ctx, namePat)
 	if err != nil {
 		au.logger.Errorf("function: %s; got err: %s", fn, err)
 		return nil, err

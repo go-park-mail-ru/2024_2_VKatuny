@@ -298,9 +298,7 @@ func TestPostgresUpdate(t *testing.T) {
 func TestGetAllCities(t *testing.T) {
 	t.Parallel()
 	type args struct {
-		ID        uint64
-		CityID    uint64
-		applicant dto.JSONUpdateApplicantProfile
+		CityName    string
 		query1    func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
@@ -312,22 +310,13 @@ func TestGetAllCities(t *testing.T) {
 		{
 			name: "TestOk",
 			args: args{
-				ID: 1,
-				applicant: dto.JSONUpdateApplicantProfile{
-					FirstName: "Иван",
-					LastName:  "Иванов",
-					City:      "Москва",
-					BirthDate: "12-12-2001",
-					Contacts:  "tg - ",
-					Education: "Высшее",
-				},
-				CityID: 1,
+				CityName: "Мос",
 				query1: func(mock sqlmock.Sqlmock, args args) {
-					mock.ExpectQuery(`select city.id, city.city_name, city.created_at, city.updated_at from city`).
+					mock.ExpectQuery(`select city.city_name from city where city.city_name like (.+)`).
 						WithArgs(
 						).
-						WillReturnRows(sqlmock.NewRows([]string{"id", "city_name", "created_at", "updated_at"}).
-							AddRow(1, "Москва", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300"))
+						WillReturnRows(sqlmock.NewRows([]string{"city_name"}).
+							AddRow("Москва"))
 				},
 			},
 			wantErr: false,
@@ -348,7 +337,7 @@ func TestGetAllCities(t *testing.T) {
 
 			s := NewApplicantStorage(db)
 
-			if _, err := s.GetAllCities(context.Background()); (err != nil) != tt.wantErr {
+			if _, err := s.GetAllCities(context.Background(), tt.args.CityName); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 

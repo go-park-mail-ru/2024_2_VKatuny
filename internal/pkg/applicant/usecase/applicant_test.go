@@ -372,32 +372,27 @@ func TestGetAllCities(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		profile []*dto.City
+		profile []string
 		prepare func(
-			repo *repo, profile []*dto.City,
-		) ([]*dto.City)
+			repo *repo, profile []string,
+		) ([]string)
 	}{
 		{
 			name:    "Create: ok",
-			profile: make([]*dto.City, 0),
+			profile: make([]string, 0),
 			prepare: func(
-				repo *repo, profile []*dto.City) ([]*dto.City) {
-				model := []*dto.City{
-					&dto.City{
-						ID:   1,
-						CityName: "Moscow",
-					},
+				repo *repo, profile []string) ([]string) {
+				model := []string{
+					"Moscow",
 				}
 
 				repo.applicant.
 					EXPECT().
-					GetAllCities(context.Background()).
+					GetAllCities(context.Background(), "Мос").
 					Return(model, nil)
-				rprofile := []*dto.City{
-					&dto.City{
-						ID:   1,
-						CityName: "Moscow",
-					},
+				rprofile := []string{
+					"Moscow",
+					
 				}
 				return rprofile
 			},
@@ -417,7 +412,7 @@ func TestGetAllCities(t *testing.T) {
 			ApplicantRepository: repo.applicant,
 		}
 		uc := usecase.NewApplicantUsecase(logrus.New(), repositories)
-		profile, _ := uc.GetAllCities(context.Background())
+		profile, _ := uc.GetAllCities(context.Background(), "Мос")
 
 		require.Equal(t, tt.profile, profile)
 	}

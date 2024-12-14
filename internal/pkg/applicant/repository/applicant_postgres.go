@@ -228,20 +228,20 @@ func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSO
 	return &applicant, err
 }
 
-func (s *PostgreSQLApplicantStorage) GetAllCities(ctx context.Context) ([]*dto.City, error) {
-	Cities := make([]*dto.City, 0)
-	rows, err := s.db.Query(`select city.id, city.city_name, city.created_at, city.updated_at from city`)
+func (s *PostgreSQLApplicantStorage) GetAllCities(ctx context.Context, namePart string) ([]string, error) {
+	Cities := make([]string, 0)
+	rows, err := s.db.Query(`select city.city_name from city where city.city_name like $1`, "%"+namePart+"%")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var oneCity dto.City
-		if err := rows.Scan(&oneCity.ID, &oneCity.CityName, &oneCity.CreatedAt, &oneCity.UpdatedAt); err != nil {
+		var oneCity string
+		if err := rows.Scan(&oneCity); err != nil {
 			return nil, err
 		}
-		Cities = append(Cities, &oneCity)
+		Cities = append(Cities, oneCity)
 		fmt.Println(oneCity)
 	}
 

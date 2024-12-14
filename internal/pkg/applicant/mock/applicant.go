@@ -58,18 +58,18 @@ func (mr *MockIApplicantRepositoryMockRecorder) Create(applicant any) *gomock.Ca
 }
 
 // GetAllCities mocks base method.
-func (m *MockIApplicantRepository) GetAllCities(ctx context.Context) ([]*dto.City, error) {
+func (m *MockIApplicantRepository) GetAllCities(ctx context.Context, namePat string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllCities", ctx)
-	ret0, _ := ret[0].([]*dto.City)
+	ret := m.ctrl.Call(m, "GetAllCities", ctx, namePat)
+	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllCities indicates an expected call of GetAllCities.
-func (mr *MockIApplicantRepositoryMockRecorder) GetAllCities(ctx any) *gomock.Call {
+func (mr *MockIApplicantRepositoryMockRecorder) GetAllCities(ctx, namePat any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCities", reflect.TypeOf((*MockIApplicantRepository)(nil).GetAllCities), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCities", reflect.TypeOf((*MockIApplicantRepository)(nil).GetAllCities), ctx, namePat)
 }
 
 // GetByEmail mocks base method.
@@ -157,18 +157,18 @@ func (mr *MockIApplicantUsecaseMockRecorder) Create(ctx, applicant any) *gomock.
 }
 
 // GetAllCities mocks base method.
-func (m *MockIApplicantUsecase) GetAllCities(ctx context.Context) ([]*dto.City, error) {
+func (m *MockIApplicantUsecase) GetAllCities(ctx context.Context, namePart string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllCities", ctx)
-	ret0, _ := ret[0].([]*dto.City)
+	ret := m.ctrl.Call(m, "GetAllCities", ctx, namePart)
+	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllCities indicates an expected call of GetAllCities.
-func (mr *MockIApplicantUsecaseMockRecorder) GetAllCities(ctx any) *gomock.Call {
+func (mr *MockIApplicantUsecaseMockRecorder) GetAllCities(ctx, namePart any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCities", reflect.TypeOf((*MockIApplicantUsecase)(nil).GetAllCities), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllCities", reflect.TypeOf((*MockIApplicantUsecase)(nil).GetAllCities), ctx, namePart)
 }
 
 // GetApplicantProfile mocks base method.

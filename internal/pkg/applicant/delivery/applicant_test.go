@@ -851,10 +851,9 @@ func TestGetAllCities(t *testing.T) {
 				usecase *usecase,
 			) (*httptest.ResponseRecorder, *http.Request) {
 
-				
 				usecase.profile.
 					EXPECT().
-					GetAllCities(gomock.Any()).
+					GetAllCities(gomock.Any(), gomock.Any()).
 					Return(nil, fmt.Errorf("error"))
 				nr := httptest.NewRequest(
 					http.MethodGet,
@@ -876,14 +875,12 @@ func TestGetAllCities(t *testing.T) {
 				usecase *usecase,
 			) (*httptest.ResponseRecorder, *http.Request) {
 
-				cities := []*dto.City{
-					&dto.City{
-						ID:   1,
-					},
+				cities := []string{
+					"city1",
 				}
 				usecase.profile.
 					EXPECT().
-					GetAllCities(gomock.Any()).
+					GetAllCities(gomock.Any(), gomock.Any()).
 					Return(cities, nil)
 				nr := httptest.NewRequest(
 					http.MethodGet,

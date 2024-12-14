@@ -388,10 +388,3 @@ type UserFromSession struct {
 	ID       uint64
 	UserType string
 }
-
-type City struct {
-	ID   uint64 `json:"id"`
-	CityName string `json:"cityName"`
-	CreatedAt string `json:"createdAt"`
-	UpdatedAt string `json:"updatedAt"`
-}

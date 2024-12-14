@@ -276,9 +276,13 @@ func (h *ApplicantHandlers) GetAllCities(w http.ResponseWriter, r *http.Request)
 	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 	h.logger.Debugf("%s: entering", fn)
 
+	queryParams := r.URL.Query()
+	h.logger.Debugf("%s; Query params read: %v", fn, queryParams)
+
+	namePart := queryParams.Get("name")
 
 	// *dto.JSONGetApplicantCV
-	cities, err := h.applicantUsecase.GetAllCities(r.Context())
+	cities, err := h.applicantUsecase.GetAllCities(r.Context(), namePart)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
