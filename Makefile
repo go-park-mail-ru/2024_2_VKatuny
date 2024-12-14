@@ -36,7 +36,7 @@ lint:
 	revive -config reviveconfig.toml -formatter friendly ./...
 
 api:
-	swag init --parseInternal --pd --dir cmd/myapp/,delivery/handler/ --output api/
+	swag init --generalInfo ./cmd/app/main.go --output api/
 	node ./api/server.js
 
 mock-gen:
