@@ -11,6 +11,8 @@ services:
     build:
       context: ./
       dockerfile: ./build/services/auth/Dockerfile
+    ports:
+      - "8085:8000"
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
@@ -28,6 +30,8 @@ services:
     build:
       context: ./
       dockerfile: ./build/services/compress_microservice/Dockerfile
+    ports:
+      - "8086:8000"
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
