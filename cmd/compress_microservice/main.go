@@ -40,8 +40,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 	go func() {
-		http.ListenAndServe(":8000", mux)
-		logger.Info("Metrics server started at :8000")
+		http.ListenAndServe(conf.CompressMicroservice.Server.GetMetricsAddress(), mux)
+		logger.Infof("Metrics server started at %s", conf.CompressMicroservice.Server.GetMetricsAddress())
 	}()
 
 	compress_api.RegisterCompressServiceServer(server, compressdelivery.NewCompressManager(usecase, logger))

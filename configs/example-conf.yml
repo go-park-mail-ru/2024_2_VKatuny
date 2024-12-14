@@ -23,6 +23,7 @@ auth_microservice:
     scheme: "http"
     host: "192.168.77.130"
     port: 8091
+    metrics_port: 8000
   database:
     host: "192.168.77.130"
     port: 6379
@@ -34,4 +35,5 @@ compress_microservice:
     scheme: "http"
     host: "192.168.77.130"
     port: 8071
+    metrics_port: 8000
   CompressedMediaDir: "media/Compressed/"

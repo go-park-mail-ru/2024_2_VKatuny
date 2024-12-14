@@ -55,8 +55,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 	go func() {
-		http.ListenAndServe(":8000", mux)
-		logger.Info("Metrics server started at :8000")
+		http.ListenAndServe(conf.AuthMicroservice.Server.GetMetricsAddress(), mux)
+		logger.Infof("Metrics server started at %s", conf.AuthMicroservice.Server.GetMetricsAddress())
 	}()
 
 	grpc_auth.RegisterAuthorizationServer(server, auth.NewAuthorization(pgSQLConn, redisConn, logger))

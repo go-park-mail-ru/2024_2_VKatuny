@@ -51,9 +51,10 @@ type CompressMicroservice struct {
 }
 
 type Microservice struct {
-	Scheme string `yaml:"scheme"`
-	Host   string `yaml:"host"`
-	Port   int    `yaml:"port"`
+	Scheme      string `yaml:"scheme"`
+	Host        string `yaml:"host"`
+	Port        int    `yaml:"port"`
+	MetricsPort int    `yaml:"metrics_port"`
 }
 
 type Redis struct {
@@ -113,6 +114,10 @@ func (s *ServerConfig) GetAuthServiceLocation() string {
 
 func (m *Microservice) GetAddress() string {
 	return m.Host + ":" + strconv.Itoa(m.Port)
+}
+
+func (m *Microservice) GetMetricsAddress() string {
+	return m.Host + ":" + strconv.Itoa(m.MetricsPort)
 }
 
 func (r *Redis) GetDSN() string {
