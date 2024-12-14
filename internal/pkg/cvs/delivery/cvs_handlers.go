@@ -373,7 +373,7 @@ func (h *CVsHandler) CVtoPDF(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
+	name.FileName="/"+name.FileName
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       name,
