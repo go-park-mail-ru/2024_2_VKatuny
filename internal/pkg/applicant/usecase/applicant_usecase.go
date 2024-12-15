@@ -3,6 +3,8 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -15,7 +17,7 @@ func (u *ApplicantUsecase) Create(ctx context.Context, form *dto.JSONApplicantRe
 	u.logger.Debugf("%s: entering", fn)
 
 	_, err := u.applicantRepo.GetByEmail(form.Email)
-	if err != nil {
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgUserAlreadyExists)
 	}

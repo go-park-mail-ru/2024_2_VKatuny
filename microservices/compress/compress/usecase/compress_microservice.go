@@ -35,3 +35,11 @@ func (cu *CompressUsecase) DeleteFile(filename string) error {
 	err := cu.compressRepo.DeleteFile(filename)
 	return err
 }
+
+
+func (cu *CompressUsecase) ScanDir() error {
+	funcName := "CompressUsecase.ScanDir"
+	cu.logger.Debugf("%s: working", funcName)
+	err := cu.compressRepo.ScanDir()
+	return err
+}

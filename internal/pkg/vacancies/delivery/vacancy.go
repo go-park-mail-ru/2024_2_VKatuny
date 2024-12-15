@@ -151,6 +151,7 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	vacancy.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(vacancy.Avatar)
 	h.logger.Debugf("%s: got vacancy: %v", fn, vacancy)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
@@ -531,7 +532,9 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 		})
 		return
 	}
-
+	for _, subscriber := range subscribers.Subscribers {
+		subscriber.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(subscriber.Avatar)
+	}
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       subscribers,

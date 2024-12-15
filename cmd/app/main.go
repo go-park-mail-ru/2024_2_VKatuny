@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -124,6 +125,15 @@ func main() {
 	handlers = middleware.AccessLogger(handlers, logger, app.Metrics)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
+
+	logger.Debugf("Starting compress demon")
+	_, err = microservices.Compress.StartScanCompressDemon(
+		context.Background(),
+		&compressmicroservice.Nothing{},
+	)
+	if err != nil {
+		logger.Fatal(err)
+	}
 	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
 	err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
 	if err != nil {

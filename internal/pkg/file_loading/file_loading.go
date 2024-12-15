@@ -13,5 +13,6 @@ type IFileLoadingRepository interface {
 
 type IFileLoadingUsecase interface {
 	WriteImage(file multipart.File, header *multipart.FileHeader) (string, string, error)
+	FindCompressedFile(filename string) string
 	CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (*dto.CVPDFFile, error)
 }

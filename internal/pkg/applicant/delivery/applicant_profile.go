@@ -86,7 +86,7 @@ func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
+	applicantProfile.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(applicantProfile.Avatar)
 	h.logger.Debugf("function %s: success, got profile %v", fn, applicantProfile)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -138,6 +138,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	if err == nil {
 		defer file.Close()
 		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		h.logger.Debug("add	ress %s compressed %s", fileAddress, compressedFileAddress)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,

@@ -26,7 +26,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("can't listen port", err)
 	}
-	repository := compressrepository.NewCompressRepository(conf.CompressMicroservice.CompressedMediaDir, logger)
+	repository := compressrepository.NewCompressRepository(conf.CompressMicroservice.CompressedMediaDir, conf.Server.MediaDir, logger)
 	usecase := compressusecase.NewCompressUsecase(repository, logger)
 
 	Metrics := metrics.NewMetrics()

@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 type CompressServiceClient interface {
 	CompressAndSaveFile(ctx context.Context, in *CompressAndSaveFileInput, opts ...grpc.CallOption) (*Nothing, error)
 	DeleteFile(ctx context.Context, in *DeleteFileInput, opts ...grpc.CallOption) (*Nothing, error)
+	StartScanCompressDemon(ctx context.Context, in *Nothing, opts ...grpc.CallOption) (*Nothing, error)
 }
 
 type compressServiceClient struct {
@@ -48,12 +49,22 @@ func (c *compressServiceClient) DeleteFile(ctx context.Context, in *DeleteFileIn
 	return out, nil
 }
 
+func (c *compressServiceClient) StartScanCompressDemon(ctx context.Context, in *Nothing, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/compressmicroservice.CompressService/StartScanCompressDemon", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CompressServiceServer is the server API for CompressService service.
 // All implementations must embed UnimplementedCompressServiceServer
 // for forward compatibility
 type CompressServiceServer interface {
 	CompressAndSaveFile(context.Context, *CompressAndSaveFileInput) (*Nothing, error)
 	DeleteFile(context.Context, *DeleteFileInput) (*Nothing, error)
+	StartScanCompressDemon(context.Context, *Nothing) (*Nothing, error)
 	mustEmbedUnimplementedCompressServiceServer()
 }
 
@@ -66,6 +77,9 @@ func (UnimplementedCompressServiceServer) CompressAndSaveFile(context.Context, *
 }
 func (UnimplementedCompressServiceServer) DeleteFile(context.Context, *DeleteFileInput) (*Nothing, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFile not implemented")
+}
+func (UnimplementedCompressServiceServer) StartScanCompressDemon(context.Context, *Nothing) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartScanCompressDemon not implemented")
 }
 func (UnimplementedCompressServiceServer) mustEmbedUnimplementedCompressServiceServer() {}
 
@@ -116,6 +130,24 @@ func _CompressService_DeleteFile_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CompressService_StartScanCompressDemon_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Nothing)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CompressServiceServer).StartScanCompressDemon(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/compressmicroservice.CompressService/StartScanCompressDemon",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CompressServiceServer).StartScanCompressDemon(ctx, req.(*Nothing))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CompressService_ServiceDesc is the grpc.ServiceDesc for CompressService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,6 +162,10 @@ var CompressService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteFile",
 			Handler:    _CompressService_DeleteFile_Handler,
+		},
+		{
+			MethodName: "StartScanCompressDemon",
+			Handler:    _CompressService_StartScanCompressDemon_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

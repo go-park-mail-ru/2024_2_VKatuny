@@ -164,7 +164,7 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
+	CV.CompressedAvatar  = h.fileLoadingUsecase.FindCompressedFile(CV.Avatar)
 	h.logger.Debugf("%s: success, got cv: %v", fn, CV)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
