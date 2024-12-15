@@ -25,12 +25,12 @@ func (cu *NotificationsUsecase) GetAlEmployerNotifications(employerID uint64) ([
 	return notificationsList, err
 }
 
-// func (cu *NotificationsUsecase) MakeEmployerNotificationRead(notificationID uint64) error {
-// 	funcName := "NotificationsUsecase.MakeEmployerNotificationRead"
-// 	cu.logger.Debugf("%s: got request: %s", funcName, notificationID)
-// 	err := cu.notificationsRepo.MakeEmployerNotificationRead(notificationID)
-// 	return err
-// }
+func (cu *NotificationsUsecase) MakeEmployerNotificationRead(notificationID uint64) error {
+	funcName := "NotificationsUsecase.MakeEmployerNotificationRead"
+	cu.logger.Debugf("%s: got request: %s", funcName, notificationID)
+	err := cu.notificationsRepo.MakeEmployerNotificationRead(notificationID)
+	return err
+}
 
 func (cu *NotificationsUsecase) CreateEmployerNotification(applicantID, employerID, vacancyID uint64, applicantInfo, vacancyInfo string) error {
 	funcName := "NotificationsUsecase.CreateEmployerNotification"

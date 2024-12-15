@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"time"
 
 	monolit_dto "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -53,19 +54,41 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 		for {
 			w, err := client.NextWriter(websocket.TextMessage)
 			if err != nil {
-				return
+				nd.logger.Errorf("could write: %s", err)
+				continue
 			}
 			defer w.Close()
-			if false {
-				newMessage(w, nil)
-				return
-			}
 			notificationsList, err := nd.notificationsUsecase.GetAlEmployerNotifications(employerID)
 			if err != nil {
-				newMessage(w, nil)
+				nd.logger.Errorf("could get notifications: %s", err)
 				return
 			}
 			newMessage(w, notificationsList)
+
+			messageType, r, err := client.NextReader()
+			if err == nil {
+				var buffer []byte
+				_, err = r.Read(buffer)
+				if err != nil {
+					nd.logger.Errorf("could not read message: %s", err)
+					continue
+				}
+				nd.logger.Debugf("messageType: %s", messageType)
+				if messageType != 1 {
+					nd.logger.Errorf("wrong type read")
+					continue
+				}
+				notificationID, err := strconv.ParseUint(string(buffer), 10, 64) //buffer
+				if err != nil {
+					nd.logger.Errorf("could not parse notificationID: %s", err)
+					continue
+				}
+				err = nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
+				if err != nil {
+					nd.logger.Errorf("could not make notification read: %s", err)
+				}
+				continue
+			}
 			<-ticker.C
 		}
 	}(ws, currentUser.ID)
