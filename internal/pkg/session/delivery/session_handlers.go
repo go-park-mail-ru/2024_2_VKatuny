@@ -106,10 +106,18 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: user: %v", fn, user)
 
-	cryptToken := utils.NewCryptToken(h.secretCSRF)
+	cryptToken, err := utils.NewCryptToken(h.secretCSRF)
+	if err != nil {
+		h.logger.Errorf("%s: can't initialize CSRF token generator %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
 	tokenCSRF, err := cryptToken.Create(user.ID, user.UserType, session.Value) 
 	if err != nil {
-		h.logger.Errorf("%s: got err %s", fn, err)
+		h.logger.Errorf("%s: while creating CSRF token got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
 			Error:      err.Error(),

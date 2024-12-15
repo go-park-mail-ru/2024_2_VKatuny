@@ -72,7 +72,15 @@ func CSRFProtection(next dto.HandlerFunc, app *internal.App) dto.HandlerFunc {
 		}
 		logger.Debugf("%s: got token: %s", fn, token)
 
-		cryptToken := utils.NewCryptToken(app.CSRFSecret)
+		cryptToken, err := utils.NewCryptToken(app.CSRFSecret)
+		if err != nil {
+			logger.Errorf("%s: can't initialize CSRF token checker %s", fn, err)
+			UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      err.Error(),
+			})
+			return
+		}
 		ok, err = cryptToken.Check(
 			grpc_response.UserData.ID,
 			grpc_response.UserData.UserType,
