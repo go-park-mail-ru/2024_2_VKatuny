@@ -15,6 +15,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
 	cv_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/mock"
+	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	portfolio_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
@@ -821,7 +822,6 @@ func TestRegistration(t *testing.T) {
 		})
 	}
 }
-
 func TestGetAllCities(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
@@ -923,6 +923,144 @@ func TestGetAllCities(t *testing.T) {
 
 			r := mux.NewRouter()
 			r.HandleFunc("/api/v1/city", h.GetAllCities).Methods(http.MethodGet)
+			r.ServeHTTP(tt.w, tt.r)
+
+			require.Equal(t, tt.codeExpected, tt.w.Code)
+		})
+	}
+}
+
+func TestGetFavoriteVacancies(t *testing.T) {
+	t.Parallel()
+	type usecase struct {
+		vacancy *vacancies_mock.MockIVacanciesUsecase
+	}
+	tests := []struct {
+		name         string
+		r            *http.Request
+		w            *httptest.ResponseRecorder
+		usecase      *usecase
+		codeExpected int
+
+		prepare func(
+			r *http.Request,
+			w *httptest.ResponseRecorder,
+			usecase *usecase,
+		) (*httptest.ResponseRecorder, *http.Request)
+	}{
+		{
+			name:         "GetVacancies: bad slug",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				slug := "123534657548574856785785346346367542151341354756869568"
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/applicant/%s/favorite-vacancy", slug),
+					nil,
+				)
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+		{
+			name:         "GetProfile: bad usecase",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				slug := uint64(1)
+
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/applicant/%d/favorite-vacancy", slug),
+					nil,
+				)
+				nw := httptest.NewRecorder()
+				usecase.vacancy.
+					EXPECT().
+					GetApplicantFavoriteVacancies(slug).
+					Return(nil, fmt.Errorf("error"))
+				return nw, nr
+			},
+		},
+		{
+			name:         "GetProfile: ok",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusOK,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				slug := uint64(1)
+
+				var vacancies = []*dto.JSONGetEmployerVacancy{
+					{
+						ID:                   1,
+						EmployerID:          1,
+						Position:           "химик",
+						Description:          "нужен химик",
+						PositionCategoryName: "chemistry",
+					},
+				}
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/applicant/%d/favorite-vacancy", slug),
+					nil,
+				)
+				nw := httptest.NewRecorder()
+				usecase.vacancy.
+					EXPECT().
+					GetApplicantFavoriteVacancies(slug).
+					Return(vacancies, nil)
+				return nw, nr
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			usecase := &usecase{
+				vacancy: vacancies_mock.NewMockIVacanciesUsecase(ctrl),
+			}
+			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
+
+			app := &internal.App{
+				Logger:         logrus.New(),
+				BackendAddress: "http://localhost:8080",
+				Usecases: &internal.Usecases{
+					ApplicantUsecase:   nil,
+					VacanciesUsecase:          usecase.vacancy,
+					PortfolioUsecase:   nil,
+					FileLoadingUsecase: nil,
+				},
+				Microservices: &internal.Microservices{
+					Auth: nil,
+				},
+			}
+
+			h := delivery.NewApplicantProfileHandlers(app)
+			require.NotNil(t, h)
+			require.NotNil(t, tt.r)
+			require.NotNil(t, tt.w)
+
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", h.GetFavoriteVacancies).Methods(http.MethodGet)
+
 			r.ServeHTTP(tt.w, tt.r)
 
 			require.Equal(t, tt.codeExpected, tt.w.Code)
