@@ -379,7 +379,7 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 			h.logger.Errorf("while getting from db got err %s", err)
 			return
 		}
-		h.logger.Debugf("Sending notification: %s")
+		h.logger.Debugf("Sending notification: %s on vacancy: %s", vacancy, applicant)
 		_, err = h.NotificationsGRPC.CreateEmployerNotification(
 			context.Background(),
 			&notificationsmicroservice.CreateEmployerNotificationInput{

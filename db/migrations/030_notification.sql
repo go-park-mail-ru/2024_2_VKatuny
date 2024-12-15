@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public."employer_notification"
     CONSTRAINT employer_notification_primary_key PRIMARY KEY (id),
     CONSTRAINT employer_notification_notification_text_length_check CHECK (length(notification_text) <= 200) NOT VALID
 );
-insert into employer_notification (notification_text, employer_id, vacancy_id, applicant_id) values ('На вашу вакансию "Дизайнер витрины" откликнулся Дмитрий Петров', 1, 1, 1);
+insert into employer_notification (notification_text, employer_id, vacancy_id, applicant_id) values ('На вашу вакансию "Дизайнер витрины" откликнулся Иван Иванов', 1, 1, 1);
 ---- create above / drop below ----
 
 -- Write your migrate down statements here. If this migration is irreversible

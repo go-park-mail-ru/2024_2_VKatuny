@@ -51,7 +51,7 @@ type CompressMicroservice struct {
 
 type NotificationsMicroservice struct {
 	Server   *Microservice `yaml:"server"`
-	//Database *Redis        `yaml:"database"`
+	GRPCserver *Microservice `yaml:"GRPCserver"`
 }
 
 type Microservice struct {

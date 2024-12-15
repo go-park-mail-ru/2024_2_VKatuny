@@ -37,4 +37,8 @@ notifications_microservice:
   server:
     scheme: "http"
     host: "192.168.77.130"
+    port: 8062
+  GRPCserver:
+    scheme: "http"
+    host: "192.168.77.130"
     port: 8061

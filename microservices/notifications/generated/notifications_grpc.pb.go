@@ -18,8 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type NotificationsServiceClient interface {
-	GetAlEmployerNotifications(ctx context.Context, in *GetAlEmployerNotificationsInput, opts ...grpc.CallOption) (*GetAlEmployerNotificationsOutput, error)
-	MakeEmployerNotificationRead(ctx context.Context, in *MakeEmployerNotificationReadInput, opts ...grpc.CallOption) (*Nothing, error)
+	// rpc GetAlEmployerNotifications (GetAlEmployerNotificationsInput) returns (GetAlEmployerNotificationsOutput) {}
+	// rpc MakeEmployerNotificationRead (MakeEmployerNotificationReadInput) returns (Nothing) {}
 	CreateEmployerNotification(ctx context.Context, in *CreateEmployerNotificationInput, opts ...grpc.CallOption) (*Nothing, error)
 }
 
@@ -29,24 +29,6 @@ type notificationsServiceClient struct {
 
 func NewNotificationsServiceClient(cc grpc.ClientConnInterface) NotificationsServiceClient {
 	return &notificationsServiceClient{cc}
-}
-
-func (c *notificationsServiceClient) GetAlEmployerNotifications(ctx context.Context, in *GetAlEmployerNotificationsInput, opts ...grpc.CallOption) (*GetAlEmployerNotificationsOutput, error) {
-	out := new(GetAlEmployerNotificationsOutput)
-	err := c.cc.Invoke(ctx, "/notificationsmicroservice.NotificationsService/GetAlEmployerNotifications", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *notificationsServiceClient) MakeEmployerNotificationRead(ctx context.Context, in *MakeEmployerNotificationReadInput, opts ...grpc.CallOption) (*Nothing, error) {
-	out := new(Nothing)
-	err := c.cc.Invoke(ctx, "/notificationsmicroservice.NotificationsService/MakeEmployerNotificationRead", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *notificationsServiceClient) CreateEmployerNotification(ctx context.Context, in *CreateEmployerNotificationInput, opts ...grpc.CallOption) (*Nothing, error) {
@@ -62,8 +44,8 @@ func (c *notificationsServiceClient) CreateEmployerNotification(ctx context.Cont
 // All implementations must embed UnimplementedNotificationsServiceServer
 // for forward compatibility
 type NotificationsServiceServer interface {
-	GetAlEmployerNotifications(context.Context, *GetAlEmployerNotificationsInput) (*GetAlEmployerNotificationsOutput, error)
-	MakeEmployerNotificationRead(context.Context, *MakeEmployerNotificationReadInput) (*Nothing, error)
+	// rpc GetAlEmployerNotifications (GetAlEmployerNotificationsInput) returns (GetAlEmployerNotificationsOutput) {}
+	// rpc MakeEmployerNotificationRead (MakeEmployerNotificationReadInput) returns (Nothing) {}
 	CreateEmployerNotification(context.Context, *CreateEmployerNotificationInput) (*Nothing, error)
 	mustEmbedUnimplementedNotificationsServiceServer()
 }
@@ -72,12 +54,6 @@ type NotificationsServiceServer interface {
 type UnimplementedNotificationsServiceServer struct {
 }
 
-func (UnimplementedNotificationsServiceServer) GetAlEmployerNotifications(context.Context, *GetAlEmployerNotificationsInput) (*GetAlEmployerNotificationsOutput, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAlEmployerNotifications not implemented")
-}
-func (UnimplementedNotificationsServiceServer) MakeEmployerNotificationRead(context.Context, *MakeEmployerNotificationReadInput) (*Nothing, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method MakeEmployerNotificationRead not implemented")
-}
 func (UnimplementedNotificationsServiceServer) CreateEmployerNotification(context.Context, *CreateEmployerNotificationInput) (*Nothing, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateEmployerNotification not implemented")
 }
@@ -92,42 +68,6 @@ type UnsafeNotificationsServiceServer interface {
 
 func RegisterNotificationsServiceServer(s grpc.ServiceRegistrar, srv NotificationsServiceServer) {
 	s.RegisterService(&NotificationsService_ServiceDesc, srv)
-}
-
-func _NotificationsService_GetAlEmployerNotifications_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAlEmployerNotificationsInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NotificationsServiceServer).GetAlEmployerNotifications(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/notificationsmicroservice.NotificationsService/GetAlEmployerNotifications",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NotificationsServiceServer).GetAlEmployerNotifications(ctx, req.(*GetAlEmployerNotificationsInput))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _NotificationsService_MakeEmployerNotificationRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(MakeEmployerNotificationReadInput)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(NotificationsServiceServer).MakeEmployerNotificationRead(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/notificationsmicroservice.NotificationsService/MakeEmployerNotificationRead",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(NotificationsServiceServer).MakeEmployerNotificationRead(ctx, req.(*MakeEmployerNotificationReadInput))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _NotificationsService_CreateEmployerNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -155,14 +95,6 @@ var NotificationsService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "notificationsmicroservice.NotificationsService",
 	HandlerType: (*NotificationsServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "GetAlEmployerNotifications",
-			Handler:    _NotificationsService_GetAlEmployerNotifications_Handler,
-		},
-		{
-			MethodName: "MakeEmployerNotificationRead",
-			Handler:    _NotificationsService_MakeEmployerNotificationRead_Handler,
-		},
 		{
 			MethodName: "CreateEmployerNotification",
 			Handler:    _NotificationsService_CreateEmployerNotification_Handler,

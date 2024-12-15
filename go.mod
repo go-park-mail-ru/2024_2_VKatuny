@@ -5,6 +5,7 @@ go 1.23.0
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/gorilla/websocket v1.5.3
+	github.com/icrowley/fake v0.0.0-20240710202011-f797eb4a99c0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.27.0
@@ -25,6 +26,7 @@ require (
 )
 
 require (
+	github.com/corpix/uarand v0.0.0-20170723150923-031be390f409 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

@@ -77,17 +77,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("cant connect to grpc")
 	}
-	defer connAuthGRPC.Close()
+	defer connCompressGRPC.Close()
 	logger.Infof("Compress gRPC client started at %s", conf.CompressMicroservice.Server.GetAddress())
 	connNotificationsGRPC, err := grpc.NewClient(
-		conf.NotificationsMicroservice.Server.GetAddress(),
+		conf.NotificationsMicroservice.GRPCserver.GetAddress(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
 		log.Fatalf("cant connect to grpc")
 	}
-	defer connAuthGRPC.Close()
-	logger.Infof("Notifications gRPC client started at %s", conf.NotificationsMicroservice.Server.GetAddress())
+	defer connNotificationsGRPC.Close()
+	logger.Infof("Notifications gRPC client started at %s", conf.NotificationsMicroservice.GRPCserver.GetAddress())
 
 
 	repositories := &internal.Repositories{

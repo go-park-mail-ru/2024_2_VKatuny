@@ -9,22 +9,22 @@ package notificationsmicroservice;
 // protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
 option go_package = "./;notificationsmicroservice";
 
-message Notification {
-  uint64 ID = 1;
-  string notification_text = 2;
-  bool read = 3;
-  uint64 applicantID = 4;
-  uint64 vacancyID = 5;
-  uint64 employerID = 6;
-  string createdAt = 7;
-}
+// message Notification {
+//   uint64 ID = 1;
+//   string notification_text = 2;
+//   bool read = 3;
+//   uint64 applicantID = 4;
+//   uint64 vacancyID = 5;
+//   uint64 employerID = 6;
+//   string createdAt = 7;
+// }
 
-message GetAlEmployerNotificationsInput {
-  uint64 employerID = 1;
-}
-message MakeEmployerNotificationReadInput {
-  uint64 notificationID = 1;
-}
+// message GetAlEmployerNotificationsInput {
+//   uint64 employerID = 1;
+// }
+// message MakeEmployerNotificationReadInput {
+//   uint64 notificationID = 1;
+// }
 
 message CreateEmployerNotificationInput {
   uint64 applicantID = 1;
@@ -34,15 +34,15 @@ message CreateEmployerNotificationInput {
   string vacancyInfo = 5;
 }
 
-message GetAlEmployerNotificationsOutput {
-  repeated Notification notifications = 1;
-}
+// message GetAlEmployerNotificationsOutput {
+//   repeated Notification notifications = 1;
+// }
 
 message Nothing {
 }
 
 service NotificationsService {
-	rpc GetAlEmployerNotifications (GetAlEmployerNotificationsInput) returns (GetAlEmployerNotificationsOutput) {}
-	rpc MakeEmployerNotificationRead (MakeEmployerNotificationReadInput) returns (Nothing) {}
+	// rpc GetAlEmployerNotifications (GetAlEmployerNotificationsInput) returns (GetAlEmployerNotificationsOutput) {}
+	// rpc MakeEmployerNotificationRead (MakeEmployerNotificationReadInput) returns (Nothing) {}
   rpc CreateEmployerNotification (CreateEmployerNotificationInput) returns (Nothing) {}
 }
