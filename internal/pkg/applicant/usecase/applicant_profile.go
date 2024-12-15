@@ -79,3 +79,18 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(ctx context.Context, applican
 	au.logger.Debugf("function: %s; successfully updated applicant profile", fn)
 	return nil
 }
+
+func (au *ApplicantUsecase) GetAllCities(ctx context.Context, namePat string) ([]string, error) {
+	fn := "ApplicantUsecase.GetAllCities"
+	au.logger = utils.SetLoggerRequestID(ctx, au.logger)
+	au.logger.Debugf("%s: entering", fn)
+
+	cities, err := au.applicantRepo.GetAllCities(ctx, namePat)
+	if err != nil {
+		au.logger.Errorf("function: %s; got err: %s", fn, err)
+		return nil, err
+	}
+
+	au.logger.Debugf("function: %s; successfully updated applicant profile", fn)
+	return cities, nil
+}

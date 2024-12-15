@@ -40,6 +40,8 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 		})
 		return
 	}
+
+	utils.EscapeHTMLStruct(employerRegistrationForm)
 	h.logger.Debugf("%s: json decoded successfully: %v", fn, employerRegistrationForm)
 
 	// TODO: implement usecase for validate registration data
@@ -76,6 +78,7 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 		ID:       grpc_response.UserData.ID,
 		UserType: grpc_response.UserData.UserType,
 	}
+	user.UserType = utils.EscapeHTMLString(user.UserType)
 	h.logger.Debugf("%s: employer logged in successfully: %v", fn, user)
 
 	cookie := utils.MakeAuthCookie(grpc_response.Session.ID, h.backendAddress)

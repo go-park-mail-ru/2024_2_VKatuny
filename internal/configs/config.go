@@ -27,6 +27,7 @@ type ServerConfig struct {
 	MediaDir string `yaml:"mediadir"`
 	CVinPDFDir string `yaml:"cvpdfdir"`
 	TamplateDir string `yaml:"tamplateDir"`
+	CSRFSecret string `yaml:"csrf_secret"`
 }
 
 type DataBaseConfig struct {
