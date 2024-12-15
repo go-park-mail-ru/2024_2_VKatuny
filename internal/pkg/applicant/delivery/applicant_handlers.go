@@ -39,6 +39,7 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		})
 		return
 	}
+	utils.EscapeHTMLStruct(applicantRegistrationForm)
 	h.logger.Debugf("%s: json decoded: %v", fn, applicantRegistrationForm)
 
 	// TODO: add json validation with govalidator
@@ -52,7 +53,7 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		return
 	}
 	h.logger.Debugf("%s: user created successfully: %v", fn, applicant)
-	
+
 	requestID := r.Context().Value(dto.RequestIDContextKey).(string)
 	grpc_request := &grpc_auth.AuthRequest{
 		RequestID: requestID,
@@ -74,6 +75,8 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		ID:       grpc_response.UserData.ID,
 		UserType: grpc_response.UserData.UserType,
 	}
+	user.UserType = utils.EscapeHTMLString(user.UserType)
+
 	h.logger.Debugf("%s: user logged in: %v", fn, user)
 
 	cookie := utils.MakeAuthCookie(grpc_response.Session.ID, h.backendURI)

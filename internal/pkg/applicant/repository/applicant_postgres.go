@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -225,4 +226,24 @@ func (s *PostgreSQLApplicantStorage) Update(ID uint64, newApplicantData *dto.JSO
 	applicant.CityName = newApplicantData.City
 
 	return &applicant, err
+}
+
+func (s *PostgreSQLApplicantStorage) GetAllCities(ctx context.Context, namePart string) ([]string, error) {
+	Cities := make([]string, 0)
+	rows, err := s.db.Query(`select city.city_name from city where city.city_name like $1`, "%"+namePart+"%")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var oneCity string
+		if err := rows.Scan(&oneCity); err != nil {
+			return nil, err
+		}
+		Cities = append(Cities, oneCity)
+		fmt.Println(oneCity)
+	}
+
+	return Cities, nil
 }

@@ -1,33 +1,110 @@
 package repository
 
 import (
+	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"mime/multipart"
 	"os"
+	"strconv"
+	"strings"
+	"text/template"
+
+	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/sirupsen/logrus"
 )
 
 type FileLoadingStorage struct {
-	dir string
+	logger      *logrus.Logger
+	mediaDir    string
+	cvinPDFdir  string
+	templateDir string
 }
 
-func NewFileLoadingStorage(dir string) *FileLoadingStorage {
+func NewFileLoadingStorage(logger *logrus.Logger, mediaDir, CVinPDFDir, templateDir string) *FileLoadingStorage {
 	return &FileLoadingStorage{
-		dir: dir,
+		logger:      logger,
+		mediaDir:    mediaDir,
+		cvinPDFdir:  CVinPDFDir,
+		templateDir: templateDir,
 	}
 }
 
 func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error) {
-	fmt.Println(s.dir + filename + header.Filename)
-	dst, err := os.Create(s.dir + filename + header.Filename)
+	fn := "FileLoadingStorage.WriteFileOnDisk"
+	s.logger.Debugf("%s: entering with name: %s", fn, s.mediaDir+filename+header.Filename)
+	dst, err := os.Create(s.mediaDir + filename + header.Filename)
 	if err != nil {
-		log.Println("error creating file", err)
+		s.logger.Errorf("%s: got err %s", fn, err)
 		return "", "", fmt.Errorf("error creating file")
 	}
 	defer dst.Close()
 	if _, err := io.Copy(dst, file); err != nil {
+		s.logger.Errorf("%s: got error copying file", fn)
 		return "", "", fmt.Errorf("error copying file")
 	}
-	return s.dir, filename + header.Filename, nil
+	s.logger.Debugf("%s: done with name: %s and %s", fn, s.mediaDir, filename+header.Filename)
+	return s.mediaDir, filename + header.Filename, nil
+}
+
+func (s *FileLoadingStorage) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (string, error) {
+	fn := "FileLoadingStorage.CVtoPDF"
+	s.logger.Debugf("%s: entering", fn)
+
+
+	tmpl := template.Must(template.ParseFiles(s.templateDir + "template.html"))
+	pwd, err := os.Getwd()
+	if err != nil {
+		s.logger.Errorf("%s: got err %s", fn, err)
+		return "", err
+	}
+	type And struct{
+		CV dto.JSONCv
+		Applicant dto.JSONGetApplicantProfile
+		IsImg int
+		Template string
+	}
+	megaStruct := And{CV: *CV, Applicant: *applicant}
+	megaStruct.Applicant.BirthDate = megaStruct.Applicant.BirthDate[:9]
+	megaStruct.CV.CreatedAt = megaStruct.CV.CreatedAt[:9]
+	fmt.Println("\n\n/home/olg/projectstechnopark/2024_VKatuny_DB/2024_2_VKatuny/media/UnCompressed/1ahsdfybegtorhlodjtldbtsdjgxsdfkg.JPG")
+	fmt.Println(pwd+CV.Avatar)
+	fmt.Println(pwd+"/"+s.templateDir+"template.css")
+	megaStruct.Template = pwd+"/"+s.templateDir+"template.css"
+	megaStruct.CV.Avatar = pwd+CV.Avatar
+	if CV.Avatar != "" {
+		megaStruct.IsImg = 1 
+	} else{
+		megaStruct.IsImg = 0
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, megaStruct)
+	if err != nil {
+		s.logger.Errorf("%s: got err %s", fn, err)
+		return "", err
+	}
+	//s.logger.Debugf(buf.String())
+
+	pdfg, err := wkhtml.NewPDFGenerator()
+	if err != nil {
+		s.logger.Errorf("%s: got err %s", fn, err)
+		return "", err
+	}
+	page := wkhtml.NewPageReader(strings.NewReader(buf.String()))
+	page.EnableLocalFileAccess.Set(true)
+	pdfg.AddPage(page)
+	err = pdfg.Create()
+	if err != nil {
+		s.logger.Errorf("%s: got err %s", fn, err)
+		return "", err
+	}
+	name := s.cvinPDFdir + strconv.Itoa(int(CV.ID)) + "&&" + strconv.Itoa(int(CV.ApplicantID)) + ".pdf"
+	err = pdfg.WriteFile(name)
+	if err != nil {
+		s.logger.Errorf("%s: got err %s", fn, err)
+		return "", err
+	}
+	s.logger.Debugf("%s: done with name: %s", fn, name)
+	return name, nil
 }

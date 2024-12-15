@@ -176,7 +176,7 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 	type repo struct {
 		applicant *mock.MockIApplicantRepository
-	}
+	} 
 	tests := []struct {
 		name    string
 		form *dto.JSONApplicantRegistrationForm
@@ -362,5 +362,58 @@ func TestGetByID(t *testing.T) {
 		applicant, _ := uc.GetByID(context.Background(), userID)
 
 		require.Equal(t, tt.applicant, applicant)
+	}
+}
+
+func TestGetAllCities(t *testing.T) {
+	t.Parallel()
+	type repo struct {
+		applicant *mock.MockIApplicantRepository
+	}
+	tests := []struct {
+		name    string
+		profile []string
+		prepare func(
+			repo *repo, profile []string,
+		) ([]string)
+	}{
+		{
+			name:    "Create: ok",
+			profile: make([]string, 0),
+			prepare: func(
+				repo *repo, profile []string) ([]string) {
+				model := []string{
+					"Moscow",
+				}
+
+				repo.applicant.
+					EXPECT().
+					GetAllCities(context.Background(), "Мос").
+					Return(model, nil)
+				rprofile := []string{
+					"Moscow",
+					
+				}
+				return rprofile
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		repo := &repo{
+			applicant: mock.NewMockIApplicantRepository(ctrl),
+		}
+		tt.profile = tt.prepare(repo, tt.profile)
+
+		repositories := &internal.Repositories{
+			ApplicantRepository: repo.applicant,
+		}
+		uc := usecase.NewApplicantUsecase(logrus.New(), repositories)
+		profile, _ := uc.GetAllCities(context.Background(), "Мос")
+
+		require.Equal(t, tt.profile, profile)
 	}
 }

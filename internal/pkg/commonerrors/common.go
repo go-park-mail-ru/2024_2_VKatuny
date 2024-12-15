@@ -21,8 +21,11 @@ var (
 
 // Errors to front
 var (
-	ErrFrontBadSlug          = fmt.Errorf("bad slug")
-	ErrFrontUnableToCastSlug = fmt.Errorf("unable to cast slug")
-	ErrFrontMethodNotAllowed = fmt.Errorf("method not allowed")
-	ErrFrontServiceNotFound  = fmt.Errorf("service not found")
+	ErrFrontBadSlug              = fmt.Errorf("bad slug")
+	ErrFrontUnableToCastSlug     = fmt.Errorf("unable to cast slug")
+	ErrFrontMethodNotAllowed     = fmt.Errorf("method not allowed")
+	ErrFrontServiceNotFound      = fmt.Errorf("service not found")
+	ErrFrontCSRFExpired          = fmt.Errorf("csrf token expired")
+	ErrFrontCSRFTokenDoesntMatch = fmt.Errorf("csrf token doesn't match")
+	ErrUncoveredError            = fmt.Errorf("uncovered error")
 )

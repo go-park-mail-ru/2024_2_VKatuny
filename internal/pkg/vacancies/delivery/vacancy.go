@@ -66,7 +66,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	newVacancy.CompanyName = r.FormValue("companyName")
 	newVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
-
+	utils.EscapeHTMLStruct(newVacancy)
 	if err != nil {
 		h.logger.Errorf("bad input of salary: %s", err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
@@ -103,7 +103,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	}
 
 	h.logger.Debug(newVacancy)
-	wroteVacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
+	vacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -114,7 +114,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       wroteVacancy,
+		Body:       vacancy,
 	})
 }
 
@@ -158,6 +158,7 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	vacancy.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(vacancy.Avatar)
 	h.logger.Debugf("%s: got vacancy: %v", fn, vacancy)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
@@ -561,9 +562,68 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 		})
 		return
 	}
-
+	for _, subscriber := range subscribers.Subscribers {
+		subscriber.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(subscriber.Avatar)
+	}
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       subscribers,
+	})
+}
+
+// @Summary Subscribe on vacancy
+// @Description Subscribe on vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id}/subscription [post]
+func (h *VacanciesHandlers) AddVacancyIntoFavorite(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "VacanciesHandlers.AddVacancyIntoFavorite"
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
+
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnableToGetUserFromContext,
+		})
+		return
+	}
+
+	err = h.vacanciesUsecase.AddIntoFavorite(vacancyID, currentUser)
+	if err != nil {
+		h.logger.Errorf("while adding into favorite on vacancy got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("user_ID: %d added into favorite on vacancy_ID %d", currentUser.ID, vacancyID)
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
 	})
 }

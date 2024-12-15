@@ -30,6 +30,7 @@ func TestIsAuthorized(t *testing.T) {
 		w            *httptest.ResponseRecorder
 		usecase      *usecase
 		codeExpected int
+		CSRFSecret   string
 
 		prepare func(
 			r *http.Request,
@@ -147,9 +148,50 @@ func TestIsAuthorized(t *testing.T) {
 			},
 		},
 		{
+			name:         "IsAuthorized: invalid csrf key",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			CSRFSecret:   "12345",
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				cookie := &http.Cookie{
+					Name:  dto.SessionIDName,
+					Value: "1234567890",
+				}
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					"/api/v1/authorized",
+					nil,
+				)
+				nr.AddCookie(cookie)
+				request := &auth_grpc.CheckAuthRequest{
+					Session: &auth_grpc.SessionToken{
+						ID: cookie.Value,
+					},
+				}
+				response := &auth_grpc.CheckAuthResponse{
+					UserData: &auth_grpc.User{
+						UserType: dto.UserTypeApplicant,
+						ID:       uint64(1),
+					},
+				}
+				usecase.auth_grpc.
+					EXPECT().
+					CheckAuth(gomock.Any(), request).
+					Return(response, nil)
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+		{
 			name:         "IsAuthorized: ok",
 			r:            new(http.Request),
 			w:            new(httptest.ResponseRecorder),
+			CSRFSecret:   "1234567812345678",
 			codeExpected: http.StatusOK,
 			prepare: func(
 				r *http.Request,
@@ -203,6 +245,7 @@ func TestIsAuthorized(t *testing.T) {
 				Microservices: &internal.Microservices{
 					Auth: usecase.auth_grpc,
 				},
+				CSRFSecret: tt.CSRFSecret,
 			}
 
 			h := NewSessionHandlers(app)
