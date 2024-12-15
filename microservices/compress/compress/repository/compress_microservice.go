@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/davidbyttow/govips/v2/vips"
@@ -66,45 +65,40 @@ func (cr *CompressRepository) ScanDir() error {
 	if err != nil {
 		cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
 	}
-	compressedList := []string{}
-	cutCompressedList := []string{}
-	uncompressedList := []string{}
-	cutUncompressedList := []string{}
+	compressedList := make([]string, 0, len(compressed))
+	compressedMap := make(map[string]bool, len(compressed))
+	uncompressedList := make([]string, 0, len(uncompressed))
+	uncompressedMap := make(map[string]bool, len(uncompressed))
 	for _, file := range compressed {
 		if !file.IsDir() {
-			cutCompressedList = append(cutCompressedList, Cut(file.Name()))
 			compressedList = append(compressedList, file.Name())
+			compressedMap[Cut(file.Name())] = true
 		}
 	}
 	for _, file := range uncompressed {
 		if !file.IsDir() {
-			cutUncompressedList = append(cutUncompressedList, Cut(file.Name()))
 			uncompressedList = append(uncompressedList, file.Name())
+			uncompressedMap[Cut(file.Name())] = true
 		}
 	}
-	slices.Sort(compressedList)
-	slices.Sort(uncompressedList)
-	if slices.Equal(compressedList, uncompressedList) {
-		cr.logger.Debugf("%s: Nothing to compress or delete", funcName)
-		return nil
-	} else {
-		cutNewCompressedList := []string{}
-		for _, file := range compressedList {
-			if !slices.Contains(cutUncompressedList, Cut(file)) {
-				err := cr.DeleteFile(cr.compressedDir + file)
-				if err != nil {
-					cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
-				}
-			} else {
-				cutNewCompressedList = append(cutNewCompressedList, Cut(file))
+	fmt.Println(compressedList)
+	fmt.Println(uncompressedList)
+	fmt.Println(compressedMap)
+	fmt.Println(uncompressedMap)
+	for _, file := range compressedList {
+		if uncompressedMap[Cut(file)] != true {
+			err := cr.DeleteFile(cr.compressedDir + file)
+			if err != nil {
+				cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
 			}
+			compressedMap[Cut(file)] = false
 		}
-		for _, file := range uncompressedList {
-			if !slices.Contains(cutNewCompressedList, Cut(file)) {
-				err := cr.CompressAndWriteFile(cr.uncompressedDir+file, cr.compressedDir+file)
-				if err != nil {
-					cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
-				}
+	}
+	for _, file := range uncompressedList {
+		if compressedMap[Cut(file)] != true {
+			err := cr.CompressAndWriteFile(cr.uncompressedDir+file, cr.compressedDir+file)
+			if err != nil {
+				cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
 			}
 		}
 	}
@@ -119,12 +113,9 @@ func (cr *CompressRepository) CompressAndWriteFile(filePath string, newfilePath 
 	if err != nil {
 		return err
 	}
-	// Rotate the picture upright and reset EXIF orientation tag
-	//err = image1.AutoRotate()
 	bufer, _, err := image1.ExportWebp(&vips.WebpExportParams{MinSize: true})
 	err = os.WriteFile(Cut(newfilePath)+".webp", bufer, 0644)
 
-	//err = image1.
 	if err != nil {
 		return err
 	}
