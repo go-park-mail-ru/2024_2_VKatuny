@@ -1,12 +1,14 @@
 package repository
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
 	"strconv"
 	"strings"
+	"text/template"
 
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -31,8 +33,7 @@ func NewFileLoadingStorage(logger *logrus.Logger, mediaDir, CVinPDFDir, template
 
 func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error) {
 	fn := "FileLoadingStorage.WriteFileOnDisk"
-	s.logger.Debugf("%s: entering", fn)
-	fmt.Println(s.mediaDir + filename + header.Filename)
+	s.logger.Debugf("%s: entering with name: %s", fn, s.mediaDir+filename+header.Filename)
 	dst, err := os.Create(s.mediaDir + filename + header.Filename)
 	if err != nil {
 		s.logger.Errorf("%s: got err %s", fn, err)
@@ -50,41 +51,47 @@ func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.
 func (s *FileLoadingStorage) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (string, error) {
 	fn := "FileLoadingStorage.CVtoPDF"
 	s.logger.Debugf("%s: entering", fn)
+
+
+	tmpl := template.Must(template.ParseFiles(s.templateDir + "template.html"))
+	pwd, err := os.Getwd()
+	if err != nil {
+		s.logger.Errorf("%s: got err %s", fn, err)
+		return "", err
+	}
+	type And struct{
+		CV dto.JSONCv
+		Applicant dto.JSONGetApplicantProfile
+		IsImg int
+		Template string
+	}
+	megaStruct := And{CV: *CV, Applicant: *applicant}
+	megaStruct.Applicant.BirthDate = megaStruct.Applicant.BirthDate[:9]
+	megaStruct.CV.CreatedAt = megaStruct.CV.CreatedAt[:9]
+	fmt.Println("\n\n/home/olg/projectstechnopark/2024_VKatuny_DB/2024_2_VKatuny/media/UnCompressed/1ahsdfybegtorhlodjtldbtsdjgxsdfkg.JPG")
+	fmt.Println(pwd+CV.Avatar)
+	fmt.Println(pwd+"/"+s.templateDir+"template.css")
+	megaStruct.Template = pwd+"/"+s.templateDir+"template.css"
+	megaStruct.CV.Avatar = pwd+CV.Avatar
+	if CV.Avatar != "" {
+		megaStruct.IsImg = 1 
+	} else{
+		megaStruct.IsImg = 0
+	}
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, megaStruct)
+	if err != nil {
+		s.logger.Errorf("%s: got err %s", fn, err)
+		return "", err
+	}
+	//s.logger.Debugf(buf.String())
+
 	pdfg, err := wkhtml.NewPDFGenerator()
 	if err != nil {
 		s.logger.Errorf("%s: got err %s", fn, err)
 		return "", err
 	}
-	pwd, err := os.Getwd()
-	pwd += "/"
-	if err != nil {
-		s.logger.Errorf("%s: got err %s", fn, err)
-		return "", err
-	}
-	html, err := os.ReadFile("templates/template.html")
-	if err != nil {
-		s.logger.Errorf("%s: got err %s", fn, err)
-		return "", err
-	}
-	htmlText := string(html)
-	fmt.Println(pwd + "/" + s.mediaDir + CV.Avatar)
-
-	htmlText = strings.Replace(htmlText, "template.css", pwd+s.templateDir+"template.css", 1)
-	htmlText = strings.Replace(htmlText, "profile-avatar.jpg", pwd+s.mediaDir+CV.Avatar, 1)
-	htmlText = strings.Replace(htmlText, "FirstName", applicant.FirstName, 1)
-	htmlText = strings.Replace(htmlText, "LastName", applicant.LastName, 1)
-	htmlText = strings.Replace(htmlText, "Contacts", applicant.Contacts, 1)
-	htmlText = strings.Replace(htmlText, "PositionRu", CV.PositionRu, 1)
-	htmlText = strings.Replace(htmlText, "PositionEn", CV.PositionEn, 1)
-	htmlText = strings.Replace(htmlText, "PositionCategoryName", CV.PositionCategoryName, 1)
-	htmlText = strings.Replace(htmlText, "WorkingExperience", CV.WorkingExperience, 1)
-	htmlText = strings.Replace(htmlText, "Education", applicant.Education, 1)
-	htmlText = strings.Replace(htmlText, "BirthDate", applicant.BirthDate[:9], 1)
-	htmlText = strings.Replace(htmlText, "City", applicant.City, 1)
-	htmlText = strings.Replace(htmlText, "CreatedAt", CV.CreatedAt[:9], 1)
-	
-
-	page := wkhtml.NewPageReader(strings.NewReader(htmlText))
+	page := wkhtml.NewPageReader(strings.NewReader(buf.String()))
 	page.EnableLocalFileAccess.Set(true)
 	pdfg.AddPage(page)
 	err = pdfg.Create()

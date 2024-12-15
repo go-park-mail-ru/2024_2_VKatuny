@@ -1,10 +1,12 @@
+# configurations
+
 server:
   scheme: "http"
   host: "192.168.77.130"
   port: 8090
   frontURI: "http://192.168.77.130:8000"
-  mediadir: "media/UnCompressed/"
-  cvpdfdir: "media/CVtoPDF/"
+  mediadir: "media/Uncompressed/"
+  cvpdfdir: "media/CVinPDF/"
   tamplateDir: "templates/"
   
 
@@ -34,3 +36,13 @@ compress_microservice:
     host: "192.168.77.130"
     port: 8071
   CompressedMediaDir: "media/Compressed/"
+
+notifications_microservice:
+  server:
+    scheme: "http"
+    host: "192.168.77.130"
+    port: 8062
+  GRPCserver:
+    scheme: "http"
+    host: "192.168.77.130"
+    port: 8061
