@@ -21,7 +21,7 @@ func NewNotificationsRepository(logger *logrus.Logger, db *sql.DB) *Notification
 
 func (nr *NotificationsRepository) GetAlEmployerNotifications(employerID uint64) ([]*dto.EmployerNotification, error) {
 	funcName := "NotificationsRepository.GetAlEmployerNotifications"
-	nr.logger.Debugf("%s: got request: %s", funcName, employerID)
+	nr.logger.Debugf("%s: got request: %d", funcName, employerID)
 	NotificationsList := make([]*dto.EmployerNotification, 0)
 
 	rows, err := nr.db.Query(`select id, notification_text, applicant_id, employer_id, vacancy_id, is_read, created_at
@@ -45,14 +45,14 @@ func (nr *NotificationsRepository) GetAlEmployerNotifications(employerID uint64)
 			return nil, err
 		}
 		NotificationsList = append(NotificationsList, &oneNotification)
-		nr.logger.Debugf("notification: %s", oneNotification)
+		nr.logger.Debugf("notification: %+v", oneNotification)
 	}
 	return NotificationsList, nil
 }
 
 func (nr *NotificationsRepository) MakeEmployerNotificationRead(notificationID uint64) error {
 	funcName := "NotificationsRepository.MakeEmployerNotificationRead"
-	nr.logger.Debugf("%s: got request: %s", funcName, notificationID)
+	nr.logger.Debugf("%s: got request: %d", funcName, notificationID)
 	row := nr.db.QueryRow(`update employer_notification set is_read = true where id = $1 returning id`, notificationID)
 	var id uint64
 	err := row.Scan(
@@ -62,7 +62,7 @@ func (nr *NotificationsRepository) MakeEmployerNotificationRead(notificationID u
 
 func (nr *NotificationsRepository) CreateEmployerNotification(applicantID uint64, employerID uint64, vacancyID uint64, NotificationText string) error {
 	funcName := "NotificationsRepository.CreateEmployerNotification"
-	nr.logger.Debugf("%s: got request: %s %s %s %s", funcName, applicantID, employerID, vacancyID, NotificationText)
-	_, err := nr.db.Exec(`insert into employer_notification (applicant_id, employer_id, vacancy_id, notification_text) VALUES ($1, $2, $3, $4)`, applicantID, employerID, vacancyID, NotificationText)
+	nr.logger.Debugf("%s: got request: %d %d %d %s", funcName, applicantID, employerID, vacancyID, NotificationText)
+	_, err := nr.db.Exec(`insert into employer_notification (applicant_id, employer_id, vacancy_id, notification_text) VALUES ($1, $2, $3, $4) returning id`, applicantID, employerID, vacancyID, NotificationText)
 	return err
 }
