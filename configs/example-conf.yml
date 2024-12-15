@@ -7,7 +7,7 @@ server:
   mediadir: "media/UnCompressed/"
   auth_host: auth_microservice
   auth_port: 8000
-  csrf_secret: "rand string"
+  csrf_secret: "rand string" # 8, 16 or 32 bytes string allowed!
 
 database:
   host: "192.168.77.130"
