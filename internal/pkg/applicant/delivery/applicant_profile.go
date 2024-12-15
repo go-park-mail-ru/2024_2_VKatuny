@@ -28,7 +28,7 @@ type ApplicantHandlers struct {
 	cvUsecase          cvs.ICVsUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
 	authGRPC           auth_grpc.AuthorizationClient
-	CompressGRPC       compressmicroservice.CompressServiceClient
+	compressGRPC       compressmicroservice.CompressServiceClient
 }
 
 func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
@@ -40,7 +40,7 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 		cvUsecase:          app.Usecases.CVUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
 		authGRPC:           app.Microservices.Auth,
-		CompressGRPC:       app.Microservices.Compress,
+		compressGRPC:       app.Microservices.Compress,
 	}
 }
 
@@ -145,6 +145,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 		newProfileData.Avatar = fileAddress
 		newProfileData.CompressedAvatar = compressedFileAddress
 	}
+	utils.EscapeHTMLStruct(newProfileData)
 	err = h.applicantUsecase.UpdateApplicantProfile(r.Context(), applicantID, newProfileData)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
