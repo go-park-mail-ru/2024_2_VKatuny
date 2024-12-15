@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"errors"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
@@ -80,7 +81,7 @@ func CSRFProtection(next dto.HandlerFunc, app *internal.App) dto.HandlerFunc {
 		)
 		if err != nil {
 			errMsg := commonerrors.ErrUncoveredError
-			if err == utils.ErrTokenExpired {
+			if errors.Is(err, utils.ErrTokenExpired) {
 				errMsg = commonerrors.ErrFrontCSRFExpired
 			}
 			logger.Errorf("%s: got err %s", fn, err)
