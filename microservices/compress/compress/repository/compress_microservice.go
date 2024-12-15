@@ -81,12 +81,8 @@ func (cr *CompressRepository) ScanDir() error {
 			uncompressedMap[Cut(file.Name())] = true
 		}
 	}
-	fmt.Println(compressedList)
-	fmt.Println(uncompressedList)
-	fmt.Println(compressedMap)
-	fmt.Println(uncompressedMap)
 	for _, file := range compressedList {
-		if uncompressedMap[Cut(file)] != true {
+		if uncompressedMap[Cut(file)] {
 			err := cr.DeleteFile(cr.compressedDir + file)
 			if err != nil {
 				cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
@@ -95,7 +91,7 @@ func (cr *CompressRepository) ScanDir() error {
 		}
 	}
 	for _, file := range uncompressedList {
-		if compressedMap[Cut(file)] != true {
+		if compressedMap[Cut(file)] {
 			err := cr.CompressAndWriteFile(cr.uncompressedDir+file, cr.compressedDir+file)
 			if err != nil {
 				cr.logger.Errorf("%s: got err: %s", funcName, err.Error())
