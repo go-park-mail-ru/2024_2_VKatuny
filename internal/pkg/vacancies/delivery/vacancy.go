@@ -53,13 +53,13 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newVacancy := &dto.JSONVacancy{}
 	newVacancy.Position = r.FormValue("position")
-	newVacancy.Location = utils.SanitizeString(r.FormValue("location"))
-	newVacancy.Description = utils.SanitizeString(r.FormValue("description"))
-	newVacancy.WorkType = utils.SanitizeString(r.FormValue("workType"))
-	newVacancy.CompanyName = utils.SanitizeString(r.FormValue("companyName"))
-	newVacancy.PositionCategoryName = utils.SanitizeString(r.FormValue("group"))
+	newVacancy.Location = r.FormValue("location")
+	newVacancy.Description = r.FormValue("description")
+	newVacancy.WorkType = r.FormValue("workType")
+	newVacancy.CompanyName = r.FormValue("companyName")
+	newVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
-
+	utils.EscapeHTMLStruct(newVacancy)
 	if err != nil {
 		h.logger.Errorf("bad input of salary: %s", err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{

@@ -79,16 +79,7 @@ func (h *EmployerHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	profile.FirstName = utils.SanitizeString(profile.FirstName)
-	profile.LastName = utils.SanitizeString(profile.LastName)
-	profile.City = utils.SanitizeString(profile.City)
-	profile.Position = utils.SanitizeString(profile.Position)
-	profile.Company = utils.SanitizeString(profile.Company)
-	profile.CompanyDescription = utils.SanitizeString(profile.CompanyDescription)
-	profile.CompanyWebsite = utils.SanitizeString(profile.CompanyWebsite)
-	profile.Contacts = utils.SanitizeString(profile.Contacts)
-	profile.Avatar = utils.SanitizeString(profile.Avatar)
-	profile.CompressedAvatar = utils.SanitizeString(profile.CompressedAvatar)
+	utils.EscapeHTMLStruct(profile)
 
 	h.logger.Debugf("function %s: success, got profile %v", fn, profile)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
@@ -132,10 +123,10 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 	}
 
 	newProfileData := &dto.JSONUpdateEmployerProfile{}
-	newProfileData.FirstName = utils.SanitizeString(r.FormValue("firstName"))
-	newProfileData.LastName = utils.SanitizeString(r.FormValue("lastName"))
-	newProfileData.City = utils.SanitizeString(r.FormValue("city"))
-	newProfileData.Contacts = utils.SanitizeString(r.FormValue("contacts"))
+	newProfileData.FirstName = r.FormValue("firstName")
+	newProfileData.LastName = r.FormValue("lastName")
+	newProfileData.City = r.FormValue("city")
+	newProfileData.Contacts = r.FormValue("contacts")
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
@@ -151,7 +142,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 		newProfileData.Avatar = fileAddress
 		newProfileData.CompressedAvatar = compressedFileAddress
 	}
-
+	utils.EscapeHTMLStruct(newProfileData)
 	h.logger.Debugf("function %s: new profile data MultiPart parsed: %v", fn, newProfileData)
 
 	err = h.employerUsecase.UpdateEmployerProfile(r.Context(), employerID, newProfileData)
@@ -207,15 +198,7 @@ func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.R
 	}
 
 	for _, vacancy := range vacancies {
-		vacancy.Position = utils.SanitizeString(vacancy.Position)
-		vacancy.Location = utils.SanitizeString(vacancy.Location)
-		vacancy.Description = utils.SanitizeString(vacancy.Description)
-		vacancy.WorkType = utils.SanitizeString(vacancy.WorkType)
-		vacancy.Avatar = utils.SanitizeString(vacancy.Avatar)
-		vacancy.CompressedAvatar = utils.SanitizeString(vacancy.CompressedAvatar)
-		vacancy.PositionCategoryName = utils.SanitizeString(vacancy.PositionCategoryName)
-		vacancy.CreatedAt = utils.SanitizeString(vacancy.CreatedAt)
-		vacancy.UpdatedAt = utils.SanitizeString(vacancy.UpdatedAt)
+		utils.EscapeHTMLStruct(vacancy)
 	} 
 
 	h.logger.Debugf("function %s: success, got vacancies: %d", fn, len(vacancies))

@@ -68,7 +68,7 @@ func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group,
 	var vacancies []*dto.JSONVacancy
 	vacancies, err = vu.vacanciesRepository.SearchAll(offset, offset+num, searchStr, group, searchBy)
 	for _, vacancy := range vacancies {
-		vu.SanitizeXSS(vacancy)
+		utils.EscapeHTMLStruct(vacancy)
 	}
 	if err != nil {
 		return nil, err
@@ -87,18 +87,19 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 
 	vacancies := make([]*dto.JSONGetEmployerVacancy, 0, len(vacanciesModels))
 	for _, vacancyModel := range vacanciesModels {
+		utils.EscapeHTMLStruct(vacancyModel)
 		vacancies = append(vacancies, &dto.JSONGetEmployerVacancy{
 			ID:                   vacancyModel.ID,
 			EmployerID:           vacancyModel.EmployerID,
 			Salary:               vacancyModel.Salary,
-			Position:             utils.SanitizeString(vacancyModel.Position),
-			Description:          utils.SanitizeString(vacancyModel.Description),
-			WorkType:             utils.SanitizeString(vacancyModel.WorkType),
-			Avatar:               utils.SanitizeString(vacancyModel.Avatar),
-			PositionCategoryName: utils.SanitizeString(vacancyModel.PositionCategoryName),
-			CreatedAt:            utils.SanitizeString(vacancyModel.CreatedAt),
-			UpdatedAt:            utils.SanitizeString(vacancyModel.UpdatedAt),
-			CompressedAvatar:     utils.SanitizeString(vacancyModel.CompressedAvatar),
+			Position:             vacancyModel.Position,
+			Description:          vacancyModel.Description,
+			WorkType:             vacancyModel.WorkType,
+			Avatar:               vacancyModel.Avatar,
+			PositionCategoryName: vacancyModel.PositionCategoryName,
+			CreatedAt:            vacancyModel.CreatedAt,
+			UpdatedAt:            vacancyModel.UpdatedAt,
+			CompressedAvatar:     vacancyModel.CompressedAvatar,
 		})
 	}
 	return vacancies, nil
@@ -109,7 +110,7 @@ func (vu *VacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser 
 
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got creation request")
 	vacancy.EmployerID = currentUser.ID
-	vacancy = vu.SanitizeXSS(vacancy)
+	utils.EscapeHTMLStruct(vacancy)
 	createdVacancyID, err := vu.vacanciesRepository.Create(vacancy)
 	if err != nil {
 		vu.logger.Errorf("while creating in db got err %s", err)
@@ -122,7 +123,7 @@ func (vu *VacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser 
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
-	updatedVacancy = vu.SanitizeXSS(updatedVacancy)
+	utils.EscapeHTMLStruct(updatedVacancy)
 	vu.logger.Debugf("got updated vacancy with id %d", createdVacancyID)
 	return updatedVacancy, nil
 }
@@ -133,14 +134,14 @@ func (vu *VacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, err
 	}
-	vacancy = vu.SanitizeXSS(vacancy)
+	utils.EscapeHTMLStruct(vacancy)
 	return vacancy, nil
 }
 
 func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got update request")
 	oldVacancy, err := vu.vacanciesRepository.GetByID(ID)
-	oldVacancy = vu.SanitizeXSS(oldVacancy)
+	utils.EscapeHTMLStruct(oldVacancy)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -150,14 +151,14 @@ func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, c
 		vu.logger.Debugf("not an owner tried to update vacancy, got %d expected %d", currentUser.ID, ID)
 		return nil, fmt.Errorf(dto.MsgAccessDenied)
 	}
-	vacancy = vu.SanitizeXSS(vacancy)
+	utils.EscapeHTMLStruct(vacancy)
 
 	updatedVacancy, err := vu.vacanciesRepository.Update(ID, vacancy)
 	if err != nil {
 		vu.logger.Errorf("while updating in db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
-	updatedVacancy = vu.SanitizeXSS(updatedVacancy)
+	utils.EscapeHTMLStruct(updatedVacancy)
 	vu.logger.Debugf("successfully updated vacancy, got %d", updatedVacancy.ID)
 	return updatedVacancy, nil
 }
@@ -169,7 +170,7 @@ func (vu *VacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.UserFromSe
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)
 	}
-	vacancy = vu.SanitizeXSS(vacancy)
+	utils.EscapeHTMLStruct(vacancy)
 	if vacancy.EmployerID != currentUser.ID {
 		vu.logger.Debugf("not an owner tried to delete vacancy, got %d expected %d", currentUser.ID, ID)
 		return fmt.Errorf(dto.MsgAccessDenied)
@@ -252,16 +253,17 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.Us
 
 	subscribers := make([]*dto.JSONGetApplicantProfile, 0, len(subscribersModel))
 	for _, subscriberModel := range subscribersModel {
+		utils.EscapeHTMLStruct(subscriberModel)
 		subscribers = append(subscribers, &dto.JSONGetApplicantProfile{
 			ID:               subscriberModel.ID,
-			FirstName:        utils.SanitizeString(subscriberModel.FirstName),
-			LastName:         utils.SanitizeString(subscriberModel.LastName),
-			City:             utils.SanitizeString(subscriberModel.CityName),
-			BirthDate:        utils.SanitizeString(subscriberModel.BirthDate),
-			Avatar:           utils.SanitizeString(subscriberModel.PathToProfileAvatar),
-			Contacts:         utils.SanitizeString(subscriberModel.Contacts),
-			Education:        utils.SanitizeString(subscriberModel.Education),
-			CompressedAvatar: utils.SanitizeString(subscriberModel.CompressedAvatar),
+			FirstName:        subscriberModel.FirstName,
+			LastName:         subscriberModel.LastName,
+			City:             subscriberModel.CityName,
+			BirthDate:        subscriberModel.BirthDate,
+			Avatar:           subscriberModel.PathToProfileAvatar,
+			Contacts:         subscriberModel.Contacts,
+			Education:        subscriberModel.Education,
+			CompressedAvatar: subscriberModel.CompressedAvatar,
 		})
 	}
 
@@ -270,17 +272,4 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.Us
 		ID:          ID,
 		Subscribers: subscribers,
 	}, nil
-}
-
-func (vu *VacanciesUsecase) SanitizeXSS(vacancy *dto.JSONVacancy) *dto.JSONVacancy {
-	vacancy.Position = utils.SanitizeString(vacancy.Position)
-	vacancy.Location = utils.SanitizeString(vacancy.Location)
-	vacancy.Description = utils.SanitizeString(vacancy.Description)
-	vacancy.WorkType = utils.SanitizeString(vacancy.WorkType)
-	vacancy.Avatar = utils.SanitizeString(vacancy.Avatar)
-	vacancy.CompressedAvatar = utils.SanitizeString(vacancy.CompressedAvatar)
-	vacancy.PositionCategoryName = utils.SanitizeString(vacancy.PositionCategoryName)
-	vacancy.CreatedAt = utils.SanitizeString(vacancy.CreatedAt)
-	vacancy.UpdatedAt = utils.SanitizeString(vacancy.UpdatedAt)
-	return vacancy
 }

@@ -39,16 +39,7 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		})
 		return
 	}
-	applicantRegistrationForm.FirstName =
-		utils.SanitizeString(applicantRegistrationForm.FirstName)
-	applicantRegistrationForm.LastName =
-		utils.SanitizeString(applicantRegistrationForm.LastName)
-	applicantRegistrationForm.Email =
-		utils.SanitizeString(applicantRegistrationForm.Email)
-	applicantRegistrationForm.BirthDate =
-		utils.SanitizeString(applicantRegistrationForm.BirthDate)
-	applicantRegistrationForm.Password =
-		utils.SanitizeString(applicantRegistrationForm.Password)
+	utils.EscapeHTMLStruct(applicantRegistrationForm)
 	h.logger.Debugf("%s: json decoded: %v", fn, applicantRegistrationForm)
 
 	// TODO: add json validation with govalidator
@@ -84,7 +75,7 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 		ID:       grpc_response.UserData.ID,
 		UserType: grpc_response.UserData.UserType,
 	}
-	user.UserType = utils.SanitizeString(user.UserType)
+	user.UserType = utils.EscapeHTMLString(user.UserType)
 
 	h.logger.Debugf("%s: user logged in: %v", fn, user)
 

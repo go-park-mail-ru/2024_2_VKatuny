@@ -124,12 +124,12 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	}
 
 	newProfileData := &dto.JSONUpdateApplicantProfile{}
-	newProfileData.FirstName = utils.SanitizeString(r.FormValue("firstName"))
-	newProfileData.LastName = utils.SanitizeString(r.FormValue("lastName"))
-	newProfileData.City = utils.SanitizeString(r.FormValue("city"))
-	newProfileData.BirthDate = utils.SanitizeString(r.FormValue("birthDate"))
-	newProfileData.Contacts = utils.SanitizeString(r.FormValue("contacts"))
-	newProfileData.Education = utils.SanitizeString(r.FormValue("education"))
+	newProfileData.FirstName = r.FormValue("firstName")
+	newProfileData.LastName = r.FormValue("lastName")
+	newProfileData.City = r.FormValue("city")
+	newProfileData.BirthDate = r.FormValue("birthDate")
+	newProfileData.Contacts = r.FormValue("contacts")
+	newProfileData.Education = r.FormValue("education")
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
@@ -145,6 +145,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 		newProfileData.Avatar = fileAddress
 		newProfileData.CompressedAvatar = compressedFileAddress
 	}
+	utils.EscapeHTMLStruct(newProfileData)
 	err = h.applicantUsecase.UpdateApplicantProfile(r.Context(), applicantID, newProfileData)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)

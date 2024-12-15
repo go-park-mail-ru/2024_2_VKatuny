@@ -70,12 +70,12 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
-	newCV.PositionRu = utils.SanitizeString(r.FormValue("positionRu"))
-	newCV.PositionEn = utils.SanitizeString(r.FormValue("positionEn"))
-	newCV.Description = utils.SanitizeString(r.FormValue("description"))
-	newCV.JobSearchStatusName = utils.SanitizeString(r.FormValue("jobSearchStatus"))
-	newCV.WorkingExperience = utils.SanitizeString(r.FormValue("workingExperience"))
-	newCV.PositionCategoryName = utils.SanitizeString(r.FormValue("group"))
+	newCV.PositionRu = r.FormValue("positionRu")
+	newCV.PositionEn = r.FormValue("positionEn")
+	newCV.Description = r.FormValue("description")
+	newCV.JobSearchStatusName = r.FormValue("jobSearchStatus")
+	newCV.WorkingExperience = r.FormValue("workingExperience")
+	newCV.PositionCategoryName = r.FormValue("group")
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
@@ -91,7 +91,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 		newCV.Avatar = fileAddress
 		newCV.CompressedAvatar = compressedFileAddress
 	}
-
+	utils.EscapeHTMLStruct(newCV)
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
@@ -222,12 +222,12 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseMultipartForm(25 << 20) // 25Mb
 	newCV := &dto.JSONCv{}
-	newCV.PositionRu = utils.SanitizeString(r.FormValue("positionRu"))
-	newCV.PositionEn = utils.SanitizeString(r.FormValue("positionEn"))
-	newCV.Description = utils.SanitizeString(r.FormValue("description"))
-	newCV.JobSearchStatusName = utils.SanitizeString(r.FormValue("jobSearchStatus"))
-	newCV.WorkingExperience = utils.SanitizeString(r.FormValue("workingExperience"))
-	newCV.PositionCategoryName = utils.SanitizeString(r.FormValue("group"))
+	newCV.PositionRu = r.FormValue("positionRu")
+	newCV.PositionEn = r.FormValue("positionEn")
+	newCV.Description = r.FormValue("description")
+	newCV.JobSearchStatusName = r.FormValue("jobSearchStatus")
+	newCV.WorkingExperience = r.FormValue("workingExperience")
+	newCV.PositionCategoryName = r.FormValue("group")
 	defer r.MultipartForm.RemoveAll()
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
@@ -243,7 +243,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 		newCV.Avatar = fileAddress
 		newCV.CompressedAvatar = compressedFileAddress
 	}
-
+	utils.EscapeHTMLStruct(newCV)
 	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, currentUser, newCV)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
