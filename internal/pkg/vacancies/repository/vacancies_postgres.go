@@ -68,6 +68,7 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 			UpdatedAt:            Vacancy.UpdatedAt,
 		}
 		Vacancies = append(Vacancies, &VacancyOk)
+		//TODO logger
 		fmt.Println(VacancyOk)
 	}
 	return Vacancies, nil
@@ -122,7 +123,6 @@ func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, search
 	} else if group != "" && searchStr == "" {
 		rows, err = s.db.Query(mainPart+categoryPart+searchPart+lastPart, group, num, offset)
 	}
-	fmt.Println("!!!!!", err)
 	if err != nil {
 		return nil, err
 	}
@@ -150,8 +150,10 @@ func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, search
 			CompressedAvatar:     Vacancy.CompressedAvatar.String,
 		}
 		Vacancies = append(Vacancies, &VacancyOk)
+		//TODO logger
 		fmt.Println(VacancyOk)
 	}
+	//TODO logger
 	fmt.Println(Vacancies)
 	return Vacancies, nil
 }
@@ -371,6 +373,7 @@ func (s *PostgreSQLVacanciesStorage) Delete(ID uint64) error {
 }
 
 func (s *PostgreSQLVacanciesStorage) Subscribe(ID uint64, applicantID uint64) error {
+	//TODO logger
 	fmt.Println(ID, applicantID)
 	_, err := s.db.Exec(`insert into vacancy_subscriber (vacancy_id, applicant_id) VALUES ($1, $2)`, ID, applicantID)
 	return err
@@ -430,6 +433,7 @@ func (s *PostgreSQLVacanciesStorage) GetSubscribersList(ID uint64) ([]*models.Ap
 		}
 
 		Applicants = append(Applicants, &oneApplicant)
+		//TODO logger
 		fmt.Println(oneApplicant)
 	}
 	return Applicants, nil
@@ -491,12 +495,14 @@ func (s *PostgreSQLVacanciesStorage) GetApplicantFavoriteVacancies(applicantID u
 			UpdatedAt:            Vacancy.UpdatedAt,
 		}
 		Vacancies = append(Vacancies, &VacancyOk)
+		//TODO logger
 		fmt.Println(VacancyOk)
 	}
 	return Vacancies, nil
 }
 
 func (s *PostgreSQLVacanciesStorage) MakeFavorite(ID uint64, applicantID uint64) error {
+	//TODO logger
 	fmt.Println(ID, applicantID)
 	_, err := s.db.Exec(`insert into favorite_vacancy (applicant_id, vacancy_id) VALUES ($1, $2)`, applicantID, ID)
 	return err
