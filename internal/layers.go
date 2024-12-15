@@ -10,23 +10,26 @@ import (
 	authClient "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/sirupsen/logrus"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/metrics"
 )
 
 type App struct {
 	Logger         *logrus.Logger
 	BackendAddress string
+	CSRFSecret     string
 	Repositories   *Repositories
 	Usecases       *Usecases
 	Microservices  *Microservices
+	Metrics        *metrics.Metrics
 }
 
 type Repositories struct {
-	EmployerRepository         employer.IEmployerRepository
-	ApplicantRepository        applicant.IApplicantRepository
-	PortfolioRepository        portfolio.IPortfolioRepository
-	CVRepository               cvs.ICVsRepository
-	VacanciesRepository        vacancies.IVacanciesRepository
-	FileLoadingRepository      fileloading.IFileLoadingRepository
+	EmployerRepository    employer.IEmployerRepository
+	ApplicantRepository   applicant.IApplicantRepository
+	PortfolioRepository   portfolio.IPortfolioRepository
+	CVRepository          cvs.ICVsRepository
+	VacanciesRepository   vacancies.IVacanciesRepository
+	FileLoadingRepository fileloading.IFileLoadingRepository
 }
 
 type Usecases struct {

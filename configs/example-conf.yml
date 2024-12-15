@@ -1,10 +1,18 @@
+# configurations
+
 server:
   scheme: "http"
-  host: "192.168.77.130"
-  port: 8090
-  frontURI: "http://192.168.77.130:8000"
+  host: "0.0.0.0"
+  port: 8080
+  portCompressMicroservice: 8091
+  frontURI: "http://172.28.166.156:8080/"
   mediadir: "media/UnCompressed/"
-  
+  auth_host: auth_microservice
+  auth_port: 8000
+  cvpdfdir: "media/CVinPDF/"
+  tamplateDir: "templates/"
+  csrf_secret: "rand string" # 16, 24 or 32 bytes string allowed!
+
 
 database:
   host: "192.168.77.130"
@@ -21,14 +29,27 @@ auth_microservice:
     scheme: "http"
     host: "192.168.77.130"
     port: 8091
+    metrics_port: 8000
   database:
     host: "192.168.77.130"
     port: 6379
-    password: "passIMO"
+    user: user
+    password: 1234123412341234
 
 compress_microservice:
   server:
     scheme: "http"
     host: "192.168.77.130"
     port: 8071
+    metrics_port: 8000
   CompressedMediaDir: "media/Compressed/"
+
+notifications_microservice:
+  server:
+    scheme: "http"
+    host: "192.168.77.130"
+    port: 8062
+  GRPCserver:
+    scheme: "http"
+    host: "192.168.77.130"
+    port: 8061

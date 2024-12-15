@@ -1,0 +1,131 @@
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data: {}
+  grafana-storage: {}
+
+services:
+  auth_microservice:
+    build:
+      context: ./
+      dockerfile: ./build/services/auth/Dockerfile
+    ports:
+      - "8085:8000"
+    restart: unless-stopped
+    volumes:
+      - ./configs/:/build/configs
+    depends_on:
+      db_postgresql:
+        condition: service_started
+        restart: true
+      redis:
+        condition: service_started
+        restart: true
+    networks:
+      - monitoring
+
+  compress_microservice:
+    build:
+      context: ./
+      dockerfile: ./build/services/compress_microservice/Dockerfile
+    ports:
+      - "8086:8000"
+    restart: unless-stopped
+    volumes:
+      - ./configs/:/build/configs
+    networks:
+      - monitoring
+
+  main_service:
+    build:
+      context: ./
+      dockerfile: ./build/services/app/Dockerfile
+    ports:
+      - "8082:8001"
+    restart: unless-stopped
+    volumes:
+      - ./configs/:/build/configs
+    depends_on:
+      db_postgresql:
+        condition: service_started
+        restart: true
+    networks:
+      - monitoring
+
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
+    volumes:
+      - /var/lib/redis_data:/data
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+        echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+        echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+        echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+        redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  db_postgresql:
+    build:
+      context: ./
+      dockerfile: ./build/db/Dockerfile
+    ports:
+      - "127.0.0.1:8083:5432"
+    restart: unless-stopped
+    shm_size: 256mb
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_SCHEMA: ${POSTGRES_SCHEMA}
+    volumes:
+      - /var/lib/postgresql/container_data:/var/lib/postgresql
+    networks:
+      - monitoring
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    command:
+      - "--path.rootfs=/host"
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - "/proc:/host/proc:ro"
+      - "/sys:/host/sys:ro"
+      - "/:/rootfs:ro"
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - "./configs/:/etc/prometheus"
+      - "prometheus_data:/prometheus"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana
+    restart: unless-stopped
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - monitoring

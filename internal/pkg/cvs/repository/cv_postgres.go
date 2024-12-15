@@ -212,9 +212,9 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 		} else {
 			row = s.db.QueryRow(`update cv
 					set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
-					job_search_status_id = $5, working_experience = $6, path_to_profile_avatar=$7, position_category_id=$8 where id=$9 returning id, 
+					job_search_status_id = $5, working_experience = $6, position_category_id=$7 where id=$8 returning id, 
 					applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at, compressed_image`,
-				updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, PositionCategoryID, ID)
+				updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, PositionCategoryID, ID)
 		}
 	}
 
