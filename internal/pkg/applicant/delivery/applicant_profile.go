@@ -257,3 +257,44 @@ func (h *ApplicantHandlers) GetCVs(w http.ResponseWriter, r *http.Request) {
 		Body:       CVs,
 	})
 }
+
+// GetCVs godoc
+// @Summary Get applicant CVs
+// @Description Get CVs of an applicant by ID
+// @Tags Applicant
+// @Accept json
+// @Produce json
+// @Param id path string true "Applicant ID"
+// @Success 200 {object} dto.JSONResponse "CVs"
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/city [get]
+func (h *ApplicantHandlers) GetAllCities(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "ApplicantProfileHandlers.GetAllCities"
+
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
+
+	queryParams := r.URL.Query()
+	h.logger.Debugf("%s; Query params read: %v", fn, queryParams)
+
+	namePart := queryParams.Get("name")
+
+	// *dto.JSONGetApplicantCV
+	cities, err := h.applicantUsecase.GetAllCities(r.Context(), namePart)
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	h.logger.Debugf("function %s: success, got CVs: %d", fn, len(cities))
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       cities,
+	})
+}

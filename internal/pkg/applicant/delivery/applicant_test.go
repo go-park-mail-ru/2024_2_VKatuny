@@ -821,3 +821,111 @@ func TestRegistration(t *testing.T) {
 		})
 	}
 }
+
+func TestGetAllCities(t *testing.T) {
+	t.Parallel()
+	type usecase struct {
+		profile *mock.MockIApplicantUsecase
+	}
+	tests := []struct {
+		name         string
+		r            *http.Request
+		w            *httptest.ResponseRecorder
+		usecase      *usecase
+		codeExpected int
+
+		prepare func(
+			r *http.Request,
+			w *httptest.ResponseRecorder,
+			usecase *usecase,
+		) (*httptest.ResponseRecorder, *http.Request)
+	}{
+		{
+			name:         "TestProfile: bad usecase",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+
+				usecase.profile.
+					EXPECT().
+					GetAllCities(gomock.Any(), gomock.Any()).
+					Return(nil, fmt.Errorf("error"))
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/city"),
+					nil,
+				).WithContext(r.Context())
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+		{
+			name:         "TestProfile: bad usecase",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			codeExpected: http.StatusOK,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+
+				cities := []string{
+					"city1",
+				}
+				usecase.profile.
+					EXPECT().
+					GetAllCities(gomock.Any(), gomock.Any()).
+					Return(cities, nil)
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/city"),
+					nil,
+				).WithContext(r.Context())
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			usecase := &usecase{
+				profile: mock.NewMockIApplicantUsecase(ctrl),
+			}
+			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
+
+			app := &internal.App{
+				Logger:         logrus.New(),
+				BackendAddress: "http://localhost:8080",
+				Usecases: &internal.Usecases{
+					ApplicantUsecase:   usecase.profile,
+					CVUsecase:          nil,
+					PortfolioUsecase:   nil,
+					FileLoadingUsecase: nil,
+				},
+				Microservices: &internal.Microservices{
+					Auth: nil,
+				},
+			}
+
+			h := delivery.NewApplicantProfileHandlers(app)
+			require.NotNil(t, h)
+			require.NotNil(t, tt.r)
+			require.NotNil(t, tt.w)
+
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/city", h.GetAllCities).Methods(http.MethodGet)
+			r.ServeHTTP(tt.w, tt.r)
+
+			require.Equal(t, tt.codeExpected, tt.w.Code)
+		})
+	}
+}
