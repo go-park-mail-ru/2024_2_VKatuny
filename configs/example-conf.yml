@@ -36,8 +36,5 @@ compress_microservice:
     scheme: "http"
     host: "192.168.77.130"
     port: 8071
-<<<<<<< HEAD
     metrics_port: 8000
-=======
->>>>>>> dev
   CompressedMediaDir: "media/Compressed/"
