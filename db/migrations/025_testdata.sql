@@ -10,7 +10,7 @@ insert into creation_tag (creation_tag_name) values ('Скульптура');
 insert into creation_type (creation_type_name) values ('svg');
 insert into job_search_status (job_search_status_name) values ('Активно ищу работу');
 insert into applicant (first_name , last_name , city_id, birth_date, path_to_profile_avatar, contacts, education, email, password_hash)
-values ('Иван', 'Иванов', 1, '12-12-2001', 'IvanovIvan.svg', 'tg - @IvanovIvan', 'МАРХИ', 'applicant@mail.ru', '$2a$10$mxG.iijgPJyg3RXdCdDyT.Nrah32oBs5JfaIoum4ITx.PMF.oNV1a'); --pass1234
+values ('Иван', 'Иванов', 1, '12-12-2001', '/media/Uncompressed/1ahsdfybegtorhlodjtldbtsdjgxsdfkg.JPG', 'tg - @IvanovIvan', 'МАРХИ', 'applicant@mail.ru', '$2a$10$mxG.iijgPJyg3RXdCdDyT.Nrah32oBs5JfaIoum4ITx.PMF.oNV1a'); --pass1234
 
 insert into applicant (first_name , last_name , city_id, birth_date, email, password_hash)
 values ('Дмитрий', 'Петров', 1, '12-10-1989', 'applicant1@mail.ru', '$2a$10$mxG.iijgPJyg3RXdCdDyT.Nrah32oBs5JfaIoum4ITx.PMF.oNV1a'); --pass1234
@@ -22,7 +22,7 @@ insert into applicant (first_name , last_name , city_id, birth_date, email, pass
 values ('Владимир', 'Ершов', 1, '12-08-2001', 'applicant4@mail.ru', '$2a$10$mxG.iijgPJyg3RXdCdDyT.Nrah32oBs5JfaIoum4ITx.PMF.oNV1a'); --pass1234
 
 insert into employer (first_name , last_name , city_id, position, company_name_id, company_description, company_website, path_to_profile_avatar, contacts,	email, password_hash)
-values ('Петр', 'Петров', 1, 'Помощник мэра', 1, 'Мэрия Москвы', 'https://www.mos.ru/', 'PetrPetrov.svg', 'tg - @PetrPetrov', 'employer@mail.ru',  '$2a$10$UJdgr8sjQPsa1IpS7pLHBu3VgsO4W/SPjGjVBI2aw1WdYcx63IAEK'); --pass1234
+values ('Петр', 'Петров', 1, 'Помощник мэра', 1, 'Мэрия Москвы', 'https://www.mos.ru/', '/media/Uncompressed/1uytdfybegtorhlodjtldbtsdjioldfkg.JPG', 'tg - @PetrPetrov', 'employer@mail.ru',  '$2a$10$UJdgr8sjQPsa1IpS7pLHBu3VgsO4W/SPjGjVBI2aw1WdYcx63IAEK'); --pass1234
 
 insert into employer (first_name , last_name , city_id, position, company_name_id, company_description, company_website,	email, password_hash)
 values ('Станислав', 'Шубин', 2, 'Ландшафтный дизайнер', 2, 'Архитект Бутик', 'https://architect.boutique/', 'employer2@mail.ru',  '$2a$10$UJdgr8sjQPsa1IpS7pLHBu3VgsO4W/SPjGjVBI2aw1WdYcx63IAEK'); --pass1234
@@ -34,7 +34,7 @@ values ('Семен', 'Стрельцов', 1, 'Главный дизайнер'
 insert into work_type (work_type_name) values ('Полная занятость');
 insert into work_type (work_type_name) values ('Разовая работа');
 insert into cv (applicant_id, position_rus, position_eng, job_search_status_id, cv_description, working_experience, path_to_profile_avatar)
-values (1, 'Скульптор', 'Sculptor', 1,  'Я усердный и целеустремленный', 'Не было опыта работы', 'IvanovIvan.svg');
+values (1, 'Скульптор', 'Sculptor', 1,  'Я усердный и целеустремленный', 'Не было опыта работы', '/media/Uncompressed/1ahsdfybegtorhlodjtldbtsdjgxsdfkg.JPG');
 insert into cv_subscriber (employer_id , cv_id) values (1, 1);
 insert into applicant_session ( applicant_id, session_token) values (1, '1ahsdfybegtorhjertoldbtsdjgxsdfkg');
 insert into employer_session (employer_id , session_token) values (1, '2heysdfyuilsorhjertuhebtsdjxsdfkg');

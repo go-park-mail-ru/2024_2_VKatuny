@@ -74,6 +74,8 @@ func Init(app *internal.App) *mux.Router {
 		Methods(http.MethodDelete)
 	router.HandleFunc("/api/v1/cvs", cvsHandlers.SearchCVs).
 		Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/cv-to-pdf/{id:[0-9]+}", cvsHandlers.CVtoPDF).
+		Methods(http.MethodGet)
 
 	vacanciesHandlers := vacancies_delivery.NewVacanciesHandlers(app)
 	router.HandleFunc("/api/v1/vacancies", vacanciesHandlers.GetVacancies).

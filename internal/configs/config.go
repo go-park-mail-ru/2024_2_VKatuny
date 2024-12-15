@@ -20,14 +20,16 @@ type Config struct {
 
 // ServerConfig is a struct of server config block in .yaml
 type ServerConfig struct {
-	Scheme   string `yaml:"scheme"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Front    string `yaml:"frontURI"`
-	MediaDir string `yaml:"mediadir"`
-	AuthPort string `yaml:"auth_port"`
-	AuthHost string `yaml:"auth_host"`
-	CSRFSecret string `yaml:"csrf_secret"`
+	Scheme      string `yaml:"scheme"`
+	Host        string `yaml:"host"`
+	Port        int    `yaml:"port"`
+	Front       string `yaml:"frontURI"`
+	MediaDir    string `yaml:"mediadir"`
+	CVinPDFDir  string `yaml:"cvpdfdir"`
+	TamplateDir string `yaml:"tamplateDir"`
+	AuthPort    string `yaml:"auth_port"`
+	AuthHost    string `yaml:"auth_host"`
+	CSRFSecret  string `yaml:"csrf_secret"`
 }
 
 type DataBaseConfig struct {

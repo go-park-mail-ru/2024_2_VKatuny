@@ -1,3 +1,5 @@
+# configurations
+
 server:
   scheme: "http"
   host: "0.0.0.0"
@@ -7,7 +9,10 @@ server:
   mediadir: "media/UnCompressed/"
   auth_host: auth_microservice
   auth_port: 8000
+  cvpdfdir: "media/CVinPDF/"
+  tamplateDir: "templates/"
   csrf_secret: "rand string" # 16, 24 or 32 bytes string allowed!
+
 
 database:
   host: "192.168.77.130"
@@ -38,3 +43,13 @@ compress_microservice:
     port: 8071
     metrics_port: 8000
   CompressedMediaDir: "media/Compressed/"
+
+notifications_microservice:
+  server:
+    scheme: "http"
+    host: "192.168.77.130"
+    port: 8062
+  GRPCserver:
+    scheme: "http"
+    host: "192.168.77.130"
+    port: 8061
