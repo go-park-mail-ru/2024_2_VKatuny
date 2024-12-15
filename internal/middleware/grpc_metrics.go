@@ -34,16 +34,19 @@ func MetricsInterceptor(metrics *metrics.Metrics, logger *logrus.Logger, service
 			errMsg = err.Error()
 		}
 
-		if service == AuthMicroservice {
+		switch service {
+		case AuthMicroservice:
 			metrics.AuthHits.WithLabelValues(info.FullMethod, errMsg).Inc()
 			metrics.AuthTimings.WithLabelValues(info.FullMethod).Observe(end.Seconds())
-		} else if service == CompressMicroservice {
+			logger.Debug("Auth metrics wrote")
+		case CompressMicroservice:
 			metrics.CompressHits.WithLabelValues(info.FullMethod, errMsg).Inc()
 			metrics.CompressTimings.WithLabelValues(info.FullMethod).Observe(end.Seconds())
-		} else {
+			logger.Debug("Compress metrics wrote")
+		default:
 			logger.Errorf("Unknown microservice code %d", service)
 		}
-		logger.Debugf("metrics wrote")
+		
 		return resp, err
 	}
 }
