@@ -9,6 +9,8 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/metrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -60,7 +62,7 @@ func main() {
 	defer dbConnection.Close()
 
 	connAuthGRPC, err := grpc.NewClient(
-		conf.AuthMicroservice.Server.GetAddress(),
+		conf.Server.GetAuthServiceLocation(),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
@@ -79,6 +81,8 @@ func main() {
 	defer connAuthGRPC.Close()
 	logger.Infof("Compress gRPC client started at %s", conf.CompressMicroservice.Server.GetAddress())
 
+	Metrics := metrics.NewMetrics()
+	metrics.InitMetrics(Metrics)
 
 	repositories := &internal.Repositories{
 		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
@@ -100,21 +104,24 @@ func main() {
 		EmployerUsecase:    employerUsecase.NewEmployerUsecase(logger, repositories),
 		FileLoadingUsecase: file_loading_usecase.NewFileLoadingUsecase(logger, repositories, microservices, conf),
 	}
-	
+
 	app := &internal.App{
 		Logger:        logger,
 		Repositories:  repositories,
 		CSRFSecret:    conf.Server.CSRFSecret,
 		Usecases:      usecases,
 		Microservices: microservices,
+		Metrics:       Metrics,
 	}
 
 	Mux := mux.Init(app)
 
+	Mux.Handle("/metrics", promhttp.Handler())
+
 	// Wrapped multiplexer
 	// Mux implements http.Handler interface so it's possible to wrap
 	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.Front)
-	handlers = middleware.AccessLogger(handlers, logger)
+	handlers = middleware.AccessLogger(handlers, logger, app.Metrics)
 	handlers = middleware.SetLogger(handlers, logger)
 	handlers = middleware.Panic(handlers, logger)
 	logger.Infof("Server is starting at %s", conf.Server.GetAddress())

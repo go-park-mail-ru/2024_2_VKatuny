@@ -25,7 +25,7 @@ install:
 
 tests:
 	go test ./... -coverprofile=coverage.out.tmp
-	cat coverage.out.tmp | grep -v -E 'mock|pb.go' > coverage.out
+	cat coverage.out.tmp | grep -v -E 'docs|mock|pb.go' > coverage.out
 	go tool cover -func=coverage.out
 	go tool cover -html=coverage.out -o index.html
 
@@ -36,7 +36,7 @@ lint:
 	revive -config reviveconfig.toml -formatter friendly ./...
 
 api:
-	swag init --parseInternal --pd --dir cmd/myapp/,delivery/handler/ --output api/
+	swag init --generalInfo ./cmd/app/main.go --output api/
 	node ./api/server.js
 
 mock-gen:

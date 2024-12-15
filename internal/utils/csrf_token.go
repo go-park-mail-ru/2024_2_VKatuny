@@ -16,6 +16,7 @@ var (
 	ErrShortCipher      = fmt.Errorf("short cipher")
 	ErrDecryptionFailed = fmt.Errorf("decryption failed")
 	ErrTokenExpired     = fmt.Errorf("csrf token expired")
+	ErrInvalidKeyLength = fmt.Errorf("aes key length must be 16, 24 or 32 bytes")
 )
 
 type CryptToken struct {
@@ -29,9 +30,13 @@ type CSRFTokenData struct {
 	TTL       int64
 }
 
-func NewCryptToken(secret string) *CryptToken {
+func NewCryptToken(secret string) (*CryptToken, error) {
 	key := []byte(secret)
-	return &CryptToken{secret: key}
+	keyLength := len(key)
+	if keyLength != 16 && keyLength != 24 && keyLength != 32 {
+		return nil, ErrInvalidKeyLength
+	}
+	return &CryptToken{secret: key}, nil
 }
 
 func (c *CryptToken) Create(userID uint64, UserType, SessionID string) (string, error) {
