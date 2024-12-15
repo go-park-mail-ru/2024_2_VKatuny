@@ -53,12 +53,12 @@ make tests
 ```
 
 ### Необходимые библиотеки
-go-pdfium
+go-pdfium  
 https://github.com/klippa-app/go-pdfium?tab=readme-ov-file
-pdfium
+pdfium  
 https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F6886/pdfium-linux-x64.tgz
 
-govips
+govips  
 https://github.com/davidbyttow/govips
 +
 https://github.com/davidbyttow/govips/issues/100

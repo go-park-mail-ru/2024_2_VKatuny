@@ -1,15 +1,20 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.23-bullseye AS builder
+
+RUN apt-get update -y && apt-get install -y pkg-config && apt-get install -y libvips-dev
 
 WORKDIR /build
 
-ADD go.mod .
+# ADD go.mod .
+COPY go.mod go.sum ./
 
 COPY . .
 
-RUN go build -o pic-compress ./cmd/compress_microservice/main.go
+RUN CGO_ENABLED=1 go build -o pic-compress ./cmd/compress_microservice/main.go
 
 
-FROM alpine
+FROM ubuntu
+
+RUN apt-get update -y && apt-get install -y pkg-config && apt-get install -y libvips-dev
 
 WORKDIR /build
 
