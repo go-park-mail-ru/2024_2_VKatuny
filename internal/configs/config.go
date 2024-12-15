@@ -27,6 +27,7 @@ type ServerConfig struct {
 	MediaDir string `yaml:"mediadir"`
 	AuthPort string `yaml:"auth_port"`
 	AuthHost string `yaml:"auth_host"`
+	CSRFSecret string `yaml:"csrf_secret"`
 }
 
 type DataBaseConfig struct {

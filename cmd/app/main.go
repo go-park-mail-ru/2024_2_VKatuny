@@ -108,6 +108,7 @@ func main() {
 	app := &internal.App{
 		Logger:        logger,
 		Repositories:  repositories,
+		CSRFSecret:    conf.Server.CSRFSecret,
 		Usecases:      usecases,
 		Microservices: microservices,
 		Metrics:       Metrics,

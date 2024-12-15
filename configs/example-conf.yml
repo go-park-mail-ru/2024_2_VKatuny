@@ -4,9 +4,10 @@ server:
   port: 8080
   portCompressMicroservice: 8091
   frontURI: "http://172.28.166.156:8080/"
-  mediadir: "media/"
+  mediadir: "media/UnCompressed/"
   auth_host: auth_microservice
   auth_port: 8000
+  csrf_secret: "rand string"
 
 database:
   host: "192.168.77.130"
@@ -35,5 +36,8 @@ compress_microservice:
     scheme: "http"
     host: "192.168.77.130"
     port: 8071
+<<<<<<< HEAD
     metrics_port: 8000
+=======
+>>>>>>> dev
   CompressedMediaDir: "media/Compressed/"

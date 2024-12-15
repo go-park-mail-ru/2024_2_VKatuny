@@ -34,4 +34,5 @@ type IVacanciesUsecase interface {
 	GetSubscriptionInfo(ID uint64, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error)
 	SearchVacancies(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error)
 	GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error)
+	// SanitizeXSS(vacancy *dto.JSONVacancy) *dto.JSONVacancy
 }

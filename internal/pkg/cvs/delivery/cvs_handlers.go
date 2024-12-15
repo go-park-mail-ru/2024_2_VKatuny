@@ -10,9 +10,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 )
@@ -91,7 +91,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 		newCV.Avatar = fileAddress
 		newCV.CompressedAvatar = compressedFileAddress
 	}
-
+	utils.EscapeHTMLStruct(newCV)
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
@@ -243,7 +243,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 		newCV.Avatar = fileAddress
 		newCV.CompressedAvatar = compressedFileAddress
 	}
-
+	utils.EscapeHTMLStruct(newCV)
 	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, currentUser, newCV)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
