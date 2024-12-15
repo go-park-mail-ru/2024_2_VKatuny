@@ -59,7 +59,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	newVacancy.CompanyName = r.FormValue("companyName")
 	newVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
-
+	utils.EscapeHTMLStruct(newVacancy)
 	if err != nil {
 		h.logger.Errorf("bad input of salary: %s", err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
@@ -96,7 +96,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	}
 
 	h.logger.Debug(newVacancy)
-	wroteVacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
+	vacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -107,7 +107,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       wroteVacancy,
+		Body:       vacancy,
 	})
 }
 

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -250,6 +251,7 @@ func TestPostgresCreate(t *testing.T) {
 		query1     func(mock sqlmock.Sqlmock, args args)
 		query2     func(mock sqlmock.Sqlmock, args args)
 		query3     func(mock sqlmock.Sqlmock, args args)
+		query4     func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
@@ -302,6 +304,181 @@ func TestPostgresCreate(t *testing.T) {
 						WillReturnRows(sqlmock.NewRows([]string{"id"}).
 							AddRow(1))
 				},
+				query4: func(mock sqlmock.Sqlmock, args args) {
+
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk1",
+			args: args{
+				vacancy: dto.JSONVacancy{
+					EmployerID:       1,
+					Salary:           10000,
+					Position:         "Position",
+					Location:         "Location",
+					Description:      "Description",
+					WorkType:         "WorkType",
+					CompressedAvatar: "CompressedAvatar",
+				},
+				worTypeId:  1,
+				locationId: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
+						WillReturnError(sql.ErrNoRows)
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into work_type (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query4: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into vacancy (.+)`).
+						WithArgs(
+							args.vacancy.Position,
+							args.vacancy.Description,
+							args.vacancy.Salary,
+							args.vacancy.EmployerID,
+							args.worTypeId,
+							args.vacancy.Avatar,
+							args.locationId,
+							args.vacancy.CompressedAvatar,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk1",
+			args: args{
+				vacancy: dto.JSONVacancy{
+					EmployerID:       1,
+					Salary:           10000,
+					Position:         "Position",
+					Location:         "Location",
+					Description:      "Description",
+					WorkType:         "WorkType",
+					CompressedAvatar: "CompressedAvatar",
+				},
+				worTypeId:  1,
+				locationId: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnError(sql.ErrNoRows)
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into city (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+
+				query4: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into vacancy (.+)`).
+						WithArgs(
+							args.vacancy.Position,
+							args.vacancy.Description,
+							args.vacancy.Salary,
+							args.vacancy.EmployerID,
+							args.worTypeId,
+							args.vacancy.Avatar,
+							args.locationId,
+							args.vacancy.CompressedAvatar,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				vacancy: dto.JSONVacancy{
+					EmployerID:           1,
+					Salary:               10000,
+					Position:             "Position",
+					Location:             "Location",
+					Description:          "Description",
+					WorkType:             "WorkType",
+					CompressedAvatar:     "CompressedAvatar",
+					PositionCategoryName: "PositionCategoryName",
+				},
+				worTypeId:  1,
+				locationId: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select (.+)`).
+						WithArgs(
+							args.vacancy.PositionCategoryName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query4: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into vacancy (.+)`).
+						WithArgs(
+							args.vacancy.Position,
+							args.vacancy.Description,
+							args.vacancy.Salary,
+							args.vacancy.EmployerID,
+							args.worTypeId,
+							args.vacancy.Avatar,
+							args.locationId,
+							1,
+							args.vacancy.CompressedAvatar,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
 			},
 			wantErr: false,
 			err:     nil,
@@ -320,6 +497,7 @@ func TestPostgresCreate(t *testing.T) {
 			tt.args.query1(mock, tt.args)
 			tt.args.query2(mock, tt.args)
 			tt.args.query3(mock, tt.args)
+			tt.args.query4(mock, tt.args)
 
 			s := NewVacanciesStorage(db)
 
@@ -345,6 +523,7 @@ func TestPostgresUpdate(t *testing.T) {
 		query2     func(mock sqlmock.Sqlmock, args args)
 		query3     func(mock sqlmock.Sqlmock, args args)
 		query4     func(mock sqlmock.Sqlmock, args args)
+		query5     func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
@@ -380,10 +559,17 @@ func TestPostgresUpdate(t *testing.T) {
 						WithArgs(
 							args.vacancy.WorkType,
 						).
+						WillReturnError(sql.ErrNoRows)
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into work_type  (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
 						WillReturnRows(sqlmock.NewRows([]string{"id"}).
 							AddRow(1))
 				},
-				query3: func(mock sqlmock.Sqlmock, args args) {
+				query4: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`update vacancy (.+)`).
 						WithArgs(
 							args.vacancy.EmployerID,
@@ -399,7 +585,280 @@ func TestPostgresUpdate(t *testing.T) {
 							AddRow(1, "Скульптор", "Требуется скульптор без опыта работы", 90000, 1, "",
 								"2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "test"))
 				},
+				query5: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.EmployerID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"company.company_name"}).
+							AddRow("a"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				ID: 1,
+				vacancy: dto.JSONVacancy{
+					EmployerID:       1,
+					Salary:           10000,
+					Position:         "Position",
+					Location:         "Location",
+					Description:      "Description",
+					WorkType:         "WorkType",
+					CompressedAvatar: "CompressedAvatar",
+				},
+				worTypeId:  1,
+				locationId: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnError(sql.ErrNoRows)
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into city (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
 				query4: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`update vacancy (.+)`).
+						WithArgs(
+							args.vacancy.EmployerID,
+							args.vacancy.Salary,
+							args.vacancy.Position,
+							args.locationId,
+							args.vacancy.Description,
+							args.worTypeId,
+							args.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "position", "vacancy_description",
+							"salary", "employer_id", "path_to_profile_avatar", "created_at", "updated_at", "compressed_image"}).
+							AddRow(1, "Скульптор", "Требуется скульптор без опыта работы", 90000, 1, "",
+								"2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "test"))
+				},
+				query5: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.EmployerID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"company.company_name"}).
+							AddRow("a"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				ID: 1,
+				vacancy: dto.JSONVacancy{
+					EmployerID:       1,
+					Salary:           10000,
+					Position:         "Position",
+					Location:         "Location",
+					Description:      "Description",
+					WorkType:         "WorkType",
+					CompressedAvatar: "CompressedAvatar",
+					PositionCategoryName: "PositionCategoryName",
+				},
+				worTypeId:  1,
+				locationId: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select (.+)`).
+						WithArgs(
+							args.vacancy.PositionCategoryName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query4: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`update vacancy (.+)`).
+						WithArgs(
+							args.vacancy.EmployerID,
+							args.vacancy.Salary,
+							args.vacancy.Position,
+							args.locationId,
+							args.vacancy.Description,
+							args.worTypeId,
+							1,
+							args.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "position", "vacancy_description",
+							"salary", "employer_id", "path_to_profile_avatar", "created_at", "updated_at", "compressed_image"}).
+							AddRow(1, "Скульптор", "Требуется скульптор без опыта работы", 90000, 1, "",
+								"2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "test"))
+				},
+				query5: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.EmployerID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"company.company_name"}).
+							AddRow("a"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				ID: 1,
+				vacancy: dto.JSONVacancy{
+					EmployerID:       1,
+					Salary:           10000,
+					Position:         "Position",
+					Location:         "Location",
+					Description:      "Description",
+					WorkType:         "WorkType",
+					Avatar:           "Avatar",
+					CompressedAvatar: "CompressedAvatar",
+					PositionCategoryName: "PositionCategoryName",
+
+				},
+				worTypeId:  1,
+				locationId: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select (.+)`).
+						WithArgs(
+							args.vacancy.PositionCategoryName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query4: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`update vacancy (.+)`).
+						WithArgs(
+							args.vacancy.EmployerID,
+							args.vacancy.Salary,
+							args.vacancy.Position,
+							args.locationId,
+							args.vacancy.Description,
+							args.worTypeId,
+							args.vacancy.Avatar,
+							1,
+							args.vacancy.CompressedAvatar,
+							args.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "position", "vacancy_description",
+							"salary", "employer_id", "path_to_profile_avatar", "created_at", "updated_at", "compressed_image"}).
+							AddRow(1, "Скульптор", "Требуется скульптор без опыта работы", 90000, 1, "",
+								"2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "test"))
+				},
+				query5: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.EmployerID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"company.company_name"}).
+							AddRow("a"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				ID: 1,
+				vacancy: dto.JSONVacancy{
+					EmployerID:       1,
+					Salary:           10000,
+					Position:         "Position",
+					Location:         "Location",
+					Description:      "Description",
+					WorkType:         "WorkType",
+					Avatar:           "Avatar",
+					CompressedAvatar: "CompressedAvatar",
+
+				},
+				worTypeId:  1,
+				locationId: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.Location,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.vacancy.WorkType,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+				},
+				query4: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`update vacancy (.+)`).
+						WithArgs(
+							args.vacancy.EmployerID,
+							args.vacancy.Salary,
+							args.vacancy.Position,
+							args.locationId,
+							args.vacancy.Description,
+							args.worTypeId,
+							args.vacancy.Avatar,
+							args.vacancy.CompressedAvatar,
+							args.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "position", "vacancy_description",
+							"salary", "employer_id", "path_to_profile_avatar", "created_at", "updated_at", "compressed_image"}).
+							AddRow(1, "Скульптор", "Требуется скульптор без опыта работы", 90000, 1, "",
+								"2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "test"))
+				},
+				query5: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`select  (.+)`).
 						WithArgs(
 							args.vacancy.EmployerID,
@@ -426,6 +885,7 @@ func TestPostgresUpdate(t *testing.T) {
 			tt.args.query2(mock, tt.args)
 			tt.args.query3(mock, tt.args)
 			tt.args.query4(mock, tt.args)
+			tt.args.query5(mock, tt.args)
 
 			s := NewVacanciesStorage(db)
 

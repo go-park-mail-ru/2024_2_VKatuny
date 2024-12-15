@@ -38,4 +38,5 @@ type IVacanciesUsecase interface {
 	GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error)
 	GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONGetEmployerVacancy, error)
 	AddIntoFavorite(ID uint64, currentUser *dto.UserFromSession) error
+	// SanitizeXSS(vacancy *dto.JSONVacancy) *dto.JSONVacancy
 }
