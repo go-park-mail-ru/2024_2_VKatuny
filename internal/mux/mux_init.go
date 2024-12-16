@@ -97,6 +97,9 @@ func Init(app *internal.App) *mux.Router {
 	AddVacancyIntoFavorite := middleware.RequireAuthorization(vacanciesHandlers.AddVacancyIntoFavorite, app, dto.UserTypeApplicant)
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", AddVacancyIntoFavorite).
 		Methods(http.MethodPost)
+	DellVacancyFromFavorite := middleware.RequireAuthorization(vacanciesHandlers.DellVacancyFromFavorite, app, dto.UserTypeApplicant)
+		router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", DellVacancyFromFavorite).
+			Methods(http.MethodDelete)
 
 	subscribe := middleware.RequireAuthorization(vacanciesHandlers.SubscribeVacancy, app, dto.UserTypeApplicant)
 	subscribe = middleware.CSRFProtection(subscribe, app)

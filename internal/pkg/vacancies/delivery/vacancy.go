@@ -541,8 +541,8 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 	})
 }
 
-// @Summary Subscribe on vacancy
-// @Description Subscribe on vacancy by ID
+// @Summary make favorite  vacancy
+// @Description make favorite  vacancy by ID
 // @Tags Vacancy
 // @Accept  json
 // @Produce  json
@@ -592,6 +592,63 @@ func (h *VacanciesHandlers) AddVacancyIntoFavorite(w http.ResponseWriter, r *htt
 		return
 	}
 	h.logger.Debugf("user_ID: %d added into favorite on vacancy_ID %d", currentUser.ID, vacancyID)
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+	})
+}
+
+// @Summary unmake favorite  vacancy
+// @Description unmake favorite vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id}/subscription [delete]
+func (h *VacanciesHandlers) DellVacancyFromFavorite(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "VacanciesHandlers.DellVacancyFromFavorite"
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
+
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnableToGetUserFromContext,
+		})
+		return
+	}
+
+	err = h.vacanciesUsecase.Unfavorite(vacancyID, currentUser)
+	if err != nil {
+		h.logger.Errorf("while unfavorite into favorite on vacancy got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("user_ID: %d delted from favorite on vacancy_ID %d", currentUser.ID, vacancyID)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
