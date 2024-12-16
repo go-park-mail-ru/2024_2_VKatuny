@@ -316,3 +316,18 @@ func (vu *VacanciesUsecase) AddIntoFavorite(ID uint64, currentUser *dto.UserFrom
 	vu.logger.Debugf("successfully adding into favorite on vacancy with ID: %d", ID)
 	return nil
 }
+
+func (vu *VacanciesUsecase) Unfavorite(ID uint64, currentUser *dto.UserFromSession) error {
+	if currentUser == nil {
+		vu.logger.Errorf("user is not provided")
+		return fmt.Errorf(dto.MsgUnauthorized)
+	}
+
+	err := vu.vacanciesRepository.Unfavorite(ID, currentUser.ID)
+	if err != nil {
+		vu.logger.Errorf("while adding into favorite on db got err %s", err)
+		return fmt.Errorf(dto.MsgDataBaseError)
+	}
+	vu.logger.Debugf("successfully adding into favorite on vacancy with ID: %d", ID)
+	return nil
+}

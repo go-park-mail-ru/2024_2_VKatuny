@@ -507,3 +507,10 @@ func (s *PostgreSQLVacanciesStorage) MakeFavorite(ID uint64, applicantID uint64)
 	_, err := s.db.Exec(`insert into favorite_vacancy (applicant_id, vacancy_id) VALUES ($1, $2)`, applicantID, ID)
 	return err
 }
+
+func (s *PostgreSQLVacanciesStorage) Unfavorite(ID uint64, applicantID uint64) error {
+	//TODO logger
+	fmt.Println(ID, applicantID)
+	_, err := s.db.Exec(`delete from favorite_vacancy where applicant_id = $1 and vacancy_id = $2`, applicantID, ID)
+	return err
+}

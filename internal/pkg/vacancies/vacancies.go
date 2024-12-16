@@ -22,6 +22,7 @@ type IVacanciesRepository interface {
 	Unsubscribe(ID uint64, applicantID uint64) error
 	GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONVacancy, error)
 	MakeFavorite(ID uint64, applicantID uint64) error
+	Unfavorite(ID uint64, applicantID uint64) error
 }
 
 type IVacanciesUsecase interface {
@@ -38,5 +39,6 @@ type IVacanciesUsecase interface {
 	GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error)
 	GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONGetEmployerVacancy, error)
 	AddIntoFavorite(ID uint64, currentUser *dto.UserFromSession) error
+	Unfavorite(ID uint64, currentUser *dto.UserFromSession) error
 	// SanitizeXSS(vacancy *dto.JSONVacancy) *dto.JSONVacancy
 }
