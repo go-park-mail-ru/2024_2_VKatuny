@@ -52,6 +52,6 @@ configs/redis.conf
 
 
 # html
-*.html
+index.html
 
 *.pdf
