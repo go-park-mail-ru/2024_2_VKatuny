@@ -19,6 +19,7 @@ func Init(app *internal.App, logger *logrus.Logger, notificationsUsecase notific
 	router := mux.NewRouter()
 	notificationsHandlers := notificationsdelivery.NewNotificationsHandlers(logger, notificationsUsecase)
 	notificationList := middleware.RequireAuthorization(notificationsHandlers.GetAlEmployerNotifications, app, dto.UserTypeApplicant)
+	
 	router.HandleFunc("/api/v1/notifications", notificationList)
 	return router
 }

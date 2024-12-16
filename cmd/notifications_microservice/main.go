@@ -4,9 +4,7 @@ import (
 	"log"
 	"net"
 
-	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
@@ -35,22 +33,6 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func sendNewMsgNotifications(client *websocket.Conn) {
-	ticker := time.NewTicker(3 * time.Second)
-	for {
-		w, err := client.NextWriter(websocket.TextMessage)
-		if err != nil {
-			ticker.Stop()
-			break
-		}
-
-		msg := newMessage()
-		w.Write(msg)
-		w.Close()
-
-		<-ticker.C
-	}
-}
 func main() {
 	conf := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
@@ -94,28 +76,13 @@ func main() {
 
 	Mux := mux.Init(app, logger, usecase)
 
-
 	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.Front)
-	// http.HandleFunc("/api/v1/notifications/list", func(w http.ResponseWriter, r *http.Request) {
-	// 	log.Println("ws upgrade")
-	// 	ws, err := upgrader.Upgrade(w, r, nil)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	go sendNewMsgNotifications(ws)
-	// })
+	handlers = middleware.AccessLogger(handlers, logger, app.Metrics)
+	handlers = middleware.SetLogger(handlers, logger)
+	handlers = middleware.Panic(handlers, logger)
 	logger.Infof("Notifications starting server at %s", conf.NotificationsMicroservice.Server.GetAddress())
 	err = http.ListenAndServe(conf.NotificationsMicroservice.Server.GetAddress(), handlers)
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func newMessage() []byte {
-	data, _ := json.Marshal(map[string]string{
-		"email":   "e",
-		"name":    "n",
-		"subject": "s",
-	})
-	return data
 }
