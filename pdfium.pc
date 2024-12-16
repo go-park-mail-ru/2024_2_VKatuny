@@ -1,0 +1,11 @@
+prefix={path}
+libdir={path}/lib
+includedir={path}/include
+
+Name: PDFium
+Description: PDFium
+Version: 6721
+Requires:
+
+Libs: -L${libdir} -lpdfium
+Cflags: -I${includedir}
