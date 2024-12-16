@@ -70,52 +70,25 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 				continue
 			}
 			newMessage(w, notificationsList, http.StatusOK)
-
-			// messageType, r, err := client.NextReader()
-			// if err == nil {
-			// 	fmt.Println("!3")
-			// 	buffer, err := io.ReadAll(r)
-			// 	if err != nil {
-			// 		nd.logger.Errorf("could not read message: %s", err)
-			// 		newMessage(w, nil, http.StatusInternalServerError)
-			// 		continue
-			// 	}
-			// 	nd.logger.Debugf("messageType: %s", messageType)
-			// 	if messageType != 1 {
-			// 		nd.logger.Errorf("wrong type read")
-			// 		newMessage(w, nil, http.StatusInternalServerError)
-			// 		continue
-			// 	}
-			// 	notificationID, err := strconv.ParseUint(string(buffer[:]), 10, 64) //buffer
-			// 	if err != nil {
-			// 		nd.logger.Errorf("could not parse notificationID: %s", err)
-			// 		newMessage(w, nil, http.StatusInternalServerError)
-			// 		continue
-			// 	}
-			// 	err = nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
-			// 	if err != nil {
-			// 		nd.logger.Errorf("could not make notification read: %s", err)
-			// 		newMessage(w, nil, http.StatusInternalServerError)
-			// 	}
-			// 	continue
-			// }
+			
 			<-ticker.C
-			fmt.Println("!5")
+			fmt.Println("!2")
 		}
 	}(ws, currentUser.ID)
 
 	go func(client *websocket.Conn, employerID uint64) {
 		ticker := time.NewTicker(3 * time.Second)
 		for {
+			fmt.Println("?1")
 			messageType, r, err := client.NextReader()
 			if err == nil {
-				fmt.Println("!3")
+				fmt.Println("?2")
 				buffer, err := io.ReadAll(r)
 				if err != nil {
 					nd.logger.Errorf("could not read message: %s", err)
 					continue
 				}
-				nd.logger.Debugf("messageType: %s", messageType)
+				nd.logger.Debugf("messageType: %d", messageType)
 				if messageType != 1 {
 					nd.logger.Errorf("wrong type read")
 					continue
@@ -142,6 +115,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 				nd.logger.Errorf("not his notification %d", notificationID)
 				continue
 			}
+			fmt.Println("?3")
 			<-ticker.C
 		}
 	}(ws, currentUser.ID)
