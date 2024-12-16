@@ -12,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
@@ -26,6 +27,7 @@ type ApplicantHandlers struct {
 	applicantUsecase   applicant.IApplicantUsecase
 	portfolioUsecase   portfolio.IPortfolioUsecase
 	cvUsecase          cvs.ICVsUsecase
+	vacanciesUsecase   vacancies.IVacanciesUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
 	authGRPC           auth_grpc.AuthorizationClient
 	compressGRPC       compressmicroservice.CompressServiceClient
@@ -38,6 +40,7 @@ func NewApplicantProfileHandlers(app *internal.App) *ApplicantHandlers {
 		applicantUsecase:   app.Usecases.ApplicantUsecase,
 		portfolioUsecase:   app.Usecases.PortfolioUsecase,
 		cvUsecase:          app.Usecases.CVUsecase,
+		vacanciesUsecase:   app.Usecases.VacanciesUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
 		authGRPC:           app.Microservices.Auth,
 		compressGRPC:       app.Microservices.Compress,
@@ -83,7 +86,7 @@ func (h *ApplicantHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
+	applicantProfile.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(applicantProfile.Avatar)
 	h.logger.Debugf("function %s: success, got profile %v", fn, applicantProfile)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -135,6 +138,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	if err == nil {
 		defer file.Close()
 		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		h.logger.Debug("add	ress %s compressed %s", fileAddress, compressedFileAddress)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -297,5 +301,54 @@ func (h *ApplicantHandlers) GetAllCities(w http.ResponseWriter, r *http.Request)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       cities,
+	})
+}
+
+// GetFavoriteVacancies godoc
+// @Summary Get applicant Favorite Vacancies
+// @Description Get Favorite Vacancies of an applicant by ID
+// @Tags Applicant
+// @Accept json
+// @Produce json
+// @Param id path string true "Applicant ID"
+// @Success 200 {object} dto.JSONResponse "Vacancies"
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/applicant/{id}/favorite-vacancy [get]
+func (h *ApplicantHandlers) GetFavoriteVacancies(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "ApplicantProfileHandlers.GetApplicantFavoriteVacanciesHandler"
+
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
+
+	vars := mux.Vars(r)
+
+	slug := vars["id"]
+	applicantID, err := strconv.ParseUint(slug, 10, 64)
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
+		return
+	}
+
+	// *dto.JSONGetApplicantVacancies
+	Vacancies, err := h.vacanciesUsecase.GetApplicantFavoriteVacancies(applicantID)
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+
+	h.logger.Debugf("function %s: success, got CVs: %d", fn, len(Vacancies))
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       Vacancies,
 	})
 }

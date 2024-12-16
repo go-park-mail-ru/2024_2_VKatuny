@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/microcosm-cc/bluemonday"
@@ -14,10 +13,8 @@ func EscapeHTMLString(input string) string {
 }
 
 func escapeField(v reflect.Value) {
-	fmt.Println(v.Kind().String())
 	switch v.Kind() {
 	case reflect.String:
-		fmt.Printf("string: %s\n", v.String())
 		v.SetString(EscapeHTMLString(v.String()))
 	case reflect.Struct:
 		for i := 0; i < v.NumField(); i++ {
@@ -30,7 +27,6 @@ func escapeField(v reflect.Value) {
 	case reflect.Map:
 		for _, key := range v.MapKeys() {
 			value := v.MapIndex(key)
-			fmt.Printf("key: %v, value: %+v\n", key, value)
 			if value.IsValid() {
 				escapeField(value)
 				if key.Kind() == reflect.String {

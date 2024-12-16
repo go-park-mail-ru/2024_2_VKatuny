@@ -70,6 +70,21 @@ func (mr *MockIVacanciesRepositoryMockRecorder) Delete(ID any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIVacanciesRepository)(nil).Delete), ID)
 }
 
+// GetApplicantFavoriteVacancies mocks base method.
+func (m *MockIVacanciesRepository) GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONVacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApplicantFavoriteVacancies", applicantID)
+	ret0, _ := ret[0].([]*dto.JSONVacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplicantFavoriteVacancies indicates an expected call of GetApplicantFavoriteVacancies.
+func (mr *MockIVacanciesRepositoryMockRecorder) GetApplicantFavoriteVacancies(applicantID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicantFavoriteVacancies", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetApplicantFavoriteVacancies), applicantID)
+}
+
 // GetByID mocks base method.
 func (m *MockIVacanciesRepository) GetByID(ID uint64) (*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
@@ -143,6 +158,20 @@ func (m *MockIVacanciesRepository) GetVacanciesByEmployerID(employerID uint64) (
 func (mr *MockIVacanciesRepositoryMockRecorder) GetVacanciesByEmployerID(employerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacanciesByEmployerID", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetVacanciesByEmployerID), employerID)
+}
+
+// MakeFavorite mocks base method.
+func (m *MockIVacanciesRepository) MakeFavorite(ID, applicantID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MakeFavorite", ID, applicantID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MakeFavorite indicates an expected call of MakeFavorite.
+func (mr *MockIVacanciesRepositoryMockRecorder) MakeFavorite(ID, applicantID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeFavorite", reflect.TypeOf((*MockIVacanciesRepository)(nil).MakeFavorite), ID, applicantID)
 }
 
 // SearchAll mocks base method.
@@ -227,6 +256,20 @@ func (m *MockIVacanciesUsecase) EXPECT() *MockIVacanciesUsecaseMockRecorder {
 	return m.recorder
 }
 
+// AddIntoFavorite mocks base method.
+func (m *MockIVacanciesUsecase) AddIntoFavorite(ID uint64, currentUser *dto.UserFromSession) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddIntoFavorite", ID, currentUser)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddIntoFavorite indicates an expected call of AddIntoFavorite.
+func (mr *MockIVacanciesUsecaseMockRecorder) AddIntoFavorite(ID, currentUser any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIntoFavorite", reflect.TypeOf((*MockIVacanciesUsecase)(nil).AddIntoFavorite), ID, currentUser)
+}
+
 // CreateVacancy mocks base method.
 func (m *MockIVacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
@@ -254,6 +297,21 @@ func (m *MockIVacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.UserFr
 func (mr *MockIVacanciesUsecaseMockRecorder) DeleteVacancy(ID, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).DeleteVacancy), ID, currentUser)
+}
+
+// GetApplicantFavoriteVacancies mocks base method.
+func (m *MockIVacanciesUsecase) GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApplicantFavoriteVacancies", applicantID)
+	ret0, _ := ret[0].([]*dto.JSONGetEmployerVacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplicantFavoriteVacancies indicates an expected call of GetApplicantFavoriteVacancies.
+func (mr *MockIVacanciesUsecaseMockRecorder) GetApplicantFavoriteVacancies(applicantID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicantFavoriteVacancies", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetApplicantFavoriteVacancies), applicantID)
 }
 
 // GetSubscriptionInfo mocks base method.

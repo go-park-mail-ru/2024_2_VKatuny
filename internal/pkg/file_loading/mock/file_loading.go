@@ -13,6 +13,7 @@ import (
 	multipart "mime/multipart"
 	reflect "reflect"
 
+	dto "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -38,6 +39,21 @@ func NewMockIFileLoadingRepository(ctrl *gomock.Controller) *MockIFileLoadingRep
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIFileLoadingRepository) EXPECT() *MockIFileLoadingRepositoryMockRecorder {
 	return m.recorder
+}
+
+// CVtoPDF mocks base method.
+func (m *MockIFileLoadingRepository) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CVtoPDF", CV, applicant)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CVtoPDF indicates an expected call of CVtoPDF.
+func (mr *MockIFileLoadingRepositoryMockRecorder) CVtoPDF(CV, applicant any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CVtoPDF", reflect.TypeOf((*MockIFileLoadingRepository)(nil).CVtoPDF), CV, applicant)
 }
 
 // WriteFileOnDisk mocks base method.
@@ -78,6 +94,21 @@ func NewMockIFileLoadingUsecase(ctrl *gomock.Controller) *MockIFileLoadingUsecas
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIFileLoadingUsecase) EXPECT() *MockIFileLoadingUsecaseMockRecorder {
 	return m.recorder
+}
+
+// CVtoPDF mocks base method.
+func (m *MockIFileLoadingUsecase) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (*dto.CVPDFFile, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CVtoPDF", CV, applicant)
+	ret0, _ := ret[0].(*dto.CVPDFFile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CVtoPDF indicates an expected call of CVtoPDF.
+func (mr *MockIFileLoadingUsecaseMockRecorder) CVtoPDF(CV, applicant any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CVtoPDF", reflect.TypeOf((*MockIFileLoadingUsecase)(nil).CVtoPDF), CV, applicant)
 }
 
 // WriteImage mocks base method.

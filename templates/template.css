@@ -1,0 +1,23 @@
+.profile-picture {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    position: absolute;
+    left: 40%;
+}
+
+
+.resume {
+    margin-left: 10%;
+    
+}
+
+.header__logo {
+    color: #d9e2ec;
+    background-color:  #243b53;
+    border-radius: 8px;
+    text-decoration: none;
+    padding: 8px 16px;
+    font-size: 32px;
+    margin-left: 90%;
+}

@@ -388,3 +388,7 @@ type UserFromSession struct {
 	ID       uint64
 	UserType string
 }
+
+type CVPDFFile struct {
+	FileName string
+}

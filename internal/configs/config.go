@@ -20,12 +20,16 @@ type Config struct {
 
 // ServerConfig is a struct of server config block in .yaml
 type ServerConfig struct {
-	Scheme   string `yaml:"scheme"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Front    string `yaml:"frontURI"`
-	MediaDir string `yaml:"mediadir"`
-	CSRFSecret string `yaml:"csrf_secret"`
+	Scheme      string `yaml:"scheme"`
+	Host        string `yaml:"host"`
+	Port        int    `yaml:"port"`
+	Front       string `yaml:"frontURI"`
+	MediaDir    string `yaml:"mediadir"`
+	CVinPDFDir  string `yaml:"cvpdfdir"`
+	TamplateDir string `yaml:"tamplateDir"`
+	AuthPort    string `yaml:"auth_port"`
+	AuthHost    string `yaml:"auth_host"`
+	CSRFSecret  string `yaml:"csrf_secret"`
 }
 
 type DataBaseConfig struct {
@@ -50,14 +54,16 @@ type CompressMicroservice struct {
 }
 
 type Microservice struct {
-	Scheme string `yaml:"scheme"`
-	Host   string `yaml:"host"`
-	Port   int    `yaml:"port"`
+	Scheme      string `yaml:"scheme"`
+	Host        string `yaml:"host"`
+	Port        int    `yaml:"port"`
+	MetricsPort int    `yaml:"metrics_port"`
 }
 
 type Redis struct {
 	Host     string `yaml:"host"`
 	Port     int    `yaml:"port"`
+	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 }
 
@@ -105,8 +111,16 @@ func (d *DataBaseConfig) GetDSN() string {
 	)
 }
 
+func (s *ServerConfig) GetAuthServiceLocation() string {
+	return s.AuthHost + ":" + s.AuthPort
+}
+
 func (m *Microservice) GetAddress() string {
 	return m.Host + ":" + strconv.Itoa(m.Port)
+}
+
+func (m *Microservice) GetMetricsAddress() string {
+	return m.Host + ":" + strconv.Itoa(m.MetricsPort)
 }
 
 func (r *Redis) GetDSN() string {

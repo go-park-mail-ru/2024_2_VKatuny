@@ -40,6 +40,8 @@ func Init(app *internal.App) *mux.Router {
 		Methods(http.MethodGet)
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/cv", applicantHandlers.GetCVs).
 		Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", applicantHandlers.GetFavoriteVacancies).
+		Methods(http.MethodGet)
 	router.HandleFunc("/api/v1/city", applicantHandlers.GetAllCities).
 		Methods(http.MethodGet)
 
@@ -72,6 +74,8 @@ func Init(app *internal.App) *mux.Router {
 		Methods(http.MethodDelete)
 	router.HandleFunc("/api/v1/cvs", cvsHandlers.SearchCVs).
 		Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/cv-to-pdf/{id:[0-9]+}", cvsHandlers.CVtoPDF).
+		Methods(http.MethodGet)
 
 	vacanciesHandlers := vacancies_delivery.NewVacanciesHandlers(app)
 	router.HandleFunc("/api/v1/vacancies", vacanciesHandlers.GetVacancies).
@@ -90,6 +94,9 @@ func Init(app *internal.App) *mux.Router {
 	deleteVacancy = middleware.CSRFProtection(deleteVacancy, app)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}", deleteVacancy).
 		Methods(http.MethodDelete)
+	AddVacancyIntoFavorite := middleware.RequireAuthorization(vacanciesHandlers.AddVacancyIntoFavorite, app, dto.UserTypeApplicant)
+	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", AddVacancyIntoFavorite).
+		Methods(http.MethodPost)
 
 	subscribe := middleware.RequireAuthorization(vacanciesHandlers.SubscribeVacancy, app, dto.UserTypeApplicant)
 	subscribe = middleware.CSRFProtection(subscribe, app)
