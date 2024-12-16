@@ -53,7 +53,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 		return
 	}
 	go func(client *websocket.Conn, employerID uint64) {
-		ticker := time.NewTicker(3 * time.Second)
+		ticker := time.NewTicker(60 * time.Second)
 		for {
 			fmt.Println("!1")
 			w, err := client.NextWriter(websocket.TextMessage)
