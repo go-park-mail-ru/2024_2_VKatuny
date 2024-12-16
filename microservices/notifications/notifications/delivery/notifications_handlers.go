@@ -46,7 +46,6 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 		w.Write(nil)
 		return
 	}
-	ticker := time.NewTicker(3 * time.Second)
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -54,7 +53,9 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 		return
 	}
 	go func(client *websocket.Conn, employerID uint64) {
+		ticker := time.NewTicker(3 * time.Second)
 		for {
+			fmt.Println("!1")
 			w, err := client.NextWriter(websocket.TextMessage)
 			if err != nil {
 				nd.logger.Errorf("could write: %s", err)
@@ -65,36 +66,80 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 			notificationsList, err := nd.notificationsUsecase.GetAlEmployerNotifications(employerID)
 			if err != nil {
 				nd.logger.Errorf("could get notifications: %s", err)
-				return
+				newMessage(w, nil, http.StatusBadRequest)
+				continue
 			}
 			newMessage(w, notificationsList, http.StatusOK)
 
+			// messageType, r, err := client.NextReader()
+			// if err == nil {
+			// 	fmt.Println("!3")
+			// 	buffer, err := io.ReadAll(r)
+			// 	if err != nil {
+			// 		nd.logger.Errorf("could not read message: %s", err)
+			// 		newMessage(w, nil, http.StatusInternalServerError)
+			// 		continue
+			// 	}
+			// 	nd.logger.Debugf("messageType: %s", messageType)
+			// 	if messageType != 1 {
+			// 		nd.logger.Errorf("wrong type read")
+			// 		newMessage(w, nil, http.StatusInternalServerError)
+			// 		continue
+			// 	}
+			// 	notificationID, err := strconv.ParseUint(string(buffer[:]), 10, 64) //buffer
+			// 	if err != nil {
+			// 		nd.logger.Errorf("could not parse notificationID: %s", err)
+			// 		newMessage(w, nil, http.StatusInternalServerError)
+			// 		continue
+			// 	}
+			// 	err = nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
+			// 	if err != nil {
+			// 		nd.logger.Errorf("could not make notification read: %s", err)
+			// 		newMessage(w, nil, http.StatusInternalServerError)
+			// 	}
+			// 	continue
+			// }
+			<-ticker.C
+			fmt.Println("!5")
+		}
+	}(ws, currentUser.ID)
+
+	go func(client *websocket.Conn, employerID uint64) {
+		ticker := time.NewTicker(3 * time.Second)
+		for {
 			messageType, r, err := client.NextReader()
 			if err == nil {
-				var buffer []byte
-				_, err = r.Read(buffer)
+				fmt.Println("!3")
+				buffer, err := io.ReadAll(r)
 				if err != nil {
 					nd.logger.Errorf("could not read message: %s", err)
-					newMessage(w, nil, http.StatusInternalServerError)
 					continue
 				}
 				nd.logger.Debugf("messageType: %s", messageType)
 				if messageType != 1 {
 					nd.logger.Errorf("wrong type read")
-					newMessage(w, nil, http.StatusInternalServerError)
 					continue
 				}
-				notificationID, err := strconv.ParseUint(string(buffer), 10, 64) //buffer
+				notificationID, err := strconv.ParseUint(string(buffer[:]), 10, 64) //buffer
 				if err != nil {
 					nd.logger.Errorf("could not parse notificationID: %s", err)
-					newMessage(w, nil, http.StatusInternalServerError)
 					continue
 				}
-				err = nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
+				notificationsList, err := nd.notificationsUsecase.GetAlEmployerNotifications(employerID)
 				if err != nil {
-					nd.logger.Errorf("could not make notification read: %s", err)
-					newMessage(w, nil, http.StatusInternalServerError)
+					nd.logger.Errorf("could get notifications: %s", err)
+					continue
 				}
+				for _, i := range notificationsList{
+					if i.ID == notificationID{
+						err = nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
+						if err != nil {
+							nd.logger.Errorf("could not make notification read: %s", err)
+						}
+						continue
+					}
+				}
+				nd.logger.Errorf("not his notification %d", notificationID)
 				continue
 			}
 			<-ticker.C
@@ -113,38 +158,3 @@ func newMessage(w io.WriteCloser, notificationsList []*dto.EmployerNotification,
 	}
 	w.Write(data)
 }
-
-// func (nd *NotificationsHandlers) MakeEmployerNotificationRead(w http.ResponseWriter, r *http.Request) {
-// 	funcName := "NotificationsDelivery.MakeEmployerNotificationRead"
-// 	nd.logger.Debugf("%s: got request: ", funcName)
-// 	vars := mux.Vars(r)
-// 	slug := vars["id"]
-// 	notificationID, err := strconv.ParseUint(slug, 10, 64)
-// 	ws, err := upgrader.Upgrade(w, r, nil)
-// 	if err != nil {
-// 		nd.logger.Errorf("%s: %s", funcName, err)
-// 	}
-// 	go func(client *websocket.Conn, notificationID uint64) {
-// 		if false {
-// 			nd.logger.Errorf("bad input: %s", false)
-// 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
-// 				HTTPStatus: http.StatusBadRequest,
-// 				Error:      dto.MsgInvalidJSON,
-// 			})
-// 			return
-// 		}
-// 		err := nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
-// 		if err != nil {
-// 			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
-// 				HTTPStatus: http.StatusInternalServerError,
-// 				Error:      err.Error(),
-// 			})
-// 			return
-// 		}
-
-// 		middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-// 			HTTPStatus: http.StatusOK,
-// 			Body:       nil,
-// 		})
-// 	}(ws, notificationID)
-// }
