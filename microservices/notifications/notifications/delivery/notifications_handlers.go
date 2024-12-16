@@ -58,6 +58,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 			w, err := client.NextWriter(websocket.TextMessage)
 			if err != nil {
 				nd.logger.Errorf("could write: %s", err)
+				newMessage(w, nil, http.StatusInternalServerError)
 				continue
 			}
 			defer w.Close()
@@ -66,7 +67,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 				nd.logger.Errorf("could get notifications: %s", err)
 				return
 			}
-			newMessage(w, notificationsList)
+			newMessage(w, notificationsList, http.StatusOK)
 
 			messageType, r, err := client.NextReader()
 			if err == nil {
@@ -74,21 +75,25 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 				_, err = r.Read(buffer)
 				if err != nil {
 					nd.logger.Errorf("could not read message: %s", err)
+					newMessage(w, nil, http.StatusInternalServerError)
 					continue
 				}
 				nd.logger.Debugf("messageType: %s", messageType)
 				if messageType != 1 {
 					nd.logger.Errorf("wrong type read")
+					newMessage(w, nil, http.StatusInternalServerError)
 					continue
 				}
 				notificationID, err := strconv.ParseUint(string(buffer), 10, 64) //buffer
 				if err != nil {
 					nd.logger.Errorf("could not parse notificationID: %s", err)
+					newMessage(w, nil, http.StatusInternalServerError)
 					continue
 				}
 				err = nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
 				if err != nil {
 					nd.logger.Errorf("could not make notification read: %s", err)
+					newMessage(w, nil, http.StatusInternalServerError)
 				}
 				continue
 			}
@@ -97,8 +102,11 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 	}(ws, currentUser.ID)
 }
 
-func newMessage(w io.WriteCloser, notificationsList []*dto.EmployerNotification) {
-	data, err := json.Marshal(notificationsList)
+func newMessage(w io.WriteCloser, notificationsList []*dto.EmployerNotification, status int) {
+	data, err := json.Marshal(&dto.JSONResponse{
+		HTTPStatus: status,
+		Body:       notificationsList,
+	})
 	if err != nil {
 		w.Write(nil)
 		return
