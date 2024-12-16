@@ -35,8 +35,22 @@ services:
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
+      - ${MEDIA_DIR}:/build/${MEDIA_DIR}
+      - ${COMPRESSED_MEDIA_DIR}:/build/${COMPRESSED_MEDIA_DIR}
     networks:
       - monitoring
+
+  # notifications_microservice:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./build/services/notifications_microservice/Dockerfile
+  #   ports:
+  #     - "8087:8000"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./configs/:/build/configs
+  #   networks:
+  #     - monitoring
 
   main_service:
     build:
@@ -47,6 +61,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
+      - ${MEDIA_DIR}:/build/${MEDIA_DIR}
+      - ${CV_PDF_DIR}:/build/${CV_PDF_DIR}
+      - ${TEMPLATES_DIR}:/build/${TEMPLATES_DIR}
     depends_on:
       db_postgresql:
         condition: service_started
