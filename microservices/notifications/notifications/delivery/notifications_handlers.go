@@ -58,11 +58,9 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 			fmt.Println("!1")
 			w, err := client.NextWriter(websocket.TextMessage)
 			if err != nil {
-				nd.logger.Errorf("could write: %s", err)
-				newMessage(w, nil, http.StatusInternalServerError)
-				continue
+				nd.logger.Errorf("couldn't write: %s", err)
+				break
 			}
-			defer w.Close()
 			notificationsList, err := nd.notificationsUsecase.GetAlEmployerNotifications(employerID)
 			if err != nil {
 				nd.logger.Errorf("could get notifications: %s", err)
@@ -113,7 +111,8 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 					}
 				}
 				nd.logger.Errorf("not his notification %d", notificationID)
-				continue
+			} else {
+				break
 			}
 			fmt.Println("?3")
 			<-ticker.C
@@ -131,4 +130,5 @@ func newMessage(w io.WriteCloser, notificationsList []*dto.EmployerNotification,
 		return
 	}
 	w.Write(data)
+	w.Close()
 }
