@@ -13,6 +13,7 @@ func SetSecurityAndOptionsHeaders(next http.Handler, frontURI string) http.Handl
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept, X-CSRF-Token")
+		w.Header().Set("Access-Control-Expose-Headers", "X-CSRF-Token")
 
 		if r.Method == http.MethodOptions {
 			return
