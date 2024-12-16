@@ -112,11 +112,9 @@ func Init(app *internal.App) *mux.Router {
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", unsubscribe).
 		Methods(http.MethodDelete)
 	subscription := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscription, app, dto.UserTypeApplicant)
-	subscription = middleware.CSRFProtection(subscription, app)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", subscription).
 		Methods(http.MethodGet)
 	subscribers := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscribers, app, dto.UserTypeEmployer)
-	subscribers = middleware.CSRFProtection(subscribers, app)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscribers", subscribers).
 		Methods(http.MethodGet)
 
