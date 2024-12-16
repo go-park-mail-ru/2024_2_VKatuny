@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -8,6 +9,7 @@ import (
 // Returns wrapped function next with headers
 func SetSecurityAndOptionsHeaders(next http.Handler, frontURI string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(1)
 		// Set up CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", frontURI)
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -20,7 +22,7 @@ func SetSecurityAndOptionsHeaders(next http.Handler, frontURI string) http.Handl
 		}
 		// Set up content-type header
 		w.Header().Set("Content-Type", "application/json")
-
+		
 		next.ServeHTTP(w, r)
 	})
 }

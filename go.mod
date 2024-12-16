@@ -4,6 +4,8 @@ go 1.23.0
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
+	github.com/gorilla/websocket v1.5.3
+	github.com/icrowley/fake v0.0.0-20240710202011-f797eb4a99c0
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.9.3
 	github.com/davidbyttow/govips/v2 v2.15.0
 	github.com/jackc/pgx/v5 v5.7.1
@@ -27,6 +29,9 @@ require (
 )
 
 require (
+	github.com/corpix/uarand v0.0.0-20170723150923-031be390f409 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
+	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

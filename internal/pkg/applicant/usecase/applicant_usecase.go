@@ -17,7 +17,7 @@ func (u *ApplicantUsecase) Create(ctx context.Context, form *dto.JSONApplicantRe
 	u.logger.Debugf("%s: entering", fn)
 
 	_, err := u.applicantRepo.GetByEmail(form.Email)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgUserAlreadyExists)
 	}

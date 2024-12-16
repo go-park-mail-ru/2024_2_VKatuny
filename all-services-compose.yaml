@@ -40,17 +40,21 @@ services:
     networks:
       - monitoring
 
-  # notifications_microservice:
-  #   build:
-  #     context: ./
-  #     dockerfile: ./build/services/notifications_microservice/Dockerfile
-  #   ports:
-  #     - "8087:8000"
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./configs/:/build/configs
-  #   networks:
-  #     - monitoring
+  notifications_microservice:
+    build:
+      context: ./
+      dockerfile: ./build/services/notifications/Dockerfile
+    ports:
+      - "8087:8062"
+    restart: unless-stopped
+    volumes:
+      - ./configs/:/build/configs
+    depends_on:
+      db_postgresql:
+        condition: service_started
+        restart: true
+    networks:
+      - monitoring
 
   main_service:
     build:

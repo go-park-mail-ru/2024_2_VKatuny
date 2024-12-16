@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -10,8 +11,10 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
+	notificationsmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -19,8 +22,10 @@ import (
 type VacanciesHandlers struct {
 	logger             *logrus.Entry
 	vacanciesUsecase   vacancies.IVacanciesUsecase
+	applicantUsecase   applicant.IApplicantUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
 	CompressGRPC       compressmicroservice.CompressServiceClient
+	NotificationsGRPC  notificationsmicroservice.NotificationsServiceClient
 }
 
 func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
@@ -30,8 +35,10 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 	return &VacanciesHandlers{
 		logger:             &logrus.Entry{Logger: logger},
 		vacanciesUsecase:   layers.Usecases.VacanciesUsecase,
+		applicantUsecase:   layers.Usecases.ApplicantUsecase,
 		fileLoadingUsecase: layers.Usecases.FileLoadingUsecase,
 		CompressGRPC:       layers.Microservices.Compress,
+		NotificationsGRPC:  layers.Microservices.Notifications,
 	}
 }
 
@@ -362,6 +369,29 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	h.logger.Debugf("user_ID: %d subscribed on vacancy_ID %d", currentUser.ID, vacancyID)
+	go func() {
+		vacancy, err := h.vacanciesUsecase.GetVacancy(vacancyID)
+		if err != nil {
+			h.logger.Errorf("while getting from db got err %s", err)
+			return
+		}
+		applicant, err := h.applicantUsecase.GetApplicantProfile(context.Background(), currentUser.ID)
+		if err != nil {
+			h.logger.Errorf("while getting from db got err %s", err)
+			return
+		}
+		h.logger.Debugf("Sending notification: %s on vacancy: %s", vacancy, applicant)
+		_, err = h.NotificationsGRPC.CreateEmployerNotification(
+			context.Background(),
+			&notificationsmicroservice.CreateEmployerNotificationInput{
+				ApplicantID: currentUser.ID,
+				VacancyID:   vacancyID,
+				EmployerID:  vacancy.EmployerID,
+				ApplicantInfo: applicant.FirstName+" "+ applicant.LastName,
+				VacancyInfo: vacancy.Position,
+			},
+		)
+	}()
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,

@@ -30,6 +30,7 @@ import (
 	vacanciesUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/usecase"
 
 	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
+	notificationsmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/generated"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 
@@ -79,8 +80,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("cant connect to grpc")
 	}
-	defer connAuthGRPC.Close()
+	defer connCompressGRPC.Close()
 	logger.Infof("Compress gRPC client started at %s", conf.CompressMicroservice.Server.GetAddress())
+	connNotificationsGRPC, err := grpc.NewClient(
+		conf.NotificationsMicroservice.GRPCserver.GetAddress(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+	defer connNotificationsGRPC.Close()
+	logger.Infof("Notifications gRPC client started at %s", conf.NotificationsMicroservice.GRPCserver.GetAddress())
 
 	Metrics := metrics.NewMetrics()
 	metrics.InitMetrics(Metrics)
@@ -96,6 +106,7 @@ func main() {
 	microservices := &internal.Microservices{
 		Auth:     grpc_auth.NewAuthorizationClient(connAuthGRPC),
 		Compress: compressmicroservice.NewCompressServiceClient(connCompressGRPC),
+		Notifications: notificationsmicroservice.NewNotificationsServiceClient(connNotificationsGRPC),
 	}
 	usecases := &internal.Usecases{
 		ApplicantUsecase:   applicantUsecase.NewApplicantUsecase(logger, repositories),
