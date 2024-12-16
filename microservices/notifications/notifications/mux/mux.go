@@ -2,6 +2,7 @@ package mux
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -16,10 +17,11 @@ import (
 )
 
 func Init(app *internal.App, logger *logrus.Logger, notificationsUsecase notificationsmicroserviceinterface.INotificationsUsecase) *mux.Router {
+	fmt.Println(2)
 	router := mux.NewRouter()
 	notificationsHandlers := notificationsdelivery.NewNotificationsHandlers(logger, notificationsUsecase)
-	notificationList := middleware.RequireAuthorization(notificationsHandlers.GetAlEmployerNotifications, app, dto.UserTypeApplicant)
-	
+	notificationList := middleware.RequireAuthorization(notificationsHandlers.GetAlEmployerNotifications, app, dto.UserTypeEmployer)
+
 	router.HandleFunc("/api/v1/notifications", notificationList)
 	return router
 }

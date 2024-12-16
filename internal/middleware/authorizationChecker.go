@@ -20,6 +20,12 @@ func RequireAuthorization(next dto.HandlerFunc, app *internal.App, userType stri
 		if !ok {
 			fmt.Printf("WARNING: Can't get logger from context. Processing without it")
 		}
+
+		requestID, ok := r.Context().Value(dto.RequestIDContextKey).(string)
+		if !ok {
+			requestID = ""
+		}
+		fmt.Println(4)
 		logger.Debug("got logger from context")
 
 		if app == nil || app.Microservices == nil || app.Microservices.Auth == nil {
@@ -30,8 +36,12 @@ func RequireAuthorization(next dto.HandlerFunc, app *internal.App, userType stri
 			})
 			return
 		}
+		fmt.Println(5)
 
 		session, err := r.Cookie(dto.SessionIDName)
+		if session != nil {
+			logger.Debugf("session cookie: %s", session.Value)
+		}
 		if err == http.ErrNoCookie || session.Value == "" {
 			logger.Errorf("checking session: got err %s", err)
 			UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
@@ -40,6 +50,7 @@ func RequireAuthorization(next dto.HandlerFunc, app *internal.App, userType stri
 			})
 			return
 		}
+		fmt.Println(6)
 
 		// Getting userType from session
 		userTypeGot, err := utils.CheckToken(session.Value)
@@ -53,6 +64,7 @@ func RequireAuthorization(next dto.HandlerFunc, app *internal.App, userType stri
 			})
 			return
 		}
+		fmt.Println(7)
 		if userTypeGot != userType {
 			logger.Errorf("forbidden: got user type %s, expected %s", userTypeGot, userType)
 			UniversalMarshal(w, http.StatusForbidden, dto.JSONResponse{
@@ -61,13 +73,17 @@ func RequireAuthorization(next dto.HandlerFunc, app *internal.App, userType stri
 			})
 			return
 		}
+		fmt.Println(8)
+
 
 		grpc_request := &grpc_auth.CheckAuthRequest{
-			RequestID: r.Context().Value(dto.RequestIDContextKey).(string),
+			RequestID: requestID,
 			Session: &grpc_auth.SessionToken{
 				ID: session.Value,
 			},
 		}
+		fmt.Println(9)
+
 		grpc_response, err := app.Microservices.Auth.CheckAuth(r.Context(), grpc_request)
 		if err != nil {
 			logger.Errorf("got err %s", err)
@@ -77,6 +93,7 @@ func RequireAuthorization(next dto.HandlerFunc, app *internal.App, userType stri
 			})
 			return
 		}
+		fmt.Println(10)
 
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, dto.UserContextKey, &dto.UserFromSession{

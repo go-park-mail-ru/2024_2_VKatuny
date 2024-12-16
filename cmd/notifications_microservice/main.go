@@ -68,7 +68,7 @@ func main() {
 	microservices := &internal.Microservices{
 		Auth: grpc_auth.NewAuthorizationClient(connAuthGRPC),
 	}
-	logger.Infof("gRPC client started at %s", conf.AuthMicroservice.Server.GetAddress())
+	logger.Infof("Auth gRPC client started at %s", conf.AuthMicroservice.Server.GetAddress())
 	app := &internal.App{
 		Logger:        logger,
 		Microservices: microservices,
@@ -77,8 +77,8 @@ func main() {
 	Mux := mux.Init(app, logger, usecase)
 
 	handlers := middleware.SetSecurityAndOptionsHeaders(Mux, conf.Server.Front)
-	handlers = middleware.AccessLogger(handlers, logger, app.Metrics)
 	handlers = middleware.SetLogger(handlers, logger)
+
 	handlers = middleware.Panic(handlers, logger)
 	logger.Infof("Notifications starting server at %s", conf.NotificationsMicroservice.Server.GetAddress())
 	err = http.ListenAndServe(conf.NotificationsMicroservice.Server.GetAddress(), handlers)

@@ -2,6 +2,7 @@ package notificationmicroservice
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -21,6 +22,7 @@ type NotificationsHandlers struct {
 
 func NewNotificationsHandlers(logger *logrus.Logger, notificationsUsecase notificationsinterfaces.INotificationsUsecase) *NotificationsHandlers {
 	logger.Debug("NotificationsHandlers created")
+	fmt.Println(3)
 	return &NotificationsHandlers{
 		logger:               logrus.NewEntry(logger),
 		notificationsUsecase: notificationsUsecase,
@@ -49,6 +51,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		nd.logger.Errorf("%s: %s", funcName, err)
+		return
 	}
 	go func(client *websocket.Conn, employerID uint64) {
 		for {
