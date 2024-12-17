@@ -32,7 +32,7 @@ func main() {
 	Metrics := metrics.NewMetrics()
 	metrics.InitCompressMetrics(Metrics)
 	logger.Info("Metrics initialized")
-	
+
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(middleware.MetricsInterceptor(Metrics, logger, middleware.CompressMicroservice)),
 	)
