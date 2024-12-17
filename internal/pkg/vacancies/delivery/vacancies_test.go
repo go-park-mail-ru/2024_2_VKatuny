@@ -1159,7 +1159,7 @@ func TestGetVacancySubscription(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
+			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
