@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"context"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/sirupsen/logrus"
 )
 
 func TestPostgresGetByID(t *testing.T) {
@@ -63,9 +65,9 @@ func TestPostgresGetByID(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewPortfolioStorage(db)
+			s := NewPortfolioStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetPortfoliosByApplicantID(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetPortfoliosByApplicantID(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!! %s", err != nil, tt.wantErr, err)
 			}
 

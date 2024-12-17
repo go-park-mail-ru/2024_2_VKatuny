@@ -7,11 +7,11 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	notificationsmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/generated"
@@ -103,7 +103,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	}
 
 	h.logger.Debug(newVacancy)
-	vacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
+	vacancy, err := h.vacanciesUsecase.CreateVacancy(r.Context(), newVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -150,7 +150,7 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
-	vacancy, err := h.vacanciesUsecase.GetVacancy(vacancyID)
+	vacancy, err := h.vacanciesUsecase.GetVacancy(r.Context(), vacancyID)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -248,7 +248,7 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 		updatedVacancy.CompressedAvatar = compressedFileAddress
 	}
 
-	wroteVacancy, err := h.vacanciesUsecase.UpdateVacancy(vacancyID, updatedVacancy, currentUser)
+	wroteVacancy, err := h.vacanciesUsecase.UpdateVacancy(r.Context(), vacancyID, updatedVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -304,7 +304,7 @@ func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = h.vacanciesUsecase.DeleteVacancy(vacancyID, currentUser)
+	err = h.vacanciesUsecase.DeleteVacancy(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -359,7 +359,7 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = h.vacanciesUsecase.SubscribeOnVacancy(vacancyID, currentUser)
+	err = h.vacanciesUsecase.SubscribeOnVacancy(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		h.logger.Errorf("while subscribing on vacancy got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -369,8 +369,8 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	h.logger.Debugf("user_ID: %d subscribed on vacancy_ID %d", currentUser.ID, vacancyID)
-	go func() {
-		vacancy, err := h.vacanciesUsecase.GetVacancy(vacancyID)
+	// go func() {
+		vacancy, err := h.vacanciesUsecase.GetVacancy(r.Context(), vacancyID)
 		if err != nil {
 			h.logger.Errorf("while getting from db got err %s", err)
 			return
@@ -380,18 +380,18 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 			h.logger.Errorf("while getting from db got err %s", err)
 			return
 		}
-		h.logger.Debugf("Sending notification: %s on vacancy: %s", vacancy, applicant)
+		h.logger.Debugf("Sending notification: %+v on vacancy: %+v", vacancy, applicant)
 		_, err = h.NotificationsGRPC.CreateEmployerNotification(
 			context.Background(),
 			&notificationsmicroservice.CreateEmployerNotificationInput{
-				ApplicantID: currentUser.ID,
-				VacancyID:   vacancyID,
-				EmployerID:  vacancy.EmployerID,
-				ApplicantInfo: applicant.FirstName+" "+ applicant.LastName,
-				VacancyInfo: vacancy.Position,
+				ApplicantID:   currentUser.ID,
+				VacancyID:     vacancyID,
+				EmployerID:    vacancy.EmployerID,
+				ApplicantInfo: applicant.FirstName + " " + applicant.LastName,
+				VacancyInfo:   vacancy.Position,
 			},
 		)
-	}()
+	//}()
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -439,7 +439,7 @@ func (h *VacanciesHandlers) UnsubscribeVacancy(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = h.vacanciesUsecase.UnsubscribeFromVacancy(vacancyID, currentUser)
+	err = h.vacanciesUsecase.UnsubscribeFromVacancy(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		h.logger.Errorf("while unsubscribing from vacancy got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -496,7 +496,7 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 		return
 	}
 
-	vacancySubscriptionInfo, err := h.vacanciesUsecase.GetSubscriptionInfo(vacancyID, currentUser.ID)
+	vacancySubscriptionInfo, err := h.vacanciesUsecase.GetSubscriptionInfo(r.Context(), vacancyID, currentUser.ID)
 	if err != nil {
 		h.logger.Errorf("while getting subscription status got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -522,7 +522,7 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 // @Failure 400 {object} dto.JSONResponse
 // @Failure 405 {object} dto.JSONResponse
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/vacancy/{id}/subscribers [get]
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [get]
 func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -553,7 +553,7 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 		return
 	}
 
-	subscribers, err := h.vacanciesUsecase.GetVacancySubscribers(vacancyID, currentUser)
+	subscribers, err := h.vacanciesUsecase.GetVacancySubscribers(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		h.logger.Errorf("while getting subscribers got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -562,8 +562,10 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 		})
 		return
 	}
-	for _, subscriber := range subscribers.Subscribers {
-		subscriber.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(subscriber.Avatar)
+	if subscribers != nil {
+		for _, subscriber := range subscribers.Subscribers {
+			subscriber.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(subscriber.Avatar)
+		}
 	}
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -581,7 +583,7 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 // @Failure 400 {object} dto.JSONResponse
 // @Failure 405 {object} dto.JSONResponse
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/vacancy/{id}/subscription [post]
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [post]
 func (h *VacanciesHandlers) AddVacancyIntoFavorite(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -612,7 +614,7 @@ func (h *VacanciesHandlers) AddVacancyIntoFavorite(w http.ResponseWriter, r *htt
 		return
 	}
 
-	err = h.vacanciesUsecase.AddIntoFavorite(vacancyID, currentUser)
+	err = h.vacanciesUsecase.AddIntoFavorite(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		h.logger.Errorf("while adding into favorite on vacancy got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -638,7 +640,7 @@ func (h *VacanciesHandlers) AddVacancyIntoFavorite(w http.ResponseWriter, r *htt
 // @Failure 400 {object} dto.JSONResponse
 // @Failure 405 {object} dto.JSONResponse
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/vacancy/{id}/subscription [delete]
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [delete]
 func (h *VacanciesHandlers) DellVacancyFromFavorite(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -669,7 +671,7 @@ func (h *VacanciesHandlers) DellVacancyFromFavorite(w http.ResponseWriter, r *ht
 		return
 	}
 
-	err = h.vacanciesUsecase.Unfavorite(vacancyID, currentUser)
+	err = h.vacanciesUsecase.Unfavorite(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		h.logger.Errorf("while unfavorite into favorite on vacancy got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{

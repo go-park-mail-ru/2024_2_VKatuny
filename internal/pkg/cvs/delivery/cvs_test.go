@@ -89,7 +89,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(f.cv, nil)
 
 				f.args.r = httptest.NewRequest(
@@ -134,7 +134,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(f.cv, fmt.Errorf(dto.MsgDataBaseError))
 
 				f.args.r.Header.Set("Content-Type", contentType)
@@ -199,7 +199,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				multipartForm, contentType := createMultipartFormJSONCV(f.cv)
@@ -315,6 +315,7 @@ func TestGetCVHandler(t *testing.T) {
 	}
 	type dependencies struct {
 		cvsUsecase *mock.MockICVsUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 
 		cv dto.JSONCv
 
@@ -346,8 +347,13 @@ func TestGetCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					GetCV(IDslug).
+					GetCV(gomock.Any(), IDslug).
 					Return(&f.cv, nil)
+
+				f.fileLoadingUsecase.
+					EXPECT().
+					FindCompressedFile(f.cv.Avatar).
+					Return("Compressed")
 
 				f.args.r = httptest.NewRequest(
 					http.MethodGet,
@@ -365,7 +371,7 @@ func TestGetCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					GetCV(IDslug).
+					GetCV(gomock.Any(), IDslug).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				f.args.r = httptest.NewRequest(
@@ -386,6 +392,7 @@ func TestGetCVHandler(t *testing.T) {
 
 			d := dependencies{
 				cvsUsecase: mock.NewMockICVsUsecase(ctrl),
+				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 
 			if tt.prepare != nil {
@@ -399,6 +406,8 @@ func TestGetCVHandler(t *testing.T) {
 				Logger: logger,
 				Usecases: &internal.Usecases{
 					CVUsecase: d.cvsUsecase,
+					FileLoadingUsecase: d.fileLoadingUsecase,
+
 				},
 				Microservices: &internal.Microservices{
 					Compress: nil,
@@ -489,7 +498,7 @@ func TestUpdateCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					UpdateCV(uint64(slugInt), in.currentUser, gomock.Any()).
+					UpdateCV(gomock.Any(), uint64(slugInt), in.currentUser, gomock.Any()).
 					Return(in.updatedCV, nil)
 
 				args.r = httptest.NewRequest(
@@ -674,7 +683,7 @@ func TestDeleteCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					DeleteCV(uint64(slugInt), in.user).
+					DeleteCV(gomock.Any(), uint64(slugInt), in.user).
 					Return(nil)
 
 				args.r = httptest.NewRequest(
@@ -729,7 +738,7 @@ func TestDeleteCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					DeleteCV(uint64(slugInt), in.user).
+					DeleteCV(gomock.Any(), uint64(slugInt), in.user).
 					Return(fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
@@ -851,14 +860,14 @@ func TestCVtoPDF(t *testing.T) {
 				out.response = &dto.JSONResponse{
 					HTTPStatus: out.status,
 					Body: map[string]interface{}{
-						"FileName": res.FileName,
+						"FileName": "/"+res.FileName,
 					},
 				}
 				slugInt, _ := strconv.Atoi(in.slug)
 
 				usecase.cvsUsecase.
 					EXPECT().
-					GetCV(uint64(slugInt)).
+					GetCV(gomock.Any(), uint64(slugInt)).
 					Return(cv, nil)
 				usecase.applicantUsecase.
 					EXPECT().
@@ -917,7 +926,7 @@ func TestCVtoPDF(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					GetCV(uint64(slugInt)).
+					GetCV(gomock.Any(), uint64(slugInt)).
 					Return(nil, errors.New("not found"))
 
 				args.r = httptest.NewRequest(

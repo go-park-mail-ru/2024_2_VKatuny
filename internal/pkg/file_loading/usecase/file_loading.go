@@ -14,8 +14,6 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/sirupsen/logrus"
-
-	
 )
 
 type FileLoadingUsecase struct {
@@ -54,9 +52,17 @@ func (vu *FileLoadingUsecase) WriteImage(file multipart.File, header *multipart.
 
 func (vu *FileLoadingUsecase) FindCompressedFile(filename string) string {
 	filename = strings.Split(filename, "/")[len(strings.Split(filename, "/"))-1]
-	vu.logger.Debug("filename: %s", filename)
+	vu.logger.Debugf("filename: %s", filename)
 	dir := vu.conf.CompressMicroservice.CompressedMediaDir
-	compressed, err := os.ReadDir(dir)
+	pwd, _ := os.Getwd()
+	newPwd := ""
+	for _, i := range strings.Split(pwd, "/") {
+		newPwd += i + "/"
+		if i == "2024_2_VKatuny" {
+			break
+		}
+	}
+	compressed, err := os.ReadDir(newPwd + dir)
 	if err != nil {
 		return ""
 	}

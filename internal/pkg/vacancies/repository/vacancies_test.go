@@ -1,11 +1,13 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/sirupsen/logrus"
 )
 
 func TestPostgresGetVacanciesByEmployerID(t *testing.T) {
@@ -79,9 +81,9 @@ func TestPostgresGetVacanciesByEmployerID(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetVacanciesByEmployerID(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetVacanciesByEmployerID(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
@@ -163,9 +165,9 @@ func TestPostgresGetByID(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetByID(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetByID(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
@@ -229,9 +231,9 @@ func TestPostgresSearchAll(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.SearchAll(tt.args.offset, tt.args.num, tt.args.searchStr, tt.args.group, tt.args.searchBy); (err != nil) != tt.wantErr {
+			if _, err := s.SearchAll(context.Background(), tt.args.offset, tt.args.num, tt.args.searchStr, tt.args.group, tt.args.searchBy); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
@@ -499,9 +501,9 @@ func TestPostgresCreate(t *testing.T) {
 			tt.args.query3(mock, tt.args)
 			tt.args.query4(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.Create(&tt.args.vacancy); (err != nil) != tt.wantErr {
+			if _, err := s.Create(context.Background(), &tt.args.vacancy); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -887,9 +889,9 @@ func TestPostgresUpdate(t *testing.T) {
 			tt.args.query4(mock, tt.args)
 			tt.args.query5(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.Update(tt.args.ID, &tt.args.vacancy); (err != nil) != tt.wantErr {
+			if _, err := s.Update(context.Background(), tt.args.ID, &tt.args.vacancy); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -940,9 +942,9 @@ func TestPostgresDelete(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if err := s.Delete(tt.args.ID); (err != nil) != tt.wantErr {
+			if err := s.Delete(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -996,9 +998,9 @@ func TestPostgresSubscribe(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if err := s.Subscribe(tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
+			if err := s.Subscribe(context.Background(), tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -1053,9 +1055,9 @@ func TestPostgresGetSubscriptionStatus(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetSubscriptionStatus(tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
+			if _, err := s.GetSubscriptionStatus(context.Background(), tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
@@ -1107,9 +1109,9 @@ func TestPostgresGetSubscribersCount(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetSubscribersCount(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetSubscribersCount(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -1163,9 +1165,9 @@ func TestPostgresGetSubscribersList(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetSubscribersList(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetSubscribersList(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -1219,9 +1221,9 @@ func TestPostgresUnsubscribe(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if err := s.Unsubscribe(tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
+			if err := s.Unsubscribe(context.Background(), tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -1307,9 +1309,9 @@ func TestGetApplicantFavoriteVacancies(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetApplicantFavoriteVacancies(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetApplicantFavoriteVacancies(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v", err != nil, tt.wantErr)
 			}
 
@@ -1363,9 +1365,65 @@ func TestPostgresMakeFavorite(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewVacanciesStorage(db)
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
 
-			if err := s.MakeFavorite(tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
+			if err := s.MakeFavorite(context.Background(), tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
+				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestPostgresUnfavorite(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ID          uint64
+		applicantID uint64
+		query       func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "TestOk",
+			args: args{
+				ID:          1,
+				applicantID: 1,
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec(`delete from favorite_vacancy (.+)`).
+						WithArgs(
+							args.ID,
+							args.applicantID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 0))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
+
+			if err := s.Unfavorite(context.Background(), tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 

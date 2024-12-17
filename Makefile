@@ -9,7 +9,7 @@ BUILD_FLAGS=
 
 # domain dirs in internal/pkg
 DOMAINS=applicant cvs employer portfolio session vacancies file_loading
-
+MICROSERVICE_DOMAINS = notifications
 
 
 
@@ -48,6 +48,20 @@ mock-gen:
 		    -destination=internal/pkg/$$domain/mock/$$domain.go \
 			-package=mock; \
 	done
+	@for domain in $(MICROSERVICE_DOMAINS); do \
+		echo "Generating mocks for domain: $$domain"; \
+		rm -rf microservice/$$domain/mock; \
+		mockgen -source=microservices/$$domain/$$domain/$$domain.go \
+		    -destination=microservices/$$domain/$$domain/mock/$$domain.go \
+			-package=mock; \
+	done
+	@echo "Generating mocks for auth microservice"
+	@rm -rf microservices/auth/mock
+	@mockgen -source=microservices/auth/gen/auth_grpc.pb.go -destination=microservices/auth/mock/mock_grpc.go -package=mock
+	@mockgen -source=microservices/auth/auth.go -destination=microservices/auth/mock/mock_delivery.go -package=mock
+	@echo "Generating gRPC mocks for notifications microservice"
+	@rm -rf microservices/notifications/mock
+	@mockgen -source=microservices/notifications/generated/notifications_grpc.pb.go -destination=microservices/notifications/mock/mock_grpc.go -package=mock
 	@echo "OK!"
 
 redis-start:

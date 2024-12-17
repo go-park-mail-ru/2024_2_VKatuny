@@ -1,7 +1,6 @@
 package notificationmicroservice
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -69,7 +68,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 				continue
 			}
 			newMessage(w, notificationsList, http.StatusOK)
-			
+
 			<-ticker.C
 			fmt.Println("!2")
 		}
@@ -102,8 +101,8 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 					nd.logger.Errorf("could get notifications: %s", err)
 					continue
 				}
-				for _, i := range notificationsList{
-					if i.ID == notificationID{
+				for _, i := range notificationsList {
+					if i.ID == notificationID {
 						err = nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
 						if err != nil {
 							nd.logger.Errorf("could not make notification read: %s", err)

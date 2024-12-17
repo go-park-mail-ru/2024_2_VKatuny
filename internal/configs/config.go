@@ -31,6 +31,12 @@ type ServerConfig struct {
 	AuthPort    string `yaml:"auth_port"`
 	AuthHost    string `yaml:"auth_host"`
 	CSRFSecret  string `yaml:"csrf_secret"`
+	TLS         *TLS   `yaml:"tls"`
+}
+
+type TLS struct {
+	Certificate string `yaml:"certificate"`
+	Key         string `yaml:"key"`
 }
 
 type DataBaseConfig struct {

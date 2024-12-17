@@ -29,7 +29,7 @@ func (pu *PortfolioUsecase) GetApplicantPortfolios(ctx context.Context, applican
 
 
 	pu.logger.Debugf("function: %s; applicant id: %d. Trying to get applicant portfolio", fn, applicantID)
-	portfoliosModel, err := pu.portfolioRepo.GetPortfoliosByApplicantID(applicantID)
+	portfoliosModel, err := pu.portfolioRepo.GetPortfoliosByApplicantID(ctx, applicantID)
 	if err != nil {
 		pu.logger.Errorf("function: %s; got err: %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)

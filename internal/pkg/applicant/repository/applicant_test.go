@@ -6,6 +6,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/sirupsen/logrus"
 )
 
 func TestPostgresGetByID(t *testing.T) {
@@ -73,9 +74,9 @@ func TestPostgresGetByID(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetByID(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetByID(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!! %s", err != nil, tt.wantErr, err)
 			}
 
@@ -131,9 +132,9 @@ func TestPostgresGetByEmail(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetByEmail(tt.args.Email); (err != nil) != tt.wantErr {
+			if _, err := s.GetByEmail(context.Background(), tt.args.Email); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!! %s", err != nil, tt.wantErr, err)
 			}
 
@@ -199,9 +200,9 @@ func TestPostgresCreate(t *testing.T) {
 
 			tt.args.query1(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
-			if _, err := s.Create(&tt.args.applicant); (err != nil) != tt.wantErr {
+			if _, err := s.Create(context.Background(), &tt.args.applicant); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -282,9 +283,9 @@ func TestPostgresUpdate(t *testing.T) {
 			tt.args.query1(mock, tt.args)
 			tt.args.query2(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
-			if _, err := s.Update(tt.args.ID, &tt.args.applicant); (err != nil) != tt.wantErr {
+			if _, err := s.Update(context.Background(), tt.args.ID, &tt.args.applicant); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -335,7 +336,7 @@ func TestGetAllCities(t *testing.T) {
 
 			tt.args.query1(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
 			if _, err := s.GetAllCities(context.Background(), tt.args.CityName); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())

@@ -12,7 +12,7 @@ services:
       context: ./
       dockerfile: ./build/services/auth/Dockerfile
     ports:
-      - "8085:8000"
+      - "127.0.0.1:8082:8000"
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
@@ -31,7 +31,7 @@ services:
       context: ./
       dockerfile: ./build/services/compress_microservice/Dockerfile
     ports:
-      - "8086:8000"
+      - "127.0.0.1:8083:8000"
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
@@ -45,7 +45,7 @@ services:
       context: ./
       dockerfile: ./build/services/notifications/Dockerfile
     ports:
-      - "8087:8062"
+      - "127.0.0.1:8084:8062"
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
@@ -60,14 +60,17 @@ services:
     build:
       context: ./
       dockerfile: ./build/services/app/Dockerfile
+    env_file:
+      - .env
     ports:
-      - "8082:8001"
+      - "127.0.0.1:8081:8001"
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
       - ${MEDIA_DIR}:/build/${MEDIA_DIR}
       - ${CV_PDF_DIR}:/build/${CV_PDF_DIR}
       - ${TEMPLATES_DIR}:/build/${TEMPLATES_DIR}
+      - ${HOST_TLS_CERTIFICATE_DIR}:/build/${TLS_DIR}
     depends_on:
       db_postgresql:
         condition: service_started
@@ -103,7 +106,7 @@ services:
       context: ./
       dockerfile: ./build/db/Dockerfile
     ports:
-      - "127.0.0.1:8083:5432"
+      - "127.0.0.1:8086:5432"
     restart: unless-stopped
     shm_size: 256mb
     environment:
