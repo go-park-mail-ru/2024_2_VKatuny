@@ -31,6 +31,8 @@ COPY --from=builder /build/pdfium.pc /usr/lib/pkgconfig/
 
 COPY --from=builder /build/pdfium-linux-x64/ ${EXTRACT_PATH}
 
+COPY --from=builder /build/server.crt /build/server.key .
+
 ENV LD_LIBRARY_PATH={EXTRACT_PATH}/lib
 
 ENTRYPOINT ["./app"]

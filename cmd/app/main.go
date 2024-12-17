@@ -146,7 +146,7 @@ func main() {
 		logger.Fatal(err)
 	}
 	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
-	err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
+	err = http.ListenAndServeTLS(conf.Server.GetAddress(), "server.crt", "server.key" , handlers)
 	if err != nil {
 		logger.Fatal(err)
 	}
