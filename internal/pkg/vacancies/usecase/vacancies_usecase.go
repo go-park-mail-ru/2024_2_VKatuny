@@ -30,8 +30,10 @@ func NewVacanciesUsecase(logger *logrus.Logger, repositories *internal.Repositor
 	}
 }
 
-func (u *VacanciesUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, uint64, error) {
+func (u *VacanciesUsecase) ValidateQueryParameters(ctx context.Context, offsetStr, numStr string) (uint64, uint64, error) {
 	fn := "VacanciesUsecase.ValidateQueryParameters"
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
+
 	var err error
 	offset, err1 := strconv.Atoi(offsetStr)
 
@@ -59,7 +61,7 @@ func (vu *VacanciesUsecase) SearchVacancies(ctx context.Context, offsetStr, numS
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
 	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
 	
-	offset, num, err := vu.ValidateQueryParameters(offsetStr, numStr)
+	offset, num, err := vu.ValidateQueryParameters(ctx, offsetStr, numStr)
 	if errors.Is(ErrOffsetIsNotANumber, err) {
 		offset = defaultVacanciesOffset
 	}

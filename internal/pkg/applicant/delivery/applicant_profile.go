@@ -336,7 +336,7 @@ func (h *ApplicantHandlers) GetFavoriteVacancies(w http.ResponseWriter, r *http.
 	}
 
 	// *dto.JSONGetApplicantVacancies
-	Vacancies, err := h.vacanciesUsecase.GetApplicantFavoriteVacancies(applicantID)
+	Vacancies, err := h.vacanciesUsecase.GetApplicantFavoriteVacancies(r.Context(),applicantID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
