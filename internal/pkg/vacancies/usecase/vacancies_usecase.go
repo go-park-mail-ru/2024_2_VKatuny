@@ -2,6 +2,7 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -17,14 +18,14 @@ var ErrOffsetIsNotANumber = fmt.Errorf("query parameter offset isn't a number")
 var ErrNumIsNotANumber = fmt.Errorf("query parameter num isn't a number")
 
 type VacanciesUsecase struct {
-	logger              *logrus.Logger
+	logger              *logrus.Entry
 	vacanciesRepository vacancies.IVacanciesRepository
 	
 }
 
 func NewVacanciesUsecase(logger *logrus.Logger, repositories *internal.Repositories) *VacanciesUsecase {
 	return &VacanciesUsecase{
-		logger:              logger,
+		logger:              logrus.NewEntry(logger),
 		vacanciesRepository: repositories.VacanciesRepository,
 	}
 }
@@ -54,8 +55,10 @@ const (
 	defaultVacanciesNum    = 10
 )
 
-func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
+func (vu *VacanciesUsecase) SearchVacancies(ctx context.Context, offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+	
 	offset, num, err := vu.ValidateQueryParameters(offsetStr, numStr)
 	if errors.Is(ErrOffsetIsNotANumber, err) {
 		offset = defaultVacanciesOffset
@@ -67,7 +70,7 @@ func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group,
 		searchBy = ""
 	}
 	var vacancies []*dto.JSONVacancy
-	vacancies, err = vu.vacanciesRepository.SearchAll(offset, offset+num, searchStr, group, searchBy)
+	vacancies, err = vu.vacanciesRepository.SearchAll(ctx, offset, offset+num, searchStr, group, searchBy)
 	for _, vacancy := range vacancies {
 		utils.EscapeHTMLStruct(vacancy)
 	}
@@ -78,9 +81,11 @@ func (vu *VacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group,
 	return vacancies, nil
 }
 
-func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
+func (vu *VacanciesUsecase) GetVacanciesByEmployerID(ctx context.Context, employerID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
 	fn := "VacanciesUsecase.GetVacanciesByEmployerID"
-	vacanciesModels, err := vu.vacanciesRepository.GetVacanciesByEmployerID(employerID)
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
+	vacanciesModels, err := vu.vacanciesRepository.GetVacanciesByEmployerID(ctx, employerID)
 	if err != nil {
 		vu.logger.Errorf("function %s: unable to get vacancies: %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -107,20 +112,20 @@ func (vu *VacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.
 	return vacancies, nil
 }
 
-func (vu *VacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
-	// TODO: need to validate vacancy && currentUser is not nil
+func (vu *VacanciesUsecase) CreateVacancy(ctx context.Context, vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
 
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got creation request")
 	vacancy.EmployerID = currentUser.ID
 	utils.EscapeHTMLStruct(vacancy)
-	createdVacancyID, err := vu.vacanciesRepository.Create(vacancy)
+	createdVacancyID, err := vu.vacanciesRepository.Create(ctx, vacancy)
 	if err != nil {
 		vu.logger.Errorf("while creating in db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 	vu.logger.Debugf("vacancy created successfully with id %d", createdVacancyID)
 
-	updatedVacancy, err := vu.vacanciesRepository.GetByID(createdVacancyID)
+	updatedVacancy, err := vu.vacanciesRepository.GetByID(ctx, createdVacancyID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -130,8 +135,10 @@ func (vu *VacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser 
 	return updatedVacancy, nil
 }
 
-func (vu *VacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
-	vacancy, err := vu.vacanciesRepository.GetByID(ID)
+func (vu *VacanciesUsecase) GetVacancy(ctx context.Context, ID uint64) (*dto.JSONVacancy, error) {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
+	vacancy, err := vu.vacanciesRepository.GetByID(ctx, ID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, err
@@ -140,9 +147,11 @@ func (vu *VacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
 	return vacancy, nil
 }
 
-func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
+func (vu *VacanciesUsecase) UpdateVacancy(ctx context.Context, ID uint64, vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got update request")
-	oldVacancy, err := vu.vacanciesRepository.GetByID(ID)
+	oldVacancy, err := vu.vacanciesRepository.GetByID(ctx, ID)
 	utils.EscapeHTMLStruct(oldVacancy)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
@@ -155,7 +164,7 @@ func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, c
 	}
 	utils.EscapeHTMLStruct(vacancy)
 
-	updatedVacancy, err := vu.vacanciesRepository.Update(ID, vacancy)
+	updatedVacancy, err := vu.vacanciesRepository.Update(ctx, ID, vacancy)
 	if err != nil {
 		vu.logger.Errorf("while updating in db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -165,9 +174,11 @@ func (vu *VacanciesUsecase) UpdateVacancy(ID uint64, vacancy *dto.JSONVacancy, c
 	return updatedVacancy, nil
 }
 
-func (vu *VacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.UserFromSession) error {
+func (vu *VacanciesUsecase) DeleteVacancy(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
 	vu.logger.WithFields(logrus.Fields{"employer_id": currentUser.ID, "user_type": currentUser.UserType}).Debug("got delete request")
-	vacancy, err := vu.vacanciesRepository.GetByID(ID)
+	vacancy, err := vu.vacanciesRepository.GetByID(ctx, ID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)
@@ -177,7 +188,7 @@ func (vu *VacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.UserFromSe
 		vu.logger.Debugf("not an owner tried to delete vacancy, got %d expected %d", currentUser.ID, ID)
 		return fmt.Errorf(dto.MsgAccessDenied)
 	}
-	err = vu.vacanciesRepository.Delete(ID)
+	err = vu.vacanciesRepository.Delete(ctx, ID)
 	if err != nil {
 		vu.logger.Errorf("while deleting from db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)
@@ -186,13 +197,15 @@ func (vu *VacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.UserFromSe
 	return nil
 }
 
-func (vu *VacanciesUsecase) SubscribeOnVacancy(ID uint64, currentUser *dto.UserFromSession) error {
+func (vu *VacanciesUsecase) SubscribeOnVacancy(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided")
 		return fmt.Errorf(dto.MsgUnauthorized)
 	}
 
-	err := vu.vacanciesRepository.Subscribe(ID, currentUser.ID)
+	err := vu.vacanciesRepository.Subscribe(ctx, ID, currentUser.ID)
 	if err != nil {
 		vu.logger.Errorf("while subscribing on db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)
@@ -201,13 +214,15 @@ func (vu *VacanciesUsecase) SubscribeOnVacancy(ID uint64, currentUser *dto.UserF
 	return nil
 }
 
-func (vu *VacanciesUsecase) UnsubscribeFromVacancy(ID uint64, currentUser *dto.UserFromSession) error {
+func (vu *VacanciesUsecase) UnsubscribeFromVacancy(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided, currentUser = %v", currentUser)
 		return fmt.Errorf(dto.MsgUnauthorized)
 	}
 
-	err := vu.vacanciesRepository.Unsubscribe(ID, currentUser.ID)
+	err := vu.vacanciesRepository.Unsubscribe(ctx, ID, currentUser.ID)
 	if err != nil {
 		vu.logger.Errorf("while unsubscribing on db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)
@@ -216,8 +231,10 @@ func (vu *VacanciesUsecase) UnsubscribeFromVacancy(ID uint64, currentUser *dto.U
 	return nil
 }
 
-func (vu *VacanciesUsecase) GetSubscriptionInfo(ID, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error) {
-	isApplicantSubscribed, err := vu.vacanciesRepository.GetSubscriptionStatus(ID, applicantID)
+func (vu *VacanciesUsecase) GetSubscriptionInfo(ctx context.Context, ID, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error) {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
+	isApplicantSubscribed, err := vu.vacanciesRepository.GetSubscriptionStatus(ctx, ID, applicantID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -230,13 +247,15 @@ func (vu *VacanciesUsecase) GetSubscriptionInfo(ID, applicantID uint64) (*dto.JS
 	}, nil
 }
 
-func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error) {
+func (vu *VacanciesUsecase) GetVacancySubscribers(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error) {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided, currentUser = %v", currentUser)
 		return nil, fmt.Errorf(dto.MsgUnauthorized)
 	}
 
-	vacancy, err := vu.vacanciesRepository.GetByID(ID)
+	vacancy, err := vu.vacanciesRepository.GetByID(ctx, ID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -247,7 +266,7 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.Us
 		return nil, fmt.Errorf(dto.MsgUnauthorized)
 	}
 
-	subscribersModel, err := vu.vacanciesRepository.GetSubscribersList(ID)
+	subscribersModel, err := vu.vacanciesRepository.GetSubscribersList(ctx, ID)
 	if err != nil {
 		vu.logger.Errorf("while getting from db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -276,9 +295,11 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.Us
 	}, nil
 }
 
-func (vu *VacanciesUsecase) GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
+func (vu *VacanciesUsecase) GetApplicantFavoriteVacancies(ctx context.Context, applicantID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
 	fn := "VacanciesUsecase.GetApplicantFavoriteVacancies"
-	vacanciesModels, err := vu.vacanciesRepository.GetApplicantFavoriteVacancies(applicantID)
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
+	vacanciesModels, err := vu.vacanciesRepository.GetApplicantFavoriteVacancies(ctx, applicantID)
 	if err != nil {
 		vu.logger.Errorf("function %s: unable to get vacancies: %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -303,13 +324,15 @@ func (vu *VacanciesUsecase) GetApplicantFavoriteVacancies(applicantID uint64) ([
 	return vacancies, nil
 }
 
-func (vu *VacanciesUsecase) AddIntoFavorite(ID uint64, currentUser *dto.UserFromSession) error {
+func (vu *VacanciesUsecase) AddIntoFavorite(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
+
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided")
 		return fmt.Errorf(dto.MsgUnauthorized)
 	}
 
-	err := vu.vacanciesRepository.MakeFavorite(ID, currentUser.ID)
+	err := vu.vacanciesRepository.MakeFavorite(ctx, ID, currentUser.ID)
 	if err != nil {
 		vu.logger.Errorf("while adding into favorite on db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)
@@ -318,13 +341,14 @@ func (vu *VacanciesUsecase) AddIntoFavorite(ID uint64, currentUser *dto.UserFrom
 	return nil
 }
 
-func (vu *VacanciesUsecase) Unfavorite(ID uint64, currentUser *dto.UserFromSession) error {
+func (vu *VacanciesUsecase) Unfavorite(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
+	vu.logger = utils.SetLoggerRequestID(ctx, vu.logger)
 	if currentUser == nil {
 		vu.logger.Errorf("user is not provided")
 		return fmt.Errorf(dto.MsgUnauthorized)
 	}
 
-	err := vu.vacanciesRepository.Unfavorite(ID, currentUser.ID)
+	err := vu.vacanciesRepository.Unfavorite(ctx, ID, currentUser.ID)
 	if err != nil {
 		vu.logger.Errorf("while adding into favorite on db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)
