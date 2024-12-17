@@ -264,7 +264,7 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ctx context.Context, ID uint64
 	}
 
 	if currentUser.UserType != dto.UserTypeEmployer || currentUser.ID != vacancy.EmployerID {
-		vu.logger.Errorf("user is not applicant, currentUser = %v", currentUser)
+		vu.logger.Errorf("user is not employer, currentUser = %v", currentUser)
 		return nil, fmt.Errorf(dto.MsgUnauthorized)
 	}
 

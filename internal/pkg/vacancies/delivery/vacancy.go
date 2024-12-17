@@ -522,7 +522,7 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 // @Failure 400 {object} dto.JSONResponse
 // @Failure 405 {object} dto.JSONResponse
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/vacancy/{id}/subscribers [get]
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [get]
 func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -583,7 +583,7 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 // @Failure 400 {object} dto.JSONResponse
 // @Failure 405 {object} dto.JSONResponse
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/vacancy/{id}/subscription [post]
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [post]
 func (h *VacanciesHandlers) AddVacancyIntoFavorite(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -640,7 +640,7 @@ func (h *VacanciesHandlers) AddVacancyIntoFavorite(w http.ResponseWriter, r *htt
 // @Failure 400 {object} dto.JSONResponse
 // @Failure 405 {object} dto.JSONResponse
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/vacancy/{id}/subscription [delete]
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [delete]
 func (h *VacanciesHandlers) DellVacancyFromFavorite(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
