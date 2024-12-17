@@ -4,14 +4,14 @@ import "fmt"
 
 // Interface for Compress.
 type ICompressRepository interface {
-	SaveFile(filename string, fileType string, file []byte) error
+	//SaveFile(filename string, fileType string, file []byte) error
 	DeleteFile(filename string) error
 	ScanDir() error
 }
 
 type ICompressUsecase interface {
-	CompressAndSaveFile(filename string, fileType string, file []byte) error
-	DeleteFile(filename string) error
+	//CompressAndSaveFile(filename string, fileType string, file []byte) error
+	//DeleteFile(filename string) error
 	ScanDir() error
 }
 

@@ -203,6 +203,20 @@ func (mr *MockIVacanciesRepositoryMockRecorder) Subscribe(ID, applicantID any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockIVacanciesRepository)(nil).Subscribe), ID, applicantID)
 }
 
+// Unfavorite mocks base method.
+func (m *MockIVacanciesRepository) Unfavorite(ID, applicantID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Unfavorite", ID, applicantID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Unfavorite indicates an expected call of Unfavorite.
+func (mr *MockIVacanciesRepositoryMockRecorder) Unfavorite(ID, applicantID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfavorite", reflect.TypeOf((*MockIVacanciesRepository)(nil).Unfavorite), ID, applicantID)
+}
+
 // Unsubscribe mocks base method.
 func (m *MockIVacanciesRepository) Unsubscribe(ID, applicantID uint64) error {
 	m.ctrl.T.Helper()
@@ -401,6 +415,20 @@ func (m *MockIVacanciesUsecase) SubscribeOnVacancy(ID uint64, currentUser *dto.U
 func (mr *MockIVacanciesUsecaseMockRecorder) SubscribeOnVacancy(ID, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeOnVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).SubscribeOnVacancy), ID, currentUser)
+}
+
+// Unfavorite mocks base method.
+func (m *MockIVacanciesUsecase) Unfavorite(ID uint64, currentUser *dto.UserFromSession) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Unfavorite", ID, currentUser)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Unfavorite indicates an expected call of Unfavorite.
+func (mr *MockIVacanciesUsecaseMockRecorder) Unfavorite(ID, currentUser any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfavorite", reflect.TypeOf((*MockIVacanciesUsecase)(nil).Unfavorite), ID, currentUser)
 }
 
 // UnsubscribeFromVacancy mocks base method.

@@ -111,6 +111,20 @@ func (mr *MockIFileLoadingUsecaseMockRecorder) CVtoPDF(CV, applicant any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CVtoPDF", reflect.TypeOf((*MockIFileLoadingUsecase)(nil).CVtoPDF), CV, applicant)
 }
 
+// FindCompressedFile mocks base method.
+func (m *MockIFileLoadingUsecase) FindCompressedFile(filename string) string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindCompressedFile", filename)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// FindCompressedFile indicates an expected call of FindCompressedFile.
+func (mr *MockIFileLoadingUsecaseMockRecorder) FindCompressedFile(filename any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCompressedFile", reflect.TypeOf((*MockIFileLoadingUsecase)(nil).FindCompressedFile), filename)
+}
+
 // WriteImage mocks base method.
 func (m *MockIFileLoadingUsecase) WriteImage(file multipart.File, header *multipart.FileHeader) (string, string, error) {
 	m.ctrl.T.Helper()

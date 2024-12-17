@@ -15,6 +15,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/mock"
+	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
@@ -38,7 +39,8 @@ func createMultipartFormJSON(jsonForm *dto.JSONUpdateEmployerProfile) (*bytes.Bu
 func TestGetProfileHandler(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
-		profile *mock.MockIEmployerUsecase
+		profile            *mock.MockIEmployerUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 	}
 	tests := []struct {
 		name         string
@@ -114,7 +116,7 @@ func TestGetProfileHandler(t *testing.T) {
 					nil,
 				)
 				nw := httptest.NewRecorder()
-				profile := &dto.JSONGetEmployerProfile{
+				employerProfile := &dto.JSONGetEmployerProfile{
 					ID:        slug,
 					FirstName: "John",
 					LastName:  "Doe",
@@ -122,7 +124,11 @@ func TestGetProfileHandler(t *testing.T) {
 				usecase.profile.
 					EXPECT().
 					GetEmployerProfile(gomock.Any(), slug).
-					Return(profile, nil)
+					Return(employerProfile, nil)
+				usecase.fileLoadingUsecase.
+					EXPECT().
+					FindCompressedFile(employerProfile.Avatar).
+					Return("")
 				return nw, nr
 			},
 		},
@@ -134,6 +140,7 @@ func TestGetProfileHandler(t *testing.T) {
 
 			usecase := &usecase{
 				profile: mock.NewMockIEmployerUsecase(ctrl),
+				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
 
@@ -143,7 +150,7 @@ func TestGetProfileHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					EmployerUsecase:    usecase.profile,
 					VacanciesUsecase:   nil,
-					FileLoadingUsecase: nil,
+					FileLoadingUsecase: usecase.fileLoadingUsecase,
 				},
 				Microservices: &internal.Microservices{
 					Auth: nil,
@@ -555,12 +562,12 @@ func TestRegistration(t *testing.T) {
 				jsonForm, _ := json.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
-					UserType: dto.UserTypeEmployer,
-					Email:    form.Email,
-					Password: form.Password,
+					UserType:  dto.UserTypeEmployer,
+					Email:     form.Email,
+					Password:  form.Password,
 				}
 				user := &dto.JSONUser{
-					ID: 1,
+					ID:       1,
 					UserType: dto.UserTypeEmployer,
 				}
 				usecase.registration.
@@ -607,12 +614,12 @@ func TestRegistration(t *testing.T) {
 				jsonForm, _ := json.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
-					UserType: dto.UserTypeEmployer,
-					Email:    form.Email,
-					Password: form.Password,
+					UserType:  dto.UserTypeEmployer,
+					Email:     form.Email,
+					Password:  form.Password,
 				}
 				user := &dto.JSONUser{
-					ID: 1,
+					ID:       1,
 					UserType: dto.UserTypeEmployer,
 				}
 				grpc_response := &auth_grpc.AuthResponse{

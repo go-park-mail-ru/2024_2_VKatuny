@@ -54,7 +54,7 @@ func (vu *FileLoadingUsecase) WriteImage(file multipart.File, header *multipart.
 
 func (vu *FileLoadingUsecase) FindCompressedFile(filename string) string {
 	filename = strings.Split(filename, "/")[len(strings.Split(filename, "/"))-1]
-	vu.logger.Debug("filename: %s", filename)
+	vu.logger.Debugf("filename: %s", filename)
 	dir := vu.conf.CompressMicroservice.CompressedMediaDir
 	compressed, err := os.ReadDir(dir)
 	if err != nil {
