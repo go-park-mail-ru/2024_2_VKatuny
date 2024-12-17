@@ -18,13 +18,14 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
+	applicant_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
-	applicant_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
 	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
-	notifications_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/notifications/mock"
+	notifications_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/generated"
+	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/mock"
 	"github.com/gorilla/mux"
 
 	//"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
@@ -333,7 +334,7 @@ func TestGetVacancyHandler(t *testing.T) {
 		w *httptest.ResponseRecorder
 	}
 	type dependencies struct {
-		vacanciesUsecase *vacancies_mock.MockIVacanciesUsecase
+		vacanciesUsecase   *vacancies_mock.MockIVacanciesUsecase
 		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 
 		vacancy dto.JSONVacancy
@@ -425,13 +426,13 @@ func TestGetVacancyHandler(t *testing.T) {
 			expectedStatusCode: http.StatusInternalServerError,
 		},
 	}
-    for _, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			d := dependencies{
-				vacanciesUsecase: vacancies_mock.NewMockIVacanciesUsecase(ctrl),
+				vacanciesUsecase:   vacancies_mock.NewMockIVacanciesUsecase(ctrl),
 				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 
@@ -445,7 +446,7 @@ func TestGetVacancyHandler(t *testing.T) {
 			app := &internal.App{
 				Logger: logger,
 				Usecases: &internal.Usecases{
-					VacanciesUsecase: d.vacanciesUsecase,
+					VacanciesUsecase:   d.vacanciesUsecase,
 					FileLoadingUsecase: d.fileLoadingUsecase,
 				},
 				Microservices: &internal.Microservices{
@@ -469,7 +470,6 @@ func TestGetVacancyHandler(t *testing.T) {
 		})
 	}
 }
-
 
 func TestUpdateVacancyHandler(t *testing.T) {
 	t.Parallel()
@@ -517,19 +517,19 @@ func TestUpdateVacancyHandler(t *testing.T) {
 				slugInt, _ := strconv.Atoi(in.slug)
 
 				expectedVacancy := map[string]interface{}{
-					"id":            float64(0),
-					"employer":      float64(0),
-					"salary":        float64(1111),
-					"position":      "Mock Position",
-					"location":      "Mock Location",
-					"description":   "Mock Description",
-					"workType":      "Mock Work Type",
-					"positionGroup": "Mock Position Category",
-                    "compressedAvatar": "",
-					"updatedAt":     "",
-					"createdAt":     "",
-					"avatar":        "",
-					"companyName":   "",
+					"id":               float64(0),
+					"employer":         float64(0),
+					"salary":           float64(1111),
+					"position":         "Mock Position",
+					"location":         "Mock Location",
+					"description":      "Mock Description",
+					"workType":         "Mock Work Type",
+					"positionGroup":    "Mock Position Category",
+					"compressedAvatar": "",
+					"updatedAt":        "",
+					"createdAt":        "",
+					"avatar":           "",
+					"companyName":      "",
 				}
 				out.response = &dto.JSONResponse{
 					HTTPStatus: http.StatusOK,
@@ -739,7 +739,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -944,7 +944,7 @@ func TestDeleteVacancyHandler(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -976,7 +976,6 @@ func TestDeleteVacancyHandler(t *testing.T) {
 		})
 	}
 }
-
 
 func TestGetVacancySubscription(t *testing.T) {
 	t.Parallel()
@@ -1138,7 +1137,7 @@ func TestGetVacancySubscription(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -1183,9 +1182,9 @@ func TestSubscribeVacancy(t *testing.T) {
 		status   int
 	}
 	type usecaseMock struct {
-		vacanciesUsecase *vacancies_mock.MockIVacanciesUsecase
-		applicantUsecase *applicant_mock.MockIApplicantUsecase
-		notificationsGRPC  *notifications_mock.MockINotificationsUsecase
+		vacanciesUsecase  *vacancies_mock.MockIVacanciesUsecase
+		applicantUsecase  *applicant_mock.MockIApplicantUsecase
+		notificationsGRPC *grpc_mock.MockNotificationsServiceClient
 	}
 	type args struct {
 		r *http.Request
@@ -1208,26 +1207,44 @@ func TestSubscribeVacancy(t *testing.T) {
 				out.response = &dto.JSONResponse{
 					HTTPStatus: out.status,
 				}
-				vacancyJSON := &dto.JSONVacancy{
-					ID: 1,
-				}
+				
 				slugInt, _ := strconv.Atoi(in.slug)
 
 				usecase.vacanciesUsecase.
 					EXPECT().
 					SubscribeOnVacancy(uint64(slugInt), in.user).
 					Return(nil)
-				usecase.vacanciesUsecase.
-					EXPECT().
-					GetVacancy(uint64(slugInt)).
-					Return(vacancyJSON)
-
-				usecase.applicantUsecase.
-					EXPECT().
-					GetApplicantProfile(context.Background(), in.user.ID).
-					Return(&dto.JSONGetApplicantProfile{
-						ID: in.user.ID,
-					})
+				// go func() {
+					vacancyJSON := &dto.JSONVacancy{
+						ID:         1,
+						EmployerID: 1,
+						Position:   "Position",
+					}
+					usecase.vacanciesUsecase.
+						EXPECT().
+						GetVacancy(uint64(slugInt)).
+						Return(vacancyJSON, nil)
+					applicant := &dto.JSONGetApplicantProfile{
+						ID:        in.user.ID,
+						FirstName: "John",
+						LastName:  "Doe",
+					}
+					usecase.applicantUsecase.
+						EXPECT().
+						GetApplicantProfile(context.Background(), in.user.ID).
+						Return(applicant, nil)
+					input := &notifications_grpc.CreateEmployerNotificationInput{
+						ApplicantID:   in.user.ID,
+						VacancyID:     uint64(slugInt),
+						EmployerID:    vacancyJSON.EmployerID,
+						ApplicantInfo: applicant.FirstName + " " + applicant.LastName,
+						VacancyInfo:   vacancyJSON.Position,
+					}
+					usecase.notificationsGRPC.
+						EXPECT().
+						CreateEmployerNotification(gomock.Any(), input).
+						Return(&notifications_grpc.Nothing{}, nil)
+				// }()
 
 				args.r = httptest.NewRequest(
 					http.MethodPost,
@@ -1335,7 +1352,8 @@ func TestSubscribeVacancy(t *testing.T) {
 
 			usecase.vacanciesUsecase = vacancies_mock.NewMockIVacanciesUsecase(ctrl)
 			usecase.applicantUsecase = applicant_mock.NewMockIApplicantUsecase(ctrl)
-			usecase.notificationsGRPC = notifications_mock.NewMockINotificationsUsecase(ctrl)
+			//usecase.notificationsGRPC = notifications_mock.NewMockINotificationsUsecase(ctrl)
+			usecase.notificationsGRPC = grpc_mock.NewMockNotificationsServiceClient(ctrl)
 
 			tt.prepare(in, out, usecase, args)
 
@@ -1349,8 +1367,8 @@ func TestSubscribeVacancy(t *testing.T) {
 					ApplicantUsecase: usecase.applicantUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
-					Compress: nil,
+				Microservices: &internal.Microservices{
+					Compress:      nil,
 					Notifications: usecase.notificationsGRPC,
 				},
 			}
@@ -1543,7 +1561,7 @@ func TestUnsubscribeVacancy(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -1588,7 +1606,7 @@ func TestGetVacancySubscribers(t *testing.T) {
 		status   int
 	}
 	type usecaseMock struct {
-		vacanciesUsecase *vacancies_mock.MockIVacanciesUsecase
+		vacanciesUsecase   *vacancies_mock.MockIVacanciesUsecase
 		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 	}
 	type args struct {
@@ -1700,7 +1718,6 @@ func TestGetVacancySubscribers(t *testing.T) {
 		// 			EXPECT().
 		// 			GetVacancySubscribers(uint64(slugInt), in.user).
 		// 			Return(nil, fmt.Errorf(dto.MsgDataBaseError))
-				
 
 		// 		args.r = httptest.NewRequest(
 		// 			http.MethodGet,
@@ -1736,11 +1753,11 @@ func TestGetVacancySubscribers(t *testing.T) {
 			app := &internal.App{
 				Logger: logger,
 				Usecases: &internal.Usecases{
-					VacanciesUsecase: usecase.vacanciesUsecase,
+					VacanciesUsecase:   usecase.vacanciesUsecase,
 					FileLoadingUsecase: usecase.fileLoadingUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -1933,7 +1950,7 @@ func TestAddVacancyIntoFavorite(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}

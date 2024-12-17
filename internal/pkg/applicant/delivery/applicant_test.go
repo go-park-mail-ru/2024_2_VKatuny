@@ -703,7 +703,7 @@ func TestRegistration(t *testing.T) {
 
 				requestID := "1234567890"
 				jsonForm, _ := json.Marshal(form)
-				grpc_request := &auth_grpc.AuthRequest{
+				grpc_request := &auth_grpc.AuthRequest{ 
 					RequestID: requestID,
 					UserType:  dto.UserTypeApplicant,
 					Email:     form.Email,

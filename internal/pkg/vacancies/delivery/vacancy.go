@@ -369,7 +369,7 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	h.logger.Debugf("user_ID: %d subscribed on vacancy_ID %d", currentUser.ID, vacancyID)
-	go func() {
+	//go func() {
 		vacancy, err := h.vacanciesUsecase.GetVacancy(vacancyID)
 		if err != nil {
 			h.logger.Errorf("while getting from db got err %s", err)
@@ -391,7 +391,7 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 				VacancyInfo:   vacancy.Position,
 			},
 		)
-	}()
+	//}()
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
