@@ -4,11 +4,11 @@ go 1.23.0
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/gorilla/websocket v1.5.3
-	github.com/icrowley/fake v0.0.0-20240710202011-f797eb4a99c0
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.9.3
 	github.com/davidbyttow/govips/v2 v2.15.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.7.1
+	github.com/rafaeljusto/redigomock/v3 v3.1.2
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/swag v1.16.4
 	golang.org/x/crypto v0.31.0
@@ -29,9 +29,6 @@ require (
 )
 
 require (
-	github.com/corpix/uarand v0.0.0-20170723150923-031be390f409 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
-	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -48,7 +45,6 @@ require (
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.61.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/rafaeljusto/redigomock/v3 v3.1.2 // indirect
 	golang.org/x/image v0.23.0 // indirect
 	golang.org/x/tools v0.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
@@ -58,7 +54,6 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/prometheus/client_golang v1.20.5
-	github.com/rafaeljusto/redigomock v2.4.0+incompatible
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect

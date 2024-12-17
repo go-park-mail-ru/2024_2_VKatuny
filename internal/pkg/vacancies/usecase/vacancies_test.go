@@ -1,6 +1,7 @@
 package usecase_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -58,7 +59,7 @@ func TestSearchVacancies(t *testing.T) {
 
 				repo.vacancies.
 					EXPECT().
-					SearchAll(uint64(0), uint64(1), searchStr, group, searchBy).
+					SearchAll(gomock.Any(), uint64(0), uint64(1), searchStr, group, searchBy).
 					Return(model, nil)
 				rvacancy := []*dto.JSONVacancy{
 					&dto.JSONVacancy{
@@ -95,7 +96,7 @@ func TestSearchVacancies(t *testing.T) {
 			VacanciesRepository: repo.vacancies,
 		}
 		uc := usecase.NewVacanciesUsecase(logrus.New(), repositories)
-		vacancy, _ := uc.SearchVacancies(offsetStr, numStr, searchStr, group, searchBy)
+		vacancy, _ := uc.SearchVacancies(context.Background(), offsetStr, numStr, searchStr, group, searchBy)
 
 		require.Equal(t, tt.vacancy, vacancy)
 	}
@@ -143,7 +144,7 @@ func TestGetEmployerVacancies(t *testing.T) {
 
 				repo.vacancies.
 					EXPECT().
-					GetVacanciesByEmployerID(uint64(1)).
+					GetVacanciesByEmployerID(gomock.Any(), uint64(1)).
 					Return(model, nil)
 				rvacancy := []*dto.JSONGetEmployerVacancy{
 					&dto.JSONGetEmployerVacancy{
@@ -180,7 +181,7 @@ func TestGetEmployerVacancies(t *testing.T) {
 			VacanciesRepository: repo.vacancies,
 		}
 		uc := usecase.NewVacanciesUsecase(logrus.New(), repositories)
-		vacancy, _ := uc.GetVacanciesByEmployerID(ID)
+		vacancy, _ := uc.GetVacanciesByEmployerID(context.Background(), ID)
 
 		require.Equal(t, tt.vacancy, vacancy)
 	}

@@ -40,7 +40,7 @@ func TestGet(t *testing.T) {
 				userID := uint64(1)
 				repo.employer.
 					EXPECT().
-					GetByID(userID).
+					GetByID(context.Background(),userID).
 					Return(nil, errors.New("bad repository"))
 				return userID, profile
 			},
@@ -61,7 +61,7 @@ func TestGet(t *testing.T) {
 
 				repo.employer.
 					EXPECT().
-					GetByID(userID).
+					GetByID(context.Background(), userID).
 					Return(model, nil)
 				rprofile := &dto.JSONGetEmployerProfile{
 					ID:        model.ID,
@@ -118,7 +118,7 @@ func TestUpdate(t *testing.T) {
 				userID := uint64(1)
 				repo.employer.
 					EXPECT().
-					Update(userID, gomock.Any()).
+					Update(context.Background(),userID, gomock.Any()).
 					Return(nil, errors.New("bad repository"))
 				return userID, profile
 			},
@@ -140,7 +140,7 @@ func TestUpdate(t *testing.T) {
 
 				repo.employer.
 					EXPECT().
-					Update(userID, gomock.Any()).
+					Update(context.Background(),userID, gomock.Any()).
 					Return(nil, nil)
 				rprofile := &dto.JSONUpdateEmployerProfile{
 					FirstName: model.FirstName,
@@ -198,7 +198,7 @@ func TestCreate(t *testing.T) {
 			) (*dto.JSONEmployerRegistrationForm, *dto.JSONUser) {
 				repo.employer.
 					EXPECT().
-					GetByEmail(form.Email).
+					GetByEmail(context.Background(),form.Email).
 					Return(nil, errors.New("sql: no rows in result sett"))
 				return form, nil
 			},
@@ -223,11 +223,11 @@ func TestCreate(t *testing.T) {
 				}
 				repo.employer.
 					EXPECT().
-					GetByEmail(form.Email).
+					GetByEmail(context.Background(),form.Email).
 					Return(nil, nil)
 				repo.employer.
 					EXPECT().
-					Create(gomock.Any()).
+					Create(context.Background(),gomock.Any()).
 					Return(employer, errors.New("bad repository"))
 				return form, nil
 			},
@@ -252,11 +252,11 @@ func TestCreate(t *testing.T) {
 				}
 				repo.employer.
 					EXPECT().
-					GetByEmail(form.Email).
+					GetByEmail(context.Background(),form.Email).
 					Return(nil, nil)
 				repo.employer.
 					EXPECT().
-					Create(gomock.Any()).
+					Create(context.Background(),gomock.Any()).
 					Return(employer, nil)
 				user = &dto.JSONUser{
 					ID:        employer.ID,
@@ -309,7 +309,7 @@ func TestGetByID(t *testing.T) {
 				userID := uint64(1)
 				repo.employer.
 					EXPECT().
-					GetByID(userID).
+					GetByID(context.Background(),userID).
 					Return(nil, errors.New("bad repository"))
 				return userID, employer
 			},
@@ -336,7 +336,7 @@ func TestGetByID(t *testing.T) {
 				}
 				repo.employer.
 					EXPECT().
-					GetByID(userID).
+					GetByID(context.Background(),userID).
 					Return(EmployerModel, nil)
 				return userID, employer
 			},

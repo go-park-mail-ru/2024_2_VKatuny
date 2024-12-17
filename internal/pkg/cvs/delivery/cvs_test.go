@@ -88,7 +88,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(f.cv, nil)
 
 				f.args.r = httptest.NewRequest(
@@ -133,7 +133,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(f.cv, fmt.Errorf(dto.MsgDataBaseError))
 
 				f.args.r.Header.Set("Content-Type", contentType)
@@ -198,7 +198,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				multipartForm, contentType := createMultipartFormJSONCV(f.cv)
@@ -346,7 +346,7 @@ func TestGetCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					GetCV(IDslug).
+					GetCV(gomock.Any(), IDslug).
 					Return(&f.cv, nil)
 
 				f.fileLoadingUsecase.
@@ -370,7 +370,7 @@ func TestGetCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					GetCV(IDslug).
+					GetCV(gomock.Any(), IDslug).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				f.args.r = httptest.NewRequest(
@@ -497,7 +497,7 @@ func TestUpdateCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					UpdateCV(uint64(slugInt), in.currentUser, gomock.Any()).
+					UpdateCV(gomock.Any(), uint64(slugInt), in.currentUser, gomock.Any()).
 					Return(in.updatedCV, nil)
 
 				args.r = httptest.NewRequest(
@@ -682,7 +682,7 @@ func TestDeleteCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					DeleteCV(uint64(slugInt), in.user).
+					DeleteCV(gomock.Any(), uint64(slugInt), in.user).
 					Return(nil)
 
 				args.r = httptest.NewRequest(
@@ -737,7 +737,7 @@ func TestDeleteCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					DeleteCV(uint64(slugInt), in.user).
+					DeleteCV(gomock.Any(), uint64(slugInt), in.user).
 					Return(fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
@@ -866,7 +866,7 @@ func TestCVtoPDF(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					GetCV(uint64(slugInt)).
+					GetCV(gomock.Any(), uint64(slugInt)).
 					Return(cv, nil)
 				usecase.applicantUsecase.
 					EXPECT().
@@ -925,7 +925,7 @@ func TestCVtoPDF(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					GetCV(uint64(slugInt)).
+					GetCV(gomock.Any(), uint64(slugInt)).
 					Return(nil, errors.New("not found"))
 
 				args.r = httptest.NewRequest(

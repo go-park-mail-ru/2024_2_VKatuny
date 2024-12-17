@@ -43,63 +43,63 @@ func (m *MockIEmployerRepository) EXPECT() *MockIEmployerRepositoryMockRecorder 
 }
 
 // Create mocks base method.
-func (m *MockIEmployerRepository) Create(arg0 *dto.EmployerInput) (*models.Employer, error) {
+func (m *MockIEmployerRepository) Create(ctx context.Context, employer *dto.EmployerInput) (*models.Employer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0)
+	ret := m.ctrl.Call(m, "Create", ctx, employer)
 	ret0, _ := ret[0].(*models.Employer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockIEmployerRepositoryMockRecorder) Create(arg0 any) *gomock.Call {
+func (mr *MockIEmployerRepositoryMockRecorder) Create(ctx, employer any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIEmployerRepository)(nil).Create), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIEmployerRepository)(nil).Create), ctx, employer)
 }
 
 // GetByEmail mocks base method.
-func (m *MockIEmployerRepository) GetByEmail(email string) (*models.Employer, error) {
+func (m *MockIEmployerRepository) GetByEmail(ctx context.Context, email string) (*models.Employer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByEmail", email)
+	ret := m.ctrl.Call(m, "GetByEmail", ctx, email)
 	ret0, _ := ret[0].(*models.Employer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByEmail indicates an expected call of GetByEmail.
-func (mr *MockIEmployerRepositoryMockRecorder) GetByEmail(email any) *gomock.Call {
+func (mr *MockIEmployerRepositoryMockRecorder) GetByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockIEmployerRepository)(nil).GetByEmail), email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockIEmployerRepository)(nil).GetByEmail), ctx, email)
 }
 
 // GetByID mocks base method.
-func (m *MockIEmployerRepository) GetByID(id uint64) (*models.Employer, error) {
+func (m *MockIEmployerRepository) GetByID(ctx context.Context, id uint64) (*models.Employer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", id)
+	ret := m.ctrl.Call(m, "GetByID", ctx, id)
 	ret0, _ := ret[0].(*models.Employer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID.
-func (mr *MockIEmployerRepositoryMockRecorder) GetByID(id any) *gomock.Call {
+func (mr *MockIEmployerRepositoryMockRecorder) GetByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIEmployerRepository)(nil).GetByID), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIEmployerRepository)(nil).GetByID), ctx, id)
 }
 
 // Update mocks base method.
-func (m *MockIEmployerRepository) Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) (*models.Employer, error) {
+func (m *MockIEmployerRepository) Update(ctx context.Context, ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) (*models.Employer, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ID, newEmployerData)
+	ret := m.ctrl.Call(m, "Update", ctx, ID, newEmployerData)
 	ret0, _ := ret[0].(*models.Employer)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockIEmployerRepositoryMockRecorder) Update(ID, newEmployerData any) *gomock.Call {
+func (mr *MockIEmployerRepositoryMockRecorder) Update(ctx, ID, newEmployerData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIEmployerRepository)(nil).Update), ID, newEmployerData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIEmployerRepository)(nil).Update), ctx, ID, newEmployerData)
 }
 
 // MockIEmployerUsecase is a mock of IEmployerUsecase interface.

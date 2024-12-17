@@ -37,7 +37,7 @@ func (h *CVsHandler) SearchCVs(w http.ResponseWriter, r *http.Request) {
 	searchStr := queryParams.Get("searchQuery")
 	group := queryParams.Get("group")
 	searchBy := queryParams.Get("searchBy")
-	CVs, err := h.cvsUsecase.SearchCVs(offsetStr, numStr, searchStr, group, searchBy)
+	CVs, err := h.cvsUsecase.SearchCVs(r.Context(), offsetStr, numStr, searchStr, group, searchBy)
 	for _, cv := range CVs {
 		cv.CompressedAvatar  = h.fileLoadingUsecase.FindCompressedFile(cv.Avatar)
 	}

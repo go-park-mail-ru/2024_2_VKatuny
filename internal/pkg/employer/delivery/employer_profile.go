@@ -188,7 +188,7 @@ func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	vacancies, err := h.vacanciesUsecase.GetVacanciesByEmployerID(employerID)
+	vacancies, err := h.vacanciesUsecase.GetVacanciesByEmployerID(r.Context(),employerID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{

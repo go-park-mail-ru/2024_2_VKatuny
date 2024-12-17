@@ -106,7 +106,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wroteCV, err := h.cvsUsecase.CreateCV(newCV, currentUser)
+	wroteCV, err := h.cvsUsecase.CreateCV(r.Context(), newCV, currentUser)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -155,7 +155,7 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: got slug cvID: %d", fn, cvID)
 
-	CV, err := h.cvsUsecase.GetCV(cvID)
+	CV, err := h.cvsUsecase.GetCV(r.Context(), cvID)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -248,7 +248,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 		newCV.CompressedAvatar = compressedFileAddress
 	}
 	utils.EscapeHTMLStruct(newCV)
-	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, currentUser, newCV)
+	updatedCV, err := h.cvsUsecase.UpdateCV(r.Context(), cvID, currentUser, newCV)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -309,7 +309,7 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.cvsUsecase.DeleteCV(cvID, currentUser)
+	err = h.cvsUsecase.DeleteCV(r.Context(), cvID, currentUser)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -358,7 +358,7 @@ func (h *CVsHandler) CVtoPDF(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
 
 	var name *dto.CVPDFFile
-	CV, err := h.cvsUsecase.GetCV(cvID)
+	CV, err := h.cvsUsecase.GetCV(r.Context(), cvID)
 	if err == nil {
 		applicant, err := h.applicantUsecase.GetApplicantProfile(context.Background(), CV.ApplicantID)
 		if err == nil {
