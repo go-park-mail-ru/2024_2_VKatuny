@@ -33,7 +33,16 @@ func TestFindCompressedFile(t *testing.T) {
 			prepare: func(
 				repo *repo,
 				path string) string {
-				return "/media/Compressed/favicon.ico"
+				pwd, _ := os.Getwd()
+				newPwd := ""
+				for _, i := range strings.Split(pwd, "/") {
+					newPwd += i + "/"
+					if i == "2024_2_VKatuny" {
+						break
+					}
+				}
+				conf := configs.ReadConfig(newPwd+"/configs/conf.yml")
+				return conf.CompressMicroservice.CompressedMediaDir + "favicon.ico"
 			},
 		},
 	}
