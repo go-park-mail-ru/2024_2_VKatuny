@@ -167,7 +167,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 // @Accept json
 // @Produce json
 // @Param id path string true "Employer ID"
-// @Success 200 {object} dto.JSONResponse{body=[]models.Vacancy}
+// @Success 200 {object} dto.JSONResponse{}
 // @Failure 405 {object} dto.JSONResponse
 // @Router /api/v1/employer/{id}/vacancies [get]
 func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.Request) {

@@ -327,7 +327,6 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 // @Tags CV
 // @Summary Get cv
 // @Description Get cv
-// @Accept slug
 // @Produce json
 // @Param id path uint64 true "id of cv"
 // @Success 200 {object} dto.JSONResponse
@@ -336,7 +335,7 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} dto.JSONResponse
 // @Failure 405 {object} dto.JSONResponse
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/cv-to-pdf/{id:[0-9]+} [get]
+// @Router /api/v1/cv-to-pdf/{id} [get]
 func (h *CVsHandler) CVtoPDF(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
