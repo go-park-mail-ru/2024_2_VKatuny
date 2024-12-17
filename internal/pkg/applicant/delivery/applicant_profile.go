@@ -246,7 +246,7 @@ func (h *ApplicantHandlers) GetCVs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// *dto.JSONGetApplicantCV
-	CVs, err := h.cvUsecase.GetApplicantCVs(applicantID)
+	CVs, err := h.cvUsecase.GetApplicantCVs(r.Context(), applicantID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{

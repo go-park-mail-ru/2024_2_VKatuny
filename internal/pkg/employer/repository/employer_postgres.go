@@ -1,9 +1,12 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/sirupsen/logrus"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 )
@@ -12,27 +15,24 @@ import (
 // Хранилище досок в PostgreSQL
 type PostgreSQLEmployerStorage struct {
 	db *sql.DB
+	logger *logrus.Entry
 }
 
-func NewEmployerStorage(db *sql.DB) *PostgreSQLEmployerStorage {
+func NewEmployerStorage(db *sql.DB, logger *logrus.Logger) *PostgreSQLEmployerStorage {
 	return &PostgreSQLEmployerStorage{
 		db: db,
+		logger: logrus.NewEntry(logger),
 	}
 }
 
 // GetByID
 // находит доску и связанные с ней списки и задания по id
 // или возвращает ошибки ...
-func (s *PostgreSQLEmployerStorage) GetByID(id uint64) (*models.Employer, error) {
-	// funcName := "PostgreSQLemployer.GetById"
-	// logger, ok := r.Context().Value(dto.LoggerContextKey).(*logrus.Logger)
-	// if !ok {
-	// 	fmt.Printf("function %s: can't get logger from context\n", funcName)
-	// }
+func (s *PostgreSQLEmployerStorage) GetByID(ctx context.Context, id uint64) (*models.Employer, error) {
+	funcName := "PostgreSQLEmployerStorage.GetById"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
-	//requestID := ctx.Value(dto.RequestIDKey).(uuid.UUID)
-
-	//logger.DebugFmt("Built query\n\t"+boardSql+"\nwith args\n\t"+fmt.Sprintf("%+v", args), requestID.String(), funcName, nodeName)
 	row := s.db.QueryRow(`select employer.id, first_name, last_name, city.city_name, position, company.company_name, company_description, company_website, path_to_profile_avatar, contacts, 
 	email, password_hash, employer.created_at, employer.updated_at 
 	from employer left join city on employer.city_id = city.id left join company on employer.company_name_id = company.id where employer.id = $1`, id)
@@ -54,6 +54,8 @@ func (s *PostgreSQLEmployerStorage) GetByID(id uint64) (*models.Employer, error)
 		&employerWithNull.CreatedAt,
 		&employerWithNull.UpdatedAt,
 	)
+	s.logger.Debugf("%s: got from sql db %v", funcName, employerWithNull)
+
 	employer := models.Employer{
 		ID:                  employerWithNull.ID,
 		FirstName:           employerWithNull.FirstName,
@@ -72,16 +74,17 @@ func (s *PostgreSQLEmployerStorage) GetByID(id uint64) (*models.Employer, error)
 	}
 
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
-	//logger.DebugFmt(fmt.Sprintf("%+v", board), requestID.String(), funcName, nodeName)
 
 	return &employer, nil
 }
 
-func (s *PostgreSQLEmployerStorage) GetByEmail(email string) (*models.Employer, error) {
-	//log.Println("Looking for user with login", login.Value)
-	//log.Println("Built query:", sql, "\nwith args:", args)
+func (s *PostgreSQLEmployerStorage) GetByEmail(ctx context.Context, email string) (*models.Employer, error) {
+	funcName := "PostgreSQLEmployerStorage.GetByEmail"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	row := s.db.QueryRow(`select employer.id, first_name, last_name, city.city_name, position, company.company_name, company_description, company_website, path_to_profile_avatar, contacts, 
 	email, password_hash, employer.created_at, employer.updated_at 
@@ -104,6 +107,8 @@ func (s *PostgreSQLEmployerStorage) GetByEmail(email string) (*models.Employer, 
 		&employerWithNull.CreatedAt,
 		&employerWithNull.UpdatedAt,
 	)
+	s.logger.Debugf("%s: got from sql db %v", funcName, employerWithNull)
+
 	employer := models.Employer{
 		ID:                  employerWithNull.ID,
 		FirstName:           employerWithNull.FirstName,
@@ -120,24 +125,33 @@ func (s *PostgreSQLEmployerStorage) GetByEmail(email string) (*models.Employer, 
 		CreatedAt:           employerWithNull.CreatedAt,
 		UpdatedAt:           employerWithNull.UpdatedAt,
 	}
-	//log.Println(user)
-	//log.Println(err)
-	return &employer, err
+
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return nil, err
+	}
+	return &employer, nil
 }
 
-func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*models.Employer, error) {
+func (s *PostgreSQLEmployerStorage) Create(ctx context.Context, employerInput *dto.EmployerInput) (*models.Employer, error) {
+	funcName := "PostgreSQLEmployerStorage.Create"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	var CompanyNameId int
 	row := s.db.QueryRow(`select id from company where company_name = $1`, employerInput.CompanyName)
 	if err := row.Scan(&CompanyNameId); err != nil {
 		switch err {
 		case sql.ErrNoRows:
+			s.logger.Debugf("%s: got empty result: %s", funcName, sql.ErrNoRows.Error())
 			row = s.db.QueryRow(`insert into company (company_name) VALUES ($1) returning id`, employerInput.CompanyName)
 			err = row.Scan(&CompanyNameId)
 			if err != nil {
+				s.logger.Errorf("%s: got error %v", funcName, err)
 				return nil, err
 			}
 		default:
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 	}
@@ -163,6 +177,7 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 		&employerWithNull.UpdatedAt,
 		&employerWithNull.CompressedAvatar,
 	)
+	s.logger.Debugf("%s: got from sql db %v", funcName, employerWithNull)
 	employer := models.Employer{
 		ID:                  employerWithNull.ID,
 		FirstName:           employerWithNull.FirstName,
@@ -180,24 +195,34 @@ func (s *PostgreSQLEmployerStorage) Create(employerInput *dto.EmployerInput) (*m
 	}
 	employer.CityName = employerInput.CityName
 	employer.CompanyName = employerInput.CompanyName
-	//log.Println(user)
-	//log.Println(err)
-	return &employer, err
+
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return nil, err
+	}
+
+	return &employer, nil
 }
 
-func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) (*models.Employer, error) {
+func (s *PostgreSQLEmployerStorage) Update(ctx context.Context, ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) (*models.Employer, error) {
+	funcName := "PostgreSQLEmployerStorage.Update"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	var CityId int
 	row := s.db.QueryRow(`select id from city where city_name=$1`, newEmployerData.City)
 	if err := row.Scan(&CityId); err != nil {
 		switch err {
 		case sql.ErrNoRows:
+			s.logger.Debugf("%s: got empty result: %s", funcName, sql.ErrNoRows.Error())
 			row = s.db.QueryRow(`insert into city (city_name) VALUES ($1) returning id`, newEmployerData.City)
 			err = row.Scan(&CityId)
 			if err != nil {
+				s.logger.Errorf("%s: got error %v", funcName, err)
 				return nil, err
 			}
 		default:
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 	}
@@ -230,6 +255,8 @@ func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONU
 		&employerWithNull.UpdatedAt,
 		&employerWithNull.CompressedAvatar,
 	)
+	s.logger.Debugf("%s: got from sql db %v", funcName, employerWithNull)
+
 	employer := models.Employer{
 		ID:                  employerWithNull.ID,
 		FirstName:           employerWithNull.FirstName,
@@ -246,7 +273,11 @@ func (s *PostgreSQLEmployerStorage) Update(ID uint64, newEmployerData *dto.JSONU
 		CompressedAvatar:    employerWithNull.CompressedAvatar.String,
 	}
 	employer.CityName = newEmployerData.City
-	//log.Println(user)
-	//log.Println(err)
-	return &employer, err
+	
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return nil, err
+	}
+
+	return &employer, nil
 }

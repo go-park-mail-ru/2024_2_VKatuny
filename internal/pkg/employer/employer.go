@@ -14,10 +14,10 @@ import (
 type IEmployerRepository interface {
 	//rename to Add
 	// probably shouldn't commit model to Create method
-	Create(*dto.EmployerInput) (*models.Employer, error)
-	Update(ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) (*models.Employer, error)
-	GetByID(id uint64) (*models.Employer, error)
-	GetByEmail(email string) (*models.Employer, error)
+	Create(ctx context.Context, employer *dto.EmployerInput) (*models.Employer, error)
+	Update(ctx context.Context, ID uint64, newEmployerData *dto.JSONUpdateEmployerProfile) (*models.Employer, error)
+	GetByID(ctx context.Context, id uint64) (*models.Employer, error)
+	GetByEmail(ctx context.Context, email string) (*models.Employer, error)
 }
 
 type IEmployerUsecase interface {
