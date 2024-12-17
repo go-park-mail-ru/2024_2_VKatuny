@@ -18,6 +18,8 @@ import (
 	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	portfolio_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/mock"
+
+	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
 
@@ -44,6 +46,7 @@ func TestGetProfileHandler(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
 		profile *mock.MockIApplicantUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 	}
 	tests := []struct {
 		name         string
@@ -119,15 +122,20 @@ func TestGetProfileHandler(t *testing.T) {
 					nil,
 				)
 				nw := httptest.NewRecorder()
-				profile := &dto.JSONGetApplicantProfile{
+				applicantProfile := &dto.JSONGetApplicantProfile{
 					ID:        slug,
 					FirstName: "John",
 					LastName:  "Doe",
+					Avatar:    "avatar",
 				}
 				usecase.profile.
 					EXPECT().
 					GetApplicantProfile(gomock.Any(), slug).
-					Return(profile, nil)
+					Return(applicantProfile, nil)
+				usecase.fileLoadingUsecase.
+					EXPECT().
+					FindCompressedFile(applicantProfile.Avatar).
+					Return("")
 				return nw, nr
 			},
 		},
@@ -139,6 +147,7 @@ func TestGetProfileHandler(t *testing.T) {
 
 			usecase := &usecase{
 				profile: mock.NewMockIApplicantUsecase(ctrl),
+				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
 
@@ -149,7 +158,7 @@ func TestGetProfileHandler(t *testing.T) {
 					ApplicantUsecase:   usecase.profile,
 					CVUsecase:          nil,
 					PortfolioUsecase:   nil,
-					FileLoadingUsecase: nil,
+					FileLoadingUsecase: usecase.fileLoadingUsecase,
 				},
 				Microservices: &internal.Microservices{
 					Auth: nil,

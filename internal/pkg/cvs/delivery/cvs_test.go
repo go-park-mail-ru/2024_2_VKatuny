@@ -314,6 +314,7 @@ func TestGetCVHandler(t *testing.T) {
 	}
 	type dependencies struct {
 		cvsUsecase *mock.MockICVsUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 
 		cv dto.JSONCv
 
@@ -347,6 +348,11 @@ func TestGetCVHandler(t *testing.T) {
 					EXPECT().
 					GetCV(IDslug).
 					Return(&f.cv, nil)
+
+				f.fileLoadingUsecase.
+					EXPECT().
+					FindCompressedFile(f.cv.Avatar).
+					Return("Compressed")
 
 				f.args.r = httptest.NewRequest(
 					http.MethodGet,
@@ -385,6 +391,7 @@ func TestGetCVHandler(t *testing.T) {
 
 			d := dependencies{
 				cvsUsecase: mock.NewMockICVsUsecase(ctrl),
+				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 
 			if tt.prepare != nil {
@@ -398,6 +405,8 @@ func TestGetCVHandler(t *testing.T) {
 				Logger: logger,
 				Usecases: &internal.Usecases{
 					CVUsecase: d.cvsUsecase,
+					FileLoadingUsecase: d.fileLoadingUsecase,
+
 				},
 				Microservices: &internal.Microservices{
 					Compress: nil,
@@ -850,7 +859,7 @@ func TestCVtoPDF(t *testing.T) {
 				out.response = &dto.JSONResponse{
 					HTTPStatus: out.status,
 					Body: map[string]interface{}{
-						"FileName": res.FileName,
+						"FileName": "/"+res.FileName,
 					},
 				}
 				slugInt, _ := strconv.Atoi(in.slug)

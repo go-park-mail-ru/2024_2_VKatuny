@@ -9,7 +9,7 @@ BUILD_FLAGS=
 
 # domain dirs in internal/pkg
 DOMAINS=applicant cvs employer portfolio session vacancies file_loading
-
+MICROSERVICE_DOMAINS = notifications
 
 
 
@@ -46,6 +46,13 @@ mock-gen:
 		rm -rf internal/pkg/$$domain/mock; \
 		mockgen -source=internal/pkg/$$domain/$$domain.go \
 		    -destination=internal/pkg/$$domain/mock/$$domain.go \
+			-package=mock; \
+	done
+	@for domain in $(MICROSERVICE_DOMAINS); do \
+		echo "Generating mocks for domain: $$domain"; \
+		rm -rf microservice/$$domain/mock; \
+		mockgen -source=microservices/$$domain/$$domain/$$domain.go \
+		    -destination=microservices/$$domain/$$domain/mock/$$domain.go \
 			-package=mock; \
 	done
 	@echo "OK!"

@@ -138,7 +138,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	if err == nil {
 		defer file.Close()
 		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
-		h.logger.Debug("add	ress %s compressed %s", fileAddress, compressedFileAddress)
+		h.logger.Debugf("address %s compressed %s", fileAddress, compressedFileAddress)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
