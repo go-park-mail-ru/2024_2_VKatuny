@@ -3,14 +3,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/metrics"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -56,6 +57,7 @@ import (
 func main() {
 	conf := configs.ReadConfig("./configs/conf.yml")
 	logger := logger.NewLogrusLogger()
+	fmt.Println(1)
 
 	dbConnection, err := utils.GetDBConnection(conf.DataBase.GetDSN())
 	if err != nil {
@@ -96,16 +98,16 @@ func main() {
 	metrics.InitMetrics(Metrics)
 
 	repositories := &internal.Repositories{
-		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
-		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection),
-		CVRepository:               cvRepository.NewCVStorage(dbConnection),
-		VacanciesRepository:        vacancies_repository.NewVacanciesStorage(dbConnection),
-		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
-		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(logger, conf.Server.MediaDir, conf.Server.CVinPDFDir, conf.Server.TamplateDir),
+		ApplicantRepository:   applicant_repository.NewApplicantStorage(dbConnection),
+		PortfolioRepository:   portfolioRepository.NewPortfolioStorage(dbConnection),
+		CVRepository:          cvRepository.NewCVStorage(dbConnection),
+		VacanciesRepository:   vacancies_repository.NewVacanciesStorage(dbConnection),
+		EmployerRepository:    employer_repository.NewEmployerStorage(dbConnection),
+		FileLoadingRepository: file_loading_repository.NewFileLoadingStorage(logger, conf.Server.MediaDir, conf.Server.CVinPDFDir, conf.Server.TamplateDir),
 	}
 	microservices := &internal.Microservices{
-		Auth:     grpc_auth.NewAuthorizationClient(connAuthGRPC),
-		Compress: compressmicroservice.NewCompressServiceClient(connCompressGRPC),
+		Auth:          grpc_auth.NewAuthorizationClient(connAuthGRPC),
+		Compress:      compressmicroservice.NewCompressServiceClient(connCompressGRPC),
 		Notifications: notificationsmicroservice.NewNotificationsServiceClient(connNotificationsGRPC),
 	}
 	usecases := &internal.Usecases{
