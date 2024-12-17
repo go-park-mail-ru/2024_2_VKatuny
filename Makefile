@@ -58,3 +58,7 @@ auth-microservice:
 
 run:
 	go run $(SRC_DIR)/main.go
+
+easyjson-gen:
+	easyjson -all ./internal/pkg/dto
+	easyjson -all ./microservices/notifications/notifications/dto

@@ -24,6 +24,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/delivery"
 	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 
 	//"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	//"github.com/golang/mock/gomock"
@@ -418,7 +419,7 @@ func TestGetVacancyHandler(t *testing.T) {
 			expectedStatusCode: http.StatusInternalServerError,
 		},
 	}
-    for _, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -460,7 +461,6 @@ func TestGetVacancyHandler(t *testing.T) {
 		})
 	}
 }
-
 
 func TestUpdateVacancyHandler(t *testing.T) {
 	t.Parallel()
@@ -508,19 +508,19 @@ func TestUpdateVacancyHandler(t *testing.T) {
 				slugInt, _ := strconv.Atoi(in.slug)
 
 				expectedVacancy := map[string]interface{}{
-					"id":            float64(0),
-					"employer":      float64(0),
-					"salary":        float64(1111),
-					"position":      "Mock Position",
-					"location":      "Mock Location",
-					"description":   "Mock Description",
-					"workType":      "Mock Work Type",
-					"positionGroup": "Mock Position Category",
-                    "compressedAvatar": "",
-					"updatedAt":     "",
-					"createdAt":     "",
-					"avatar":        "",
-					"companyName":   "",
+					"id":               float64(0),
+					"employer":         float64(0),
+					"salary":           float64(1111),
+					"position":         "Mock Position",
+					"location":         "Mock Location",
+					"description":      "Mock Description",
+					"workType":         "Mock Work Type",
+					"positionGroup":    "Mock Position Category",
+					"compressedAvatar": "",
+					"updatedAt":        "",
+					"createdAt":        "",
+					"avatar":           "",
+					"companyName":      "",
 				}
 				out.response = &dto.JSONResponse{
 					HTTPStatus: http.StatusOK,
@@ -730,7 +730,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -751,7 +751,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -935,7 +935,7 @@ func TestDeleteVacancyHandler(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -956,7 +956,7 @@ func TestDeleteVacancyHandler(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -967,7 +967,6 @@ func TestDeleteVacancyHandler(t *testing.T) {
 		})
 	}
 }
-
 
 func TestGetVacancySubscription(t *testing.T) {
 	t.Parallel()
@@ -1129,7 +1128,7 @@ func TestGetVacancySubscription(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -1150,7 +1149,7 @@ func TestGetVacancySubscription(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -1322,7 +1321,7 @@ func TestSubscribeVacancy(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -1343,7 +1342,7 @@ func TestSubscribeVacancy(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -1515,7 +1514,7 @@ func TestUnsubscribeVacancy(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -1536,7 +1535,7 @@ func TestUnsubscribeVacancy(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -1708,7 +1707,7 @@ func TestGetVacancySubscribers(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -1729,7 +1728,7 @@ func TestGetVacancySubscribers(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -1901,7 +1900,7 @@ func TestAddVacancyIntoFavorite(t *testing.T) {
 					VacanciesUsecase: usecase.vacanciesUsecase,
 				},
 				Repositories: &internal.Repositories{},
-                Microservices: &internal.Microservices{
+				Microservices: &internal.Microservices{
 					Compress: nil,
 				},
 			}
@@ -1922,7 +1921,7 @@ func TestAddVacancyIntoFavorite(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,

@@ -22,6 +22,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -621,7 +622,7 @@ func TestUpdateCVHandler(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -787,7 +788,7 @@ func TestDeleteCVHandler(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -973,7 +974,7 @@ func TestCVtoPDF(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 			require.Equalf(t, out.response, jsonResonse,
 				"got response %v, expected %v",

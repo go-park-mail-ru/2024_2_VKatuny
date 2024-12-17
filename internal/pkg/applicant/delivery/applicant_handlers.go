@@ -29,8 +29,6 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 	h.logger.Debugf("%s: entering", fn)
 
 	applicantRegistrationForm := new(dto.JSONApplicantRegistrationForm)
-
-	// err := json.NewDecoder(r.Body).Decode(applicantRegistrationForm)
 	err := easyjson.UnmarshalFromReader(r.Body, applicantRegistrationForm)
 
 	if err != nil {
@@ -85,13 +83,8 @@ func (h *ApplicantHandlers) ApplicantRegistration(w http.ResponseWriter, r *http
 	http.SetCookie(w, cookie)
 	h.logger.Debugf("%s: cookie set: %s", fn, cookie.Value)
 
-	// middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
-	// 	HTTPStatus: http.StatusOK,
-	// 	Body:       user,
-	// })
-	w.WriteHeader(http.StatusOK)
-	_, _, err = easyjson.MarshalToHTTPResponseWriter(dto.JSONResponse{
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       user,
-	}, w)
+	})
 }

@@ -15,11 +15,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
 	cv_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/mock"
-	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	portfolio_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/mock"
+	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
+	"github.com/mailru/easyjson"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -660,7 +661,7 @@ func TestRegistration(t *testing.T) {
 					Password:  "password",
 				}
 
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				usecase.registration.
 					EXPECT().
 					Create(gomock.Any(), form).
@@ -693,7 +694,7 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
 					UserType:  dto.UserTypeApplicant,
@@ -742,7 +743,7 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
 					UserType:  dto.UserTypeApplicant,
@@ -1008,8 +1009,8 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				var vacancies = []*dto.JSONGetEmployerVacancy{
 					{
 						ID:                   1,
-						EmployerID:          1,
-						Position:           "химик",
+						EmployerID:           1,
+						Position:             "химик",
 						Description:          "нужен химик",
 						PositionCategoryName: "chemistry",
 					},
@@ -1044,7 +1045,7 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				BackendAddress: "http://localhost:8080",
 				Usecases: &internal.Usecases{
 					ApplicantUsecase:   nil,
-					VacanciesUsecase:          usecase.vacancy,
+					VacanciesUsecase:   usecase.vacancy,
 					PortfolioUsecase:   nil,
 					FileLoadingUsecase: nil,
 				},

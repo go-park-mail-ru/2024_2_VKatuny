@@ -12,6 +12,7 @@ import (
 	notificationsinterfaces "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/notifications"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/notifications/dto"
 	"github.com/gorilla/websocket"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 )
 
@@ -121,7 +122,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 }
 
 func newMessage(w io.WriteCloser, notificationsList []*dto.EmployerNotification, status int) {
-	data, err := json.Marshal(&dto.JSONResponse{
+	data, err := easyjson.Marshal(dto.JSONResponse{
 		HTTPStatus: status,
 		Body:       notificationsList,
 	})

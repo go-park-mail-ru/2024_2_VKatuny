@@ -1,26 +1,16 @@
 package middleware
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
-	//"github.com/mailru/easyjson"
+	"github.com/mailru/easyjson"
 )
 
 // UniversalMarshal marshal any struct to json (use it for any answer from handlers).
 // Writes http status to http.ResponseWriter
-func UniversalMarshal(w http.ResponseWriter, status int, body interface{}) error {
+func UniversalMarshal(w http.ResponseWriter, status int, body dto.JSONResponse) error {
 	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(body); err != nil {
-		return fmt.Errorf(dto.MsgUnableToMarshalJSON)
-	}
-	return nil
+	_, _, err := easyjson.MarshalToHTTPResponseWriter(body, w)
+	return err
 }
-
-// func UniversalMarshal(w http.ResponseWriter, status int, body *dto.JSONResponse) error {
-// 	w.WriteHeader(status)
-// 	_, _, err := easyjson.MarshalToHTTPResponseWriter(body, w)
-// 	return err
-// }
