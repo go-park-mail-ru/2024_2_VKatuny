@@ -1377,3 +1377,59 @@ func TestPostgresMakeFavorite(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgresUnfavorite(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		ID          uint64
+		applicantID uint64
+		query       func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "TestOk",
+			args: args{
+				ID:          1,
+				applicantID: 1,
+				query: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectExec(`delete from favorite_vacancy (.+)`).
+						WithArgs(
+							args.ID,
+							args.applicantID,
+						).
+						WillReturnResult(sqlmock.NewResult(1, 0))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query(mock, tt.args)
+
+			s := NewVacanciesStorage(db, logrus.StandardLogger())
+
+			if err := s.Unfavorite(context.Background(), tt.args.ID, tt.args.applicantID); (err != nil) != tt.wantErr {
+				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
