@@ -5,12 +5,13 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
-	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/metrics"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -145,8 +146,18 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	logger.Infof("Server is starting at %s", conf.Server.GetAddress())
-	err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
+	if conf.Server.Scheme == "https" {
+		logger.Infof("Server (TLS) is starting at %s", conf.Server.GetAddress())
+		err = http.ListenAndServeTLS(
+			conf.Server.GetAddress(),
+			os.Getenv("TLS_CERT"),
+			os.Getenv("TLS_KEY"),
+			handlers,
+		)
+	} else {
+		logger.Infof("Server is starting at %s", conf.Server.GetAddress())
+		err = http.ListenAndServe(conf.Server.GetAddress(), handlers)
+	}
 	if err != nil {
 		logger.Fatal(err)
 	}

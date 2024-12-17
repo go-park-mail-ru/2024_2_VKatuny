@@ -12,7 +12,9 @@ server:
   cvpdfdir: "media/CVinPDF/"
   tamplateDir: "templates/"
   csrf_secret: "rand string" # 16, 24 or 32 bytes string allowed!
-
+  tls:
+    certificate: ${TLS_CERT}
+    key: ${TLS_KEY}
 
 database:
   host: "192.168.77.130"
