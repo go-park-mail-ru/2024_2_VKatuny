@@ -10,6 +10,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
 	dto "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -41,92 +42,92 @@ func (m *MockICVsRepository) EXPECT() *MockICVsRepositoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockICVsRepository) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
+func (m *MockICVsRepository) Create(ctx context.Context, cv *dto.JSONCv) (*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", cv)
+	ret := m.ctrl.Call(m, "Create", ctx, cv)
 	ret0, _ := ret[0].(*dto.JSONCv)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockICVsRepositoryMockRecorder) Create(cv any) *gomock.Call {
+func (mr *MockICVsRepositoryMockRecorder) Create(ctx, cv any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockICVsRepository)(nil).Create), cv)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockICVsRepository)(nil).Create), ctx, cv)
 }
 
 // Delete mocks base method.
-func (m *MockICVsRepository) Delete(ID uint64) error {
+func (m *MockICVsRepository) Delete(ctx context.Context, ID uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ID)
+	ret := m.ctrl.Call(m, "Delete", ctx, ID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockICVsRepositoryMockRecorder) Delete(ID any) *gomock.Call {
+func (mr *MockICVsRepositoryMockRecorder) Delete(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockICVsRepository)(nil).Delete), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockICVsRepository)(nil).Delete), ctx, ID)
 }
 
 // GetByID mocks base method.
-func (m *MockICVsRepository) GetByID(ID uint64) (*dto.JSONCv, error) {
+func (m *MockICVsRepository) GetByID(ctx context.Context, ID uint64) (*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", ID)
+	ret := m.ctrl.Call(m, "GetByID", ctx, ID)
 	ret0, _ := ret[0].(*dto.JSONCv)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID.
-func (mr *MockICVsRepositoryMockRecorder) GetByID(ID any) *gomock.Call {
+func (mr *MockICVsRepositoryMockRecorder) GetByID(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockICVsRepository)(nil).GetByID), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockICVsRepository)(nil).GetByID), ctx, ID)
 }
 
 // GetCVsByApplicantID mocks base method.
-func (m *MockICVsRepository) GetCVsByApplicantID(applicantID uint64) ([]*dto.JSONCv, error) {
+func (m *MockICVsRepository) GetCVsByApplicantID(ctx context.Context, applicantID uint64) ([]*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCVsByApplicantID", applicantID)
+	ret := m.ctrl.Call(m, "GetCVsByApplicantID", ctx, applicantID)
 	ret0, _ := ret[0].([]*dto.JSONCv)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCVsByApplicantID indicates an expected call of GetCVsByApplicantID.
-func (mr *MockICVsRepositoryMockRecorder) GetCVsByApplicantID(applicantID any) *gomock.Call {
+func (mr *MockICVsRepositoryMockRecorder) GetCVsByApplicantID(ctx, applicantID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCVsByApplicantID", reflect.TypeOf((*MockICVsRepository)(nil).GetCVsByApplicantID), applicantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCVsByApplicantID", reflect.TypeOf((*MockICVsRepository)(nil).GetCVsByApplicantID), ctx, applicantID)
 }
 
 // SearchAll mocks base method.
-func (m *MockICVsRepository) SearchAll(offset, num uint64, searchStr, group, searchBy string) ([]*dto.JSONCv, error) {
+func (m *MockICVsRepository) SearchAll(ctx context.Context, offset, num uint64, searchStr, group, searchBy string) ([]*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchAll", offset, num, searchStr, group, searchBy)
+	ret := m.ctrl.Call(m, "SearchAll", ctx, offset, num, searchStr, group, searchBy)
 	ret0, _ := ret[0].([]*dto.JSONCv)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SearchAll indicates an expected call of SearchAll.
-func (mr *MockICVsRepositoryMockRecorder) SearchAll(offset, num, searchStr, group, searchBy any) *gomock.Call {
+func (mr *MockICVsRepositoryMockRecorder) SearchAll(ctx, offset, num, searchStr, group, searchBy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAll", reflect.TypeOf((*MockICVsRepository)(nil).SearchAll), offset, num, searchStr, group, searchBy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAll", reflect.TypeOf((*MockICVsRepository)(nil).SearchAll), ctx, offset, num, searchStr, group, searchBy)
 }
 
 // Update mocks base method.
-func (m *MockICVsRepository) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSONCv, error) {
+func (m *MockICVsRepository) Update(ctx context.Context, ID uint64, updatedCv *dto.JSONCv) (*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ID, updatedCv)
+	ret := m.ctrl.Call(m, "Update", ctx, ID, updatedCv)
 	ret0, _ := ret[0].(*dto.JSONCv)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockICVsRepositoryMockRecorder) Update(ID, updatedCv any) *gomock.Call {
+func (mr *MockICVsRepositoryMockRecorder) Update(ctx, ID, updatedCv any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockICVsRepository)(nil).Update), ID, updatedCv)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockICVsRepository)(nil).Update), ctx, ID, updatedCv)
 }
 
 // MockICVsUsecase is a mock of ICVsUsecase interface.
@@ -154,90 +155,90 @@ func (m *MockICVsUsecase) EXPECT() *MockICVsUsecaseMockRecorder {
 }
 
 // CreateCV mocks base method.
-func (m *MockICVsUsecase) CreateCV(cv *dto.JSONCv, currentUser *dto.UserFromSession) (*dto.JSONCv, error) {
+func (m *MockICVsUsecase) CreateCV(ctx context.Context, cv *dto.JSONCv, currentUser *dto.UserFromSession) (*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateCV", cv, currentUser)
+	ret := m.ctrl.Call(m, "CreateCV", ctx, cv, currentUser)
 	ret0, _ := ret[0].(*dto.JSONCv)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateCV indicates an expected call of CreateCV.
-func (mr *MockICVsUsecaseMockRecorder) CreateCV(cv, currentUser any) *gomock.Call {
+func (mr *MockICVsUsecaseMockRecorder) CreateCV(ctx, cv, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCV", reflect.TypeOf((*MockICVsUsecase)(nil).CreateCV), cv, currentUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCV", reflect.TypeOf((*MockICVsUsecase)(nil).CreateCV), ctx, cv, currentUser)
 }
 
 // DeleteCV mocks base method.
-func (m *MockICVsUsecase) DeleteCV(ID uint64, currentUser *dto.UserFromSession) error {
+func (m *MockICVsUsecase) DeleteCV(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteCV", ID, currentUser)
+	ret := m.ctrl.Call(m, "DeleteCV", ctx, ID, currentUser)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteCV indicates an expected call of DeleteCV.
-func (mr *MockICVsUsecaseMockRecorder) DeleteCV(ID, currentUser any) *gomock.Call {
+func (mr *MockICVsUsecaseMockRecorder) DeleteCV(ctx, ID, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCV", reflect.TypeOf((*MockICVsUsecase)(nil).DeleteCV), ID, currentUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCV", reflect.TypeOf((*MockICVsUsecase)(nil).DeleteCV), ctx, ID, currentUser)
 }
 
 // GetApplicantCVs mocks base method.
-func (m *MockICVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplicantCV, error) {
+func (m *MockICVsUsecase) GetApplicantCVs(ctx context.Context, applicantID uint64) ([]*dto.JSONGetApplicantCV, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplicantCVs", applicantID)
+	ret := m.ctrl.Call(m, "GetApplicantCVs", ctx, applicantID)
 	ret0, _ := ret[0].([]*dto.JSONGetApplicantCV)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetApplicantCVs indicates an expected call of GetApplicantCVs.
-func (mr *MockICVsUsecaseMockRecorder) GetApplicantCVs(applicantID any) *gomock.Call {
+func (mr *MockICVsUsecaseMockRecorder) GetApplicantCVs(ctx, applicantID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicantCVs", reflect.TypeOf((*MockICVsUsecase)(nil).GetApplicantCVs), applicantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicantCVs", reflect.TypeOf((*MockICVsUsecase)(nil).GetApplicantCVs), ctx, applicantID)
 }
 
 // GetCV mocks base method.
-func (m *MockICVsUsecase) GetCV(ID uint64) (*dto.JSONCv, error) {
+func (m *MockICVsUsecase) GetCV(ctx context.Context, ID uint64) (*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCV", ID)
+	ret := m.ctrl.Call(m, "GetCV", ctx, ID)
 	ret0, _ := ret[0].(*dto.JSONCv)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCV indicates an expected call of GetCV.
-func (mr *MockICVsUsecaseMockRecorder) GetCV(ID any) *gomock.Call {
+func (mr *MockICVsUsecaseMockRecorder) GetCV(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCV", reflect.TypeOf((*MockICVsUsecase)(nil).GetCV), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCV", reflect.TypeOf((*MockICVsUsecase)(nil).GetCV), ctx, ID)
 }
 
 // SearchCVs mocks base method.
-func (m *MockICVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONGetApplicantCV, error) {
+func (m *MockICVsUsecase) SearchCVs(ctx context.Context, offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONGetApplicantCV, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchCVs", offsetStr, numStr, searchStr, group, searchBy)
+	ret := m.ctrl.Call(m, "SearchCVs", ctx, offsetStr, numStr, searchStr, group, searchBy)
 	ret0, _ := ret[0].([]*dto.JSONGetApplicantCV)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SearchCVs indicates an expected call of SearchCVs.
-func (mr *MockICVsUsecaseMockRecorder) SearchCVs(offsetStr, numStr, searchStr, group, searchBy any) *gomock.Call {
+func (mr *MockICVsUsecaseMockRecorder) SearchCVs(ctx, offsetStr, numStr, searchStr, group, searchBy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchCVs", reflect.TypeOf((*MockICVsUsecase)(nil).SearchCVs), offsetStr, numStr, searchStr, group, searchBy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchCVs", reflect.TypeOf((*MockICVsUsecase)(nil).SearchCVs), ctx, offsetStr, numStr, searchStr, group, searchBy)
 }
 
 // UpdateCV mocks base method.
-func (m *MockICVsUsecase) UpdateCV(ID uint64, currentUser *dto.UserFromSession, cv *dto.JSONCv) (*dto.JSONCv, error) {
+func (m *MockICVsUsecase) UpdateCV(ctx context.Context, ID uint64, currentUser *dto.UserFromSession, cv *dto.JSONCv) (*dto.JSONCv, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCV", ID, currentUser, cv)
+	ret := m.ctrl.Call(m, "UpdateCV", ctx, ID, currentUser, cv)
 	ret0, _ := ret[0].(*dto.JSONCv)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateCV indicates an expected call of UpdateCV.
-func (mr *MockICVsUsecaseMockRecorder) UpdateCV(ID, currentUser, cv any) *gomock.Call {
+func (mr *MockICVsUsecaseMockRecorder) UpdateCV(ctx, ID, currentUser, cv any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCV", reflect.TypeOf((*MockICVsUsecase)(nil).UpdateCV), ID, currentUser, cv)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCV", reflect.TypeOf((*MockICVsUsecase)(nil).UpdateCV), ctx, ID, currentUser, cv)
 }

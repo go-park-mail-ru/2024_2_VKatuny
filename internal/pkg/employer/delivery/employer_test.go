@@ -377,7 +377,7 @@ func TestGetVacancies(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.profile.
 					EXPECT().
-					GetVacanciesByEmployerID(slug).
+					GetVacanciesByEmployerID(gomock.Any(), slug).
 					Return(nil, fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -412,7 +412,7 @@ func TestGetVacancies(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.profile.
 					EXPECT().
-					GetVacanciesByEmployerID(slug).
+					GetVacanciesByEmployerID(gomock.Any(), slug).
 					Return(vacancies, nil)
 				return nw, nr
 			},

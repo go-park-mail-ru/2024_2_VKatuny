@@ -82,7 +82,7 @@ func TestCreateVacancyHandler(t *testing.T) {
 
 				f.vacanciesUsecase.
 					EXPECT().
-					CreateVacancy(f.vacancy, &f.currentUser).
+					CreateVacancy(gomock.Any(), f.vacancy, &f.currentUser).
 					Return(f.vacancy, nil)
 
 				//body, _ := json.Marshal(f.vacancy)
@@ -208,7 +208,7 @@ func TestCreateVacancyHandler(t *testing.T) {
 
 				f.vacanciesUsecase.
 					EXPECT().
-					CreateVacancy(f.vacancy, &f.currentUser).
+					CreateVacancy(gomock.Any(), f.vacancy, &f.currentUser).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				//body, _ := json.Marshal(f.vacancy)
@@ -365,7 +365,7 @@ func TestGetVacancyHandler(t *testing.T) {
 
 				f.vacanciesUsecase.
 					EXPECT().
-					GetVacancy(IDslug).
+					GetVacancy(gomock.Any(), IDslug).
 					Return(&f.vacancy, nil)
 				f.fileLoadingUsecase.
 					EXPECT().
@@ -388,7 +388,7 @@ func TestGetVacancyHandler(t *testing.T) {
 
 				f.vacanciesUsecase.
 					EXPECT().
-					GetVacancy(IDslug).
+					GetVacancy(gomock.Any(), IDslug).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				f.args.r = httptest.NewRequest(
@@ -539,7 +539,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					UpdateVacancy(uint64(slugInt), in.updatedVacancy, in.currentUser).
+					UpdateVacancy(gomock.Any(), uint64(slugInt), in.updatedVacancy, in.currentUser).
 					Return(in.updatedVacancy, nil)
 
 				args.r = httptest.NewRequest(
@@ -698,7 +698,7 @@ func TestUpdateVacancyHandler(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					UpdateVacancy(uint64(slugInt), in.updatedVacancy, in.currentUser).
+					UpdateVacancy(gomock.Any(), uint64(slugInt), in.updatedVacancy, in.currentUser).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
@@ -824,7 +824,7 @@ func TestDeleteVacancyHandler(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					DeleteVacancy(uint64(slugInt), in.user).
+					DeleteVacancy(gomock.Any(), uint64(slugInt), in.user).
 					Return(nil)
 
 				args.r = httptest.NewRequest(
@@ -905,7 +905,7 @@ func TestDeleteVacancyHandler(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					DeleteVacancy(uint64(slugInt), in.user).
+					DeleteVacancy(gomock.Any(), uint64(slugInt), in.user).
 					Return(fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
@@ -1017,7 +1017,7 @@ func TestGetVacancySubscription(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					GetSubscriptionInfo(uint64(1), uint64(slugInt)).
+					GetSubscriptionInfo(gomock.Any(), uint64(1), uint64(slugInt)).
 					Return(nil, nil)
 
 				args.r = httptest.NewRequest(
@@ -1098,7 +1098,7 @@ func TestGetVacancySubscription(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					GetSubscriptionInfo(uint64(slugInt), uint64(slugInt)).
+					GetSubscriptionInfo(gomock.Any(), uint64(slugInt), uint64(slugInt)).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
@@ -1212,7 +1212,7 @@ func TestSubscribeVacancy(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					SubscribeOnVacancy(uint64(slugInt), in.user).
+					SubscribeOnVacancy(gomock.Any(), uint64(slugInt), in.user).
 					Return(nil)
 				// go func() {
 					vacancyJSON := &dto.JSONVacancy{
@@ -1222,7 +1222,7 @@ func TestSubscribeVacancy(t *testing.T) {
 					}
 					usecase.vacanciesUsecase.
 						EXPECT().
-						GetVacancy(uint64(slugInt)).
+						GetVacancy(gomock.Any(), uint64(slugInt)).
 						Return(vacancyJSON, nil)
 					applicant := &dto.JSONGetApplicantProfile{
 						ID:        in.user.ID,
@@ -1324,7 +1324,7 @@ func TestSubscribeVacancy(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					SubscribeOnVacancy(uint64(slugInt), in.user).
+					SubscribeOnVacancy(gomock.Any(), uint64(slugInt), in.user).
 					Return(fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
@@ -1441,7 +1441,7 @@ func TestUnsubscribeVacancy(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					UnsubscribeFromVacancy(uint64(slugInt), in.user).
+					UnsubscribeFromVacancy(gomock.Any(), uint64(slugInt), in.user).
 					Return(nil)
 
 				args.r = httptest.NewRequest(
@@ -1522,7 +1522,7 @@ func TestUnsubscribeVacancy(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					UnsubscribeFromVacancy(uint64(slugInt), in.user).
+					UnsubscribeFromVacancy(gomock.Any(), uint64(slugInt), in.user).
 					Return(fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
@@ -1635,7 +1635,7 @@ func TestGetVacancySubscribers(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					GetVacancySubscribers(uint64(slugInt), in.user).
+					GetVacancySubscribers(gomock.Any(), uint64(slugInt), in.user).
 					Return(nil, nil)
 
 				args.r = httptest.NewRequest(
@@ -1652,87 +1652,87 @@ func TestGetVacancySubscribers(t *testing.T) {
 				args.w = httptest.NewRecorder()
 			},
 		},
-		// {
-		// 	name: "VacancyHandler.GetVacancySubscription bad slug",
-		// 	prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
-		// 		in.slug = "142526575673463457814521467851672457"
+		{
+			name: "VacancyHandler.GetVacancySubscription bad slug",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "142526575673463457814521467851672457"
 
-		// 		out.status = http.StatusInternalServerError
-		// 		out.response = &dto.JSONResponse{
-		// 			HTTPStatus: out.status,
-		// 			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
-		// 		}
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+				}
 
-		// 		args.r = httptest.NewRequest(
-		// 			"",
-		// 			fmt.Sprintf("/api/v1/vacancy/142526575673463457814521467851672457/subscribers"),
-		// 			nil,
-		// 		).WithContext(
-		// 			context.WithValue(
-		// 				context.Background(),
-		// 				dto.UserContextKey,
-		// 				in.user,
-		// 			),
-		// 		)
-		// 		args.w = httptest.NewRecorder()
+				args.r = httptest.NewRequest(
+					"",
+					fmt.Sprintf("/api/v1/vacancy/142526575673463457814521467851672457/subscribers"),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
 
-		// 	},
-		// },
-		// {
-		// 	name: "VacancyHandler.GetVacancySubscription no user in context",
-		// 	prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
-		// 		in.slug = "1"
+			},
+		},
+		{
+			name: "VacancyHandler.GetVacancySubscription no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
 
-		// 		out.status = http.StatusUnauthorized
-		// 		out.response = &dto.JSONResponse{
-		// 			HTTPStatus: out.status,
-		// 			Error:      dto.MsgUnableToGetUserFromContext,
-		// 		}
+				out.status = http.StatusUnauthorized
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgUnableToGetUserFromContext,
+				}
 
-		// 		args.r = httptest.NewRequest(
-		// 			http.MethodGet,
-		// 			fmt.Sprintf("/api/v1/vacancy/%s/subscribers", in.slug),
-		// 			nil,
-		// 		)
-		// 		args.w = httptest.NewRecorder()
-		// 	},
-		// },
-		// {
-		// 	name: "VacancyHandler.DeleteVacancyHandler no user in context",
-		// 	prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
-		// 		in.slug = "1"
-		// 		in.user = &dto.UserFromSession{
-		// 			ID:       1,
-		// 			UserType: dto.UserTypeEmployer,
-		// 		}
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscribers", in.slug),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "VacancyHandler.DeleteVacancyHandler no user in context",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeEmployer,
+				}
 
-		// 		out.status = http.StatusInternalServerError
-		// 		out.response = &dto.JSONResponse{
-		// 			HTTPStatus: out.status,
-		// 			Error:      dto.MsgDataBaseError,
-		// 		}
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      dto.MsgDataBaseError,
+				}
 
-		// 		slugInt, _ := strconv.Atoi(in.slug)
+				slugInt, _ := strconv.Atoi(in.slug)
 
-		// 		usecase.vacanciesUsecase.
-		// 			EXPECT().
-		// 			GetVacancySubscribers(uint64(slugInt), in.user).
-		// 			Return(nil, fmt.Errorf(dto.MsgDataBaseError))
+				usecase.vacanciesUsecase.
+					EXPECT().
+					GetVacancySubscribers(gomock.Any(), uint64(slugInt), in.user).
+					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
-		// 		args.r = httptest.NewRequest(
-		// 			http.MethodGet,
-		// 			fmt.Sprintf("/api/v1/vacancy/%s/subscribers", in.slug),
-		// 			nil,
-		// 		).WithContext(
-		// 			context.WithValue(
-		// 				context.Background(),
-		// 				dto.UserContextKey,
-		// 				in.user,
-		// 			),
-		// 		)
-		// 		args.w = httptest.NewRecorder()
-		// 	},
-		// },
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/vacancy/%s/subscribers", in.slug),
+					nil,
+				).WithContext(
+					context.WithValue(
+						context.Background(),
+						dto.UserContextKey,
+						in.user,
+					),
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1830,7 +1830,7 @@ func TestAddVacancyIntoFavorite(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					AddIntoFavorite(uint64(slugInt), in.user).
+					AddIntoFavorite(gomock.Any(), uint64(slugInt), in.user).
 					Return(nil)
 
 				args.r = httptest.NewRequest(
@@ -1911,7 +1911,7 @@ func TestAddVacancyIntoFavorite(t *testing.T) {
 
 				usecase.vacanciesUsecase.
 					EXPECT().
-					AddIntoFavorite(uint64(slugInt), in.user).
+					AddIntoFavorite(gomock.Any(), uint64(slugInt), in.user).
 					Return(fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(

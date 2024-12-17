@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -8,17 +9,18 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	"github.com/sirupsen/logrus"
 )
 
 type CVsUsecase struct {
-	logger      *logrus.Logger
+	logger      *logrus.Entry
 	cvsRepo     cvs.ICVsRepository
 }
 
 func NewCVsUsecase(logger *logrus.Logger, repositories *internal.Repositories) *CVsUsecase {
 	return &CVsUsecase{
-		logger:      logger,
+		logger:      logrus.NewEntry(logger),
 		cvsRepo:     repositories.CVRepository,
 	}
 }
@@ -31,8 +33,10 @@ const (
 var ErrOffsetIsNotANumber = fmt.Errorf("query parameter offset isn't a number")
 var ErrNumIsNotANumber = fmt.Errorf("query parameter num isn't a number")
 
-func (u *CVsUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, uint64, error) {
+func (u *CVsUsecase) ValidateQueryParameters(ctx context.Context, offsetStr, numStr string) (uint64, uint64, error) {
 	fn := "VacanciesUsecase.ValidateQueryParameters"
+	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
+
 	var err error
 	offset, err1 := strconv.Atoi(offsetStr)
 
@@ -51,9 +55,11 @@ func (u *CVsUsecase) ValidateQueryParameters(offsetStr, numStr string) (uint64, 
 	return uint64(offset), uint64(num), err
 }
 
-func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONGetApplicantCV, error) {
+func (cu *CVsUsecase) SearchCVs(ctx context.Context, offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONGetApplicantCV, error) {
 	fn := "VacanciesUsecase.GetVacanciesWithOffset"
-	offset, num, err := cu.ValidateQueryParameters(offsetStr, numStr)
+	cu.logger = utils.SetLoggerRequestID(ctx, cu.logger)
+
+	offset, num, err := cu.ValidateQueryParameters(ctx, offsetStr, numStr)
 	if errors.Is(ErrOffsetIsNotANumber, err) {
 		offset = defaultVacanciesOffset
 	}
@@ -65,7 +71,7 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy st
 	}
 	var CVsModel []*dto.JSONCv
 
-	CVsModel, err = cu.cvsRepo.SearchAll(offset, offset+num, searchStr, group, searchBy)
+	CVsModel, err = cu.cvsRepo.SearchAll(ctx, offset, offset+num, searchStr, group, searchBy)
 	var CVs []*dto.JSONGetApplicantCV
 	for _, CVModel := range CVsModel {
 		CVs = append(CVs, &dto.JSONGetApplicantCV{
@@ -90,10 +96,11 @@ func (cu *CVsUsecase) SearchCVs(offsetStr, numStr, searchStr, group, searchBy st
 	return CVs, nil
 }
 
-func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplicantCV, error) {
+func (cu *CVsUsecase) GetApplicantCVs(ctx context.Context, applicantID uint64) ([]*dto.JSONGetApplicantCV, error) {
 	fn := "CVsUsecase.GetApplicantCVs"
+	cu.logger = utils.SetLoggerRequestID(ctx, cu.logger)
 
-	CVsModel, err := cu.cvsRepo.GetCVsByApplicantID(applicantID)
+	CVsModel, err := cu.cvsRepo.GetCVsByApplicantID(ctx, applicantID)
 	if err != nil {
 		cu.logger.Errorf("function %s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -121,27 +128,35 @@ func (cu *CVsUsecase) GetApplicantCVs(applicantID uint64) ([]*dto.JSONGetApplica
 	return CVs, nil
 }
 
-func (cu *CVsUsecase) CreateCV(cv *dto.JSONCv, currentUser *dto.UserFromSession) (*dto.JSONCv, error) {
+func (cu *CVsUsecase) CreateCV(ctx context.Context, cv *dto.JSONCv, currentUser *dto.UserFromSession) (*dto.JSONCv, error) {
+	fn := "CVsUsecase.CreateCV"
+	cu.logger = utils.SetLoggerRequestID(ctx, cu.logger)
+
 	cv.ApplicantID = currentUser.ID
-	cv, err := cu.cvsRepo.Create(cv)
+	cv, err := cu.cvsRepo.Create(ctx, cv)
 	if err != nil {
-		cu.logger.Errorf("while adding to db got err: %s", err)
+		cu.logger.Errorf("%s: while adding to db got err: %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 	return cv, nil
 }
 
-func (cu *CVsUsecase) GetCV(cvID uint64) (*dto.JSONCv, error) {
-	cv, err := cu.cvsRepo.GetByID(cvID)
+func (cu *CVsUsecase) GetCV(ctx context.Context, cvID uint64) (*dto.JSONCv, error) {
+	fn := "CVsUsecase.CreateCV"
+	cu.logger = utils.SetLoggerRequestID(ctx, cu.logger)
+
+	cv, err := cu.cvsRepo.GetByID(ctx, cvID)
 	if err != nil {
-		cu.logger.Errorf("while getting from db got err %s", err)
+		cu.logger.Errorf("%s: while getting from db got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
 	}
 	return cv, nil
 }
 
-func (cu *CVsUsecase) UpdateCV(ID uint64, currentUser *dto.UserFromSession, cv *dto.JSONCv) (*dto.JSONCv, error) {
-	oldCv, err := cu.cvsRepo.GetByID(ID)
+func (cu *CVsUsecase) UpdateCV(ctx context.Context, ID uint64, currentUser *dto.UserFromSession, cv *dto.JSONCv) (*dto.JSONCv, error) {
+	cu.logger = utils.SetLoggerRequestID(ctx, cu.logger)
+
+	oldCv, err := cu.cvsRepo.GetByID(ctx, ID)
 	if err != nil {
 		cu.logger.Errorf("while getting from db got err %s", err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -151,7 +166,7 @@ func (cu *CVsUsecase) UpdateCV(ID uint64, currentUser *dto.UserFromSession, cv *
 		return nil, fmt.Errorf(dto.MsgAccessDenied)
 	}
 	cv.ApplicantID = oldCv.ApplicantID
-	newCV, err := cu.cvsRepo.Update(ID, cv)
+	newCV, err := cu.cvsRepo.Update(ctx, ID, cv)
 
 	if err != nil {
 		cu.logger.Errorf("while updating in db got err %s", err)
@@ -160,8 +175,10 @@ func (cu *CVsUsecase) UpdateCV(ID uint64, currentUser *dto.UserFromSession, cv *
 	return newCV, nil
 }
 
-func (cu *CVsUsecase) DeleteCV(cvID uint64, currentUser *dto.UserFromSession) error {
-	cv, err := cu.cvsRepo.GetByID(cvID)
+func (cu *CVsUsecase) DeleteCV(ctx context.Context, cvID uint64, currentUser *dto.UserFromSession) error {
+	cu.logger = utils.SetLoggerRequestID(ctx, cu.logger)
+
+	cv, err := cu.cvsRepo.GetByID(ctx, cvID)
 	if err != nil {
 		cu.logger.Errorf("while getting from db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)
@@ -170,7 +187,7 @@ func (cu *CVsUsecase) DeleteCV(cvID uint64, currentUser *dto.UserFromSession) er
 		cu.logger.Errorf("not an owner tried to delete CV, got %d expected %d", currentUser.ID, cv.ApplicantID)
 		return fmt.Errorf(dto.MsgAccessDenied)
 	}
-	err = cu.cvsRepo.Delete(cvID)
+	err = cu.cvsRepo.Delete(ctx, cvID)
 	if err != nil {
 		cu.logger.Errorf("while deleting from db got err %s", err)
 		return fmt.Errorf(dto.MsgDataBaseError)

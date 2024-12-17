@@ -43,18 +43,18 @@ func (m *MockIApplicantRepository) EXPECT() *MockIApplicantRepositoryMockRecorde
 }
 
 // Create mocks base method.
-func (m *MockIApplicantRepository) Create(applicant *dto.ApplicantInput) (*models.Applicant, error) {
+func (m *MockIApplicantRepository) Create(ctx context.Context, applicant *dto.ApplicantInput) (*models.Applicant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", applicant)
+	ret := m.ctrl.Call(m, "Create", ctx, applicant)
 	ret0, _ := ret[0].(*models.Applicant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockIApplicantRepositoryMockRecorder) Create(applicant any) *gomock.Call {
+func (mr *MockIApplicantRepositoryMockRecorder) Create(ctx, applicant any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIApplicantRepository)(nil).Create), applicant)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIApplicantRepository)(nil).Create), ctx, applicant)
 }
 
 // GetAllCities mocks base method.
@@ -73,48 +73,48 @@ func (mr *MockIApplicantRepositoryMockRecorder) GetAllCities(ctx, namePat any) *
 }
 
 // GetByEmail mocks base method.
-func (m *MockIApplicantRepository) GetByEmail(email string) (*models.Applicant, error) {
+func (m *MockIApplicantRepository) GetByEmail(ctx context.Context, email string) (*models.Applicant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByEmail", email)
+	ret := m.ctrl.Call(m, "GetByEmail", ctx, email)
 	ret0, _ := ret[0].(*models.Applicant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByEmail indicates an expected call of GetByEmail.
-func (mr *MockIApplicantRepositoryMockRecorder) GetByEmail(email any) *gomock.Call {
+func (mr *MockIApplicantRepositoryMockRecorder) GetByEmail(ctx, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockIApplicantRepository)(nil).GetByEmail), email)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockIApplicantRepository)(nil).GetByEmail), ctx, email)
 }
 
 // GetByID mocks base method.
-func (m *MockIApplicantRepository) GetByID(ID uint64) (*models.Applicant, error) {
+func (m *MockIApplicantRepository) GetByID(ctx context.Context, ID uint64) (*models.Applicant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", ID)
+	ret := m.ctrl.Call(m, "GetByID", ctx, ID)
 	ret0, _ := ret[0].(*models.Applicant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID.
-func (mr *MockIApplicantRepositoryMockRecorder) GetByID(ID any) *gomock.Call {
+func (mr *MockIApplicantRepositoryMockRecorder) GetByID(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIApplicantRepository)(nil).GetByID), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIApplicantRepository)(nil).GetByID), ctx, ID)
 }
 
 // Update mocks base method.
-func (m *MockIApplicantRepository) Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) (*models.Applicant, error) {
+func (m *MockIApplicantRepository) Update(ctx context.Context, ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) (*models.Applicant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ID, newApplicantData)
+	ret := m.ctrl.Call(m, "Update", ctx, ID, newApplicantData)
 	ret0, _ := ret[0].(*models.Applicant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockIApplicantRepositoryMockRecorder) Update(ID, newApplicantData any) *gomock.Call {
+func (mr *MockIApplicantRepositoryMockRecorder) Update(ctx, ID, newApplicantData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIApplicantRepository)(nil).Update), ID, newApplicantData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIApplicantRepository)(nil).Update), ctx, ID, newApplicantData)
 }
 
 // MockIApplicantUsecase is a mock of IApplicantUsecase interface.

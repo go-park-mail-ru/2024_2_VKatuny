@@ -96,11 +96,11 @@ func main() {
 	metrics.InitMetrics(Metrics)
 
 	repositories := &internal.Repositories{
-		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection),
-		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection),
-		CVRepository:               cvRepository.NewCVStorage(dbConnection),
-		VacanciesRepository:        vacancies_repository.NewVacanciesStorage(dbConnection),
-		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection),
+		ApplicantRepository:        applicant_repository.NewApplicantStorage(dbConnection, logger),
+		PortfolioRepository:        portfolioRepository.NewPortfolioStorage(dbConnection, logger),
+		CVRepository:               cvRepository.NewCVStorage(dbConnection, logger),
+		VacanciesRepository:        vacancies_repository.NewVacanciesStorage(dbConnection, logger),
+		EmployerRepository:         employer_repository.NewEmployerStorage(dbConnection, logger),
 		FileLoadingRepository:      file_loading_repository.NewFileLoadingStorage(logger, conf.Server.MediaDir, conf.Server.CVinPDFDir, conf.Server.TamplateDir),
 	}
 	microservices := &internal.Microservices{

@@ -15,9 +15,9 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
 	cv_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/mock"
-	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	portfolio_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/mock"
+	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 
 	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
@@ -386,7 +386,7 @@ func TestGetCVs(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.cv.
 					EXPECT().
-					GetApplicantCVs(slug).
+					GetApplicantCVs(gomock.Any(), slug).
 					Return(nil, fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -423,7 +423,7 @@ func TestGetCVs(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.cv.
 					EXPECT().
-					GetApplicantCVs(slug).
+					GetApplicantCVs(gomock.Any(), slug).
 					Return(vacancies, nil)
 				return nw, nr
 			},
@@ -997,7 +997,7 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.vacancy.
 					EXPECT().
-					GetApplicantFavoriteVacancies(slug).
+					GetApplicantFavoriteVacancies(gomock.Any(), slug).
 					Return(nil, fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -1031,7 +1031,7 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.vacancy.
 					EXPECT().
-					GetApplicantFavoriteVacancies(slug).
+					GetApplicantFavoriteVacancies(gomock.Any(), slug).
 					Return(vacancies, nil)
 				return nw, nr
 			},
