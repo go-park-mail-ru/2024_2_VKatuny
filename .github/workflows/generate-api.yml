@@ -1,14 +1,13 @@
 name: Generate API specification
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Build application containers"]  
+    types: ['completed']
+
 jobs:
   generate-api:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go

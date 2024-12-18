@@ -1,17 +1,15 @@
 name: Build application containers
+
 on:
-  push:
-    branches:
-      - main
-      - dev
-  pull_request:
-    branches:
-      - main
-      - dev
+  workflow_run:
+    workflows: ["Run tests"]  
+    types: ['completed']
+
 
 jobs:
   build-main-service:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - name: Build main-service
