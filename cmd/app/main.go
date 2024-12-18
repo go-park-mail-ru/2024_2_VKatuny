@@ -13,6 +13,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/metrics"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -21,7 +22,6 @@ import (
 	cvRepository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/repository"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 
-	//"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 	employer_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/repository"
 	file_loading_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/repository"
 	file_loading_usecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/usecase"
@@ -36,12 +36,14 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/go-park-mail-ru/2024_2_VKatuny/api"
 
 	cvUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/usecase"
 	vacancies_repository "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/repository"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 
 	employerUsecase "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/usecase"
+	gmux "github.com/gorilla/mux"
 )
 
 // @title   μArt's API
@@ -143,6 +145,22 @@ func main() {
 		context.Background(),
 		&compressmicroservice.Nothing{},
 	)
+
+	go func() {
+		swagFile := "./api/swagger.json"
+		currentDir, _ := os.Getwd()
+		if _, err := os.Stat(swagFile); os.IsNotExist(err) {
+			logger.Errorf("swagger file not found, path=%s %s", currentDir, swagFile)
+			return
+		}
+		r := gmux.NewRouter()
+		r.PathPrefix("/").Handler(httpSwagger.WrapHandler)
+		logger.Infof("starting swagger server at 127.0.0.1:3000")
+    	if err := http.ListenAndServe("127.0.0.1:3000", r); err != nil {
+        	logger.Errorf("while starting swagger server got: %s", err)
+    	}
+	}()
+
 	if err != nil {
 		logger.Fatal(err)
 	}

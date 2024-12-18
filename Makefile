@@ -37,7 +37,6 @@ lint:
 
 api:
 	swag init --generalInfo ./cmd/app/main.go --output api/ --pd
-	node ./api/server.js
 
 mock-gen:
 	@echo "Generating mocks..."
