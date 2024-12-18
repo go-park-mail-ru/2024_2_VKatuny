@@ -20,7 +20,7 @@ jobs:
             cd ~/CD
             sudo docker compose -f ./all-services-compose.yaml down
             cd ~
-            rm -rf ~/CD/*
+            sudo rm -rf ~/CD/*
             cd ~/CD
             git clone https://github.com/go-park-mail-ru/2024_2_VKatuny.git .
             cp ~/configs/conf.yml ./configs/
