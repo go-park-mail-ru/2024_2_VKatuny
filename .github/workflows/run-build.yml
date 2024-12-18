@@ -1,0 +1,44 @@
+name: Build application containers
+
+on:
+  workflow_run:
+    workflows: ["Run tests"]  
+    types: ['completed']
+
+
+jobs:
+  build-main-service:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build main-service
+        run: docker build . -f ./build/services/app/Dockerfile
+
+  build-auth-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build auth-service
+        run: docker build . -f ./build/services/auth/Dockerfile
+
+  build-compress-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build compress-service
+        run: docker build . -f ./build/services/compress_microservice/Dockerfile
+
+  build-notifications-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build notifications-service
+        run: docker build . -f ./build/services/notifications/Dockerfile
+
+  build-db:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build db
+        run: docker build . -f ./build/db/Dockerfile
