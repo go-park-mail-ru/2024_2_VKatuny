@@ -18,6 +18,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	portfolio_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/mock"
 	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
+	"github.com/mailru/easyjson"
 
 	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
@@ -45,7 +46,7 @@ func createMultipartForm(jsonForm *dto.JSONUpdateApplicantProfile) (*bytes.Buffe
 func TestGetProfileHandler(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
-		profile *mock.MockIApplicantUsecase
+		profile            *mock.MockIApplicantUsecase
 		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 	}
 	tests := []struct {
@@ -146,7 +147,7 @@ func TestGetProfileHandler(t *testing.T) {
 			defer ctrl.Finish()
 
 			usecase := &usecase{
-				profile: mock.NewMockIApplicantUsecase(ctrl),
+				profile:            mock.NewMockIApplicantUsecase(ctrl),
 				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
@@ -669,7 +670,7 @@ func TestRegistration(t *testing.T) {
 					Password:  "password",
 				}
 
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				usecase.registration.
 					EXPECT().
 					Create(gomock.Any(), form).
@@ -702,8 +703,8 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
-				grpc_request := &auth_grpc.AuthRequest{ 
+				jsonForm, _ := easyjson.Marshal(form)
+				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
 					UserType:  dto.UserTypeApplicant,
 					Email:     form.Email,
@@ -751,7 +752,7 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
 					UserType:  dto.UserTypeApplicant,
@@ -1017,8 +1018,8 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				var vacancies = []*dto.JSONGetEmployerVacancy{
 					{
 						ID:                   1,
-						EmployerID:          1,
-						Position:           "химик",
+						EmployerID:           1,
+						Position:             "химик",
 						Description:          "нужен химик",
 						PositionCategoryName: "chemistry",
 					},
@@ -1053,7 +1054,7 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				BackendAddress: "http://localhost:8080",
 				Usecases: &internal.Usecases{
 					ApplicantUsecase:   nil,
-					VacanciesUsecase:          usecase.vacancy,
+					VacanciesUsecase:   usecase.vacancy,
 					PortfolioUsecase:   nil,
 					FileLoadingUsecase: nil,
 				},

@@ -3,7 +3,6 @@ package delivery
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +13,7 @@ import (
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -315,7 +315,7 @@ func TestLogin(t *testing.T) {
 					Email:    "testes@test.ru",
 					Password: "pass1234",
 				}
-				JSONform, _ := json.Marshal(form)
+				JSONform, _ := easyjson.Marshal(form)
 				nr := httptest.NewRequest(
 					http.MethodPost,
 					"/api/v1/login",
@@ -349,7 +349,7 @@ func TestLogin(t *testing.T) {
 					Email:    "testes@test.ru",
 					Password: "pass1234",
 				}
-				JSONform, _ := json.Marshal(form)
+				JSONform, _ := easyjson.Marshal(form)
 				nr := httptest.NewRequest(
 					http.MethodPost,
 					"/api/v1/login",

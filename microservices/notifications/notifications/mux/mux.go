@@ -1,11 +1,11 @@
 package mux
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -34,7 +34,7 @@ func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
 		HTTPStatus: http.StatusNotFound,
 		Error:      commonerrors.ErrFrontServiceNotFound.Error(),
 	}
-	JSONResponse, err := json.Marshal(response)
+	JSONResponse, err := easyjson.Marshal(response)
 	if err != nil {
 		return
 	}
@@ -49,7 +49,7 @@ func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
 		HTTPStatus: http.StatusMethodNotAllowed,
 		Error:      commonerrors.ErrFrontMethodNotAllowed.Error(),
 	}
-	JSONResponse, err := json.Marshal(response)
+	JSONResponse, err := easyjson.Marshal(response)
 	if err != nil {
 		return
 	}
