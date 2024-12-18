@@ -134,7 +134,7 @@ jobs:
           go get ./...
       - name: Generate API specification
         run: |
-          swag init --generalInfo ./cmd/app/main.go --output api/ --pd
+          swag init -g main.go -d ./cmd/app/ -o ./api --pd
       - name: Check if API updated
         uses: tj-actions/verify-changed-files@v20
         id: verify-changed-files
