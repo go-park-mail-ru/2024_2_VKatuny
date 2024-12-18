@@ -15,9 +15,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
 	cv_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/mock"
-	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	portfolio_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/portfolio/mock"
+	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
+	"github.com/mailru/easyjson"
+
+	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
 
@@ -43,7 +46,8 @@ func createMultipartForm(jsonForm *dto.JSONUpdateApplicantProfile) (*bytes.Buffe
 func TestGetProfileHandler(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
-		profile *mock.MockIApplicantUsecase
+		profile            *mock.MockIApplicantUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 	}
 	tests := []struct {
 		name         string
@@ -119,15 +123,20 @@ func TestGetProfileHandler(t *testing.T) {
 					nil,
 				)
 				nw := httptest.NewRecorder()
-				profile := &dto.JSONGetApplicantProfile{
+				applicantProfile := &dto.JSONGetApplicantProfile{
 					ID:        slug,
 					FirstName: "John",
 					LastName:  "Doe",
+					Avatar:    "avatar",
 				}
 				usecase.profile.
 					EXPECT().
 					GetApplicantProfile(gomock.Any(), slug).
-					Return(profile, nil)
+					Return(applicantProfile, nil)
+				usecase.fileLoadingUsecase.
+					EXPECT().
+					FindCompressedFile(applicantProfile.Avatar).
+					Return("")
 				return nw, nr
 			},
 		},
@@ -138,7 +147,8 @@ func TestGetProfileHandler(t *testing.T) {
 			defer ctrl.Finish()
 
 			usecase := &usecase{
-				profile: mock.NewMockIApplicantUsecase(ctrl),
+				profile:            mock.NewMockIApplicantUsecase(ctrl),
+				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
 
@@ -149,7 +159,7 @@ func TestGetProfileHandler(t *testing.T) {
 					ApplicantUsecase:   usecase.profile,
 					CVUsecase:          nil,
 					PortfolioUsecase:   nil,
-					FileLoadingUsecase: nil,
+					FileLoadingUsecase: usecase.fileLoadingUsecase,
 				},
 				Microservices: &internal.Microservices{
 					Auth: nil,
@@ -377,7 +387,7 @@ func TestGetCVs(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.cv.
 					EXPECT().
-					GetApplicantCVs(slug).
+					GetApplicantCVs(gomock.Any(), slug).
 					Return(nil, fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -414,7 +424,7 @@ func TestGetCVs(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.cv.
 					EXPECT().
-					GetApplicantCVs(slug).
+					GetApplicantCVs(gomock.Any(), slug).
 					Return(vacancies, nil)
 				return nw, nr
 			},
@@ -660,7 +670,7 @@ func TestRegistration(t *testing.T) {
 					Password:  "password",
 				}
 
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				usecase.registration.
 					EXPECT().
 					Create(gomock.Any(), form).
@@ -693,7 +703,7 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
 					UserType:  dto.UserTypeApplicant,
@@ -742,7 +752,7 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
 					UserType:  dto.UserTypeApplicant,
@@ -988,7 +998,7 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.vacancy.
 					EXPECT().
-					GetApplicantFavoriteVacancies(slug).
+					GetApplicantFavoriteVacancies(gomock.Any(), slug).
 					Return(nil, fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -1008,8 +1018,8 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				var vacancies = []*dto.JSONGetEmployerVacancy{
 					{
 						ID:                   1,
-						EmployerID:          1,
-						Position:           "химик",
+						EmployerID:           1,
+						Position:             "химик",
 						Description:          "нужен химик",
 						PositionCategoryName: "chemistry",
 					},
@@ -1022,7 +1032,7 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.vacancy.
 					EXPECT().
-					GetApplicantFavoriteVacancies(slug).
+					GetApplicantFavoriteVacancies(gomock.Any(), slug).
 					Return(vacancies, nil)
 				return nw, nr
 			},
@@ -1044,7 +1054,7 @@ func TestGetFavoriteVacancies(t *testing.T) {
 				BackendAddress: "http://localhost:8080",
 				Usecases: &internal.Usecases{
 					ApplicantUsecase:   nil,
-					VacanciesUsecase:          usecase.vacancy,
+					VacanciesUsecase:   usecase.vacancy,
 					PortfolioUsecase:   nil,
 					FileLoadingUsecase: nil,
 				},

@@ -15,10 +15,12 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/employer/mock"
+	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	vacancies_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies/mock"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -38,7 +40,8 @@ func createMultipartFormJSON(jsonForm *dto.JSONUpdateEmployerProfile) (*bytes.Bu
 func TestGetProfileHandler(t *testing.T) {
 	t.Parallel()
 	type usecase struct {
-		profile *mock.MockIEmployerUsecase
+		profile            *mock.MockIEmployerUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 	}
 	tests := []struct {
 		name         string
@@ -114,7 +117,7 @@ func TestGetProfileHandler(t *testing.T) {
 					nil,
 				)
 				nw := httptest.NewRecorder()
-				profile := &dto.JSONGetEmployerProfile{
+				employerProfile := &dto.JSONGetEmployerProfile{
 					ID:        slug,
 					FirstName: "John",
 					LastName:  "Doe",
@@ -122,7 +125,11 @@ func TestGetProfileHandler(t *testing.T) {
 				usecase.profile.
 					EXPECT().
 					GetEmployerProfile(gomock.Any(), slug).
-					Return(profile, nil)
+					Return(employerProfile, nil)
+				usecase.fileLoadingUsecase.
+					EXPECT().
+					FindCompressedFile(employerProfile.Avatar).
+					Return("")
 				return nw, nr
 			},
 		},
@@ -133,7 +140,8 @@ func TestGetProfileHandler(t *testing.T) {
 			defer ctrl.Finish()
 
 			usecase := &usecase{
-				profile: mock.NewMockIEmployerUsecase(ctrl),
+				profile:            mock.NewMockIEmployerUsecase(ctrl),
+				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
 
@@ -143,7 +151,7 @@ func TestGetProfileHandler(t *testing.T) {
 				Usecases: &internal.Usecases{
 					EmployerUsecase:    usecase.profile,
 					VacanciesUsecase:   nil,
-					FileLoadingUsecase: nil,
+					FileLoadingUsecase: usecase.fileLoadingUsecase,
 				},
 				Microservices: &internal.Microservices{
 					Auth: nil,
@@ -370,7 +378,7 @@ func TestGetVacancies(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.profile.
 					EXPECT().
-					GetVacanciesByEmployerID(slug).
+					GetVacanciesByEmployerID(gomock.Any(), slug).
 					Return(nil, fmt.Errorf("error"))
 				return nw, nr
 			},
@@ -405,7 +413,7 @@ func TestGetVacancies(t *testing.T) {
 				nw := httptest.NewRecorder()
 				usecase.profile.
 					EXPECT().
-					GetVacanciesByEmployerID(slug).
+					GetVacanciesByEmployerID(gomock.Any(), slug).
 					Return(vacancies, nil)
 				return nw, nr
 			},
@@ -516,7 +524,7 @@ func TestRegistration(t *testing.T) {
 					Password:           "password",
 				}
 
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				usecase.registration.
 					EXPECT().
 					Create(gomock.Any(), form).
@@ -552,15 +560,15 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
-					UserType: dto.UserTypeEmployer,
-					Email:    form.Email,
-					Password: form.Password,
+					UserType:  dto.UserTypeEmployer,
+					Email:     form.Email,
+					Password:  form.Password,
 				}
 				user := &dto.JSONUser{
-					ID: 1,
+					ID:       1,
 					UserType: dto.UserTypeEmployer,
 				}
 				usecase.registration.
@@ -604,15 +612,15 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
-					UserType: dto.UserTypeEmployer,
-					Email:    form.Email,
-					Password: form.Password,
+					UserType:  dto.UserTypeEmployer,
+					Email:     form.Email,
+					Password:  form.Password,
 				}
 				user := &dto.JSONUser{
-					ID: 1,
+					ID:       1,
 					UserType: dto.UserTypeEmployer,
 				}
 				grpc_response := &auth_grpc.AuthResponse{

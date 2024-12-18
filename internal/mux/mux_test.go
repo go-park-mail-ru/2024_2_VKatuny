@@ -6,6 +6,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	//"github.com/go-park-mail-ru/2024_2_VKatuny/internal/mux"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 func TestNotFoundHandler(t *testing.T) {

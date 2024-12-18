@@ -52,3 +52,19 @@ func TestRedisGetDSN(t *testing.T) {
 	}
 	require.Equal(t, "127.0.0.1:6379", redisConfig.GetDSN())
 }
+
+func TestGetMetricsAddress(t *testing.T) {
+	microserviceConfig := Microservice{
+		Host: "127.0.0.1",
+		Port: 8080,
+	}
+	require.Equal(t, "127.0.0.1:0", microserviceConfig.GetMetricsAddress())
+}
+
+func TestGetAuthServiceLocation(t *testing.T) {
+	serviceConfig := ServerConfig{
+		AuthHost: "127.0.0.1",
+		AuthPort: "8080",
+	}
+	require.Equal(t, "127.0.0.1:8080", serviceConfig.GetAuthServiceLocation())
+}

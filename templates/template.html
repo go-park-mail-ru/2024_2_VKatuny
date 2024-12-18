@@ -1,0 +1,34 @@
+<html><head>
+    <meta charset="UTF-8">
+    <title>Резюме</title>
+    <link rel="stylesheet" href="{{.Template}}">
+</head>
+    <body>
+    {{if eq .IsImg 1}}<img src="{{.CV.Avatar}}" alt="Profile picture" class="profile-picture">{{end}}
+    <a class="header__logo">μArt</a>
+    <div class="resume">
+    <header>
+        <h1>{{.Applicant.FirstName}} {{.Applicant.LastName}}</h1>
+        <h5>Контакты:</h5>
+        <p>{{.Applicant.Contacts}}</p>
+        <p></p>
+    </header>
+    <section id="pos">
+        <h2>{{.CV.PositionRu}} ({{.CV.PositionEn}})</h2>
+    </section>
+    <section id="exp">
+        <h2>Опыт работы</h2>
+        <p>{{.CV.WorkingExperience}}</p>
+    </section>
+    <section id="ed">
+        <h2>Образование</h2>
+        <p>{{.Applicant.Education}}</p>
+    </section>
+    <section id="additional-info">
+        <h2>Дополнительная информация</h2>
+        <p>Дата рождения: {{.Applicant.BirthDate}}</p>
+        <p>Город поиска вакансии: {{.Applicant.City}}</p>
+        <p>Резюме создано в: {{.CV.CreatedAt}}</p>
+    </section>
+</div>
+</body></html>
