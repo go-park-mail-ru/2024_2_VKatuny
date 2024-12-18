@@ -1,4 +1,5 @@
 # 2024_2_VKatuny
+![Coverage](https://img.shields.io/badge/Coverage-43.4%25-yellow)
 
 Данный репозиторий предназначен для хранения frontend части проекта HeadHunter,
 разрабатываемого командой VKатуны.
