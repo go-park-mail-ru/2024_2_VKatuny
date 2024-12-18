@@ -1,0 +1,56 @@
+name: Run tests
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.x"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libvips-dev
+          sudo apt-get install -y wkhtmltopdf
+      - name: Run tests
+        run: |
+          go test -v ./... -covermode=count -coverprofile=coverage.out.tmp
+          cat coverage.out.tmp | grep -v -E 'docs|mock|pb.go' > coverage.out
+          go tool cover -func=coverage.out -o coverage.out
+
+      - name: Go Coverage Badge
+        uses: tj-actions/coverage-badge-go@v2
+        with:
+          filename: coverage.out
+
+      - name: Verify Changed files
+        uses: tj-actions/verify-changed-files@v16
+        id: verify-changed-files
+        with:
+          files: README.md
+
+      - name: Commit changes
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          git commit -m "chore: updated coverage badge."
+
+      - name: Push changes
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ github.token }}
+          branch: ${{ github.head_ref }}
