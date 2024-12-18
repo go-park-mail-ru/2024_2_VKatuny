@@ -135,13 +135,21 @@ jobs:
       - name: Generate API specification
         run: |
           swag init --generalInfo ./cmd/app/main.go --output api/ --pd
+      - name: Check if API updated
+        uses: tj-actions/verify-changed-files@v20
+        id: verify-changed-files
+        with:
+          files: |
+            api
       - name: Commit API
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add ./api
           git commit -m "chore: update api"
       - name: Push API
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ github.token }}
