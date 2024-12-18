@@ -41,7 +41,7 @@ jobs:
       - name: Run tests
         run: |
           go test -v ./... -coverprofile=coverage.out.tmp
-          cat coverage.out.tmp | grep -v -E 'docs|mock|pb.go' > coverage.out
+          cat coverage.out.tmp | grep -v -E 'docs|mock|pb.go|_easyjson.go' > coverage.out
           go tool cover -func=coverage.out -o coverage.out
 
       - name: Go Coverage Badge
