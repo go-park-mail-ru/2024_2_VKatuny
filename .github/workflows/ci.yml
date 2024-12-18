@@ -40,7 +40,7 @@ jobs:
           sudo apt-get install -y wkhtmltopdf
       - name: Run tests
         run: |
-          go test -v ./... -covermode=count -coverprofile=coverage.out.tmp
+          go test -v ./... -coverprofile=coverage.out.tmp
           cat coverage.out.tmp | grep -v -E 'docs|mock|pb.go' > coverage.out
           go tool cover -func=coverage.out -o coverage.out
 
@@ -139,7 +139,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add api
+          git add ./api
           git commit -m "chore: update api"
       - name: Push API
         uses: ad-m/github-push-action@master
