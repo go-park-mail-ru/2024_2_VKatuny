@@ -25,7 +25,7 @@ install:
 
 tests:
 	go test ./... -coverprofile=coverage.out.tmp
-	cat coverage.out.tmp | grep -v -E 'docs|mock|pb.go' > coverage.out
+	cat coverage.out.tmp | grep -v -E 'docs|mock|pb.go|_easyjson.go' > coverage.out
 	go tool cover -func=coverage.out
 	go tool cover -html=coverage.out -o index.html
 
@@ -72,3 +72,7 @@ auth-microservice:
 
 run:
 	go run $(SRC_DIR)/main.go
+
+easyjson-gen:
+	easyjson -all ./internal/pkg/dto
+	easyjson -all ./microservices/notifications/notifications/dto

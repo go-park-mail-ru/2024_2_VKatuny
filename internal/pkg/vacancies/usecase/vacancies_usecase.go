@@ -280,7 +280,7 @@ func (vu *VacanciesUsecase) GetVacancySubscribers(ctx context.Context, ID uint64
 		subscribers = append(subscribers, &dto.JSONGetApplicantProfile{
 			ID:               subscriberModel.ID,
 			FirstName:        subscriberModel.FirstName,
-			LastName:         subscriberModel.LastName,
+			LastName:         subscriberModel.LastName, 
 			City:             subscriberModel.CityName,
 			BirthDate:        subscriberModel.BirthDate,
 			Avatar:           subscriberModel.PathToProfileAvatar,
