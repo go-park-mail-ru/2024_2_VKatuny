@@ -52,30 +52,40 @@ func (s *FileLoadingStorage) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetAppli
 	fn := "FileLoadingStorage.CVtoPDF"
 	s.logger.Debugf("%s: entering", fn)
 
-
-	tmpl := template.Must(template.ParseFiles(s.templateDir + "template.html"))
+	pwd, _ := os.Getwd()
+	newPwd := ""
+	for _, i := range strings.Split(pwd, "/") {
+		newPwd += i + "/"
+		if i == "2024_2_VKatuny" {
+			break
+		}
+	}
+	tmpl := template.Must(template.ParseFiles(newPwd + s.templateDir + "template.html"))
 	pwd, err := os.Getwd()
 	if err != nil {
 		s.logger.Errorf("%s: got err %s", fn, err)
 		return "", err
 	}
-	type And struct{
-		CV dto.JSONCv
+	type And struct {
+		CV        dto.JSONCv
 		Applicant dto.JSONGetApplicantProfile
-		IsImg int
-		Template string
+		IsImg     int
+		Template  string
 	}
 	megaStruct := And{CV: *CV, Applicant: *applicant}
-	megaStruct.Applicant.BirthDate = megaStruct.Applicant.BirthDate[:9]
-	megaStruct.CV.CreatedAt = megaStruct.CV.CreatedAt[:9]
-	fmt.Println("\n\n/home/olg/projectstechnopark/2024_VKatuny_DB/2024_2_VKatuny/media/UnCompressed/1ahsdfybegtorhlodjtldbtsdjgxsdfkg.JPG")
-	fmt.Println(pwd+CV.Avatar)
-	fmt.Println(pwd+"/"+s.templateDir+"template.css")
-	megaStruct.Template = pwd+"/"+s.templateDir+"template.css"
-	megaStruct.CV.Avatar = pwd+CV.Avatar
+	if len(megaStruct.Applicant.BirthDate) > 9 {
+		megaStruct.Applicant.BirthDate = megaStruct.Applicant.BirthDate[:9]
+	}
+	if len(megaStruct.CV.CreatedAt) > 9 {
+		megaStruct.CV.CreatedAt = megaStruct.CV.CreatedAt[:9]
+	}
+	s.logger.Debugf("avatar: %s", pwd+CV.Avatar)
+	s.logger.Debugf("template: %s", pwd+"/"+s.templateDir+"template.css")
+	megaStruct.Template = pwd + "/" + s.templateDir + "template.css"
+	megaStruct.CV.Avatar = pwd + CV.Avatar
 	if CV.Avatar != "" {
-		megaStruct.IsImg = 1 
-	} else{
+		megaStruct.IsImg = 1
+	} else {
 		megaStruct.IsImg = 0
 	}
 	var buf bytes.Buffer
@@ -100,7 +110,7 @@ func (s *FileLoadingStorage) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetAppli
 		return "", err
 	}
 	name := s.cvinPDFdir + strconv.Itoa(int(CV.ID)) + "&&" + strconv.Itoa(int(CV.ApplicantID)) + ".pdf"
-	err = pdfg.WriteFile(name)
+	err = pdfg.WriteFile(newPwd+name)
 	if err != nil {
 		s.logger.Errorf("%s: got err %s", fn, err)
 		return "", err

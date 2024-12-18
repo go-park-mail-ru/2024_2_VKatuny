@@ -6,13 +6,15 @@ server:
   port: 8080
   portCompressMicroservice: 8091
   frontURI: "http://172.28.166.156:8080/"
-  mediadir: "media/Uncompressed/"
+  mediadir: "media/UnCompressed/"
   auth_host: auth_microservice
   auth_port: 8000
   cvpdfdir: "media/CVinPDF/"
   tamplateDir: "templates/"
   csrf_secret: "rand string" # 16, 24 or 32 bytes string allowed!
-
+  tls:
+    certificate: ${TLS_CERT}
+    key: ${TLS_KEY}
 
 database:
   host: "192.168.77.130"
@@ -42,7 +44,7 @@ compress_microservice:
     host: "192.168.77.130"
     port: 8071
     metrics_port: 8000
-  CompressedMediaDir: "./media/Compressed/"
+  CompressedMediaDir: "media/Compressed/"
 
 notifications_microservice:
   server:

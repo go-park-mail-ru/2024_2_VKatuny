@@ -1,6 +1,7 @@
 package usecase_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
@@ -40,7 +41,7 @@ func TestSearchCVs(t *testing.T) {
 				offsetStr, numStr, searchStr, group, searchBy string,
 				cv []*dto.JSONGetApplicantCV) (string, string, string, string, string, []*dto.JSONGetApplicantCV) {
 				model := []*dto.JSONCv{
-					&dto.JSONCv{
+					{
 						ID:                   0,
 						ApplicantID:          0,
 						PositionRu:           "PositionRu",
@@ -58,10 +59,10 @@ func TestSearchCVs(t *testing.T) {
 
 				repo.cvs.
 					EXPECT().
-					SearchAll(uint64(0), uint64(1), searchStr, group, searchBy).
+					SearchAll(gomock.Any(), uint64(0), uint64(1), searchStr, group, searchBy).
 					Return(model, nil)
 				rcv := []*dto.JSONGetApplicantCV{
-					&dto.JSONGetApplicantCV{
+					{
 						ID:                   model[0].ID,
 						ApplicantID:          model[0].ApplicantID,
 						PositionRu:           model[0].PositionRu,
@@ -95,7 +96,7 @@ func TestSearchCVs(t *testing.T) {
 			CVRepository: repo.cvs,
 		}
 		uc := usecase.NewCVsUsecase(logrus.New(), repositories)
-		cv, _ := uc.SearchCVs(offsetStr, numStr, searchStr, group, searchBy)
+		cv, _ := uc.SearchCVs(context.Background(), offsetStr, numStr, searchStr, group, searchBy)
 
 		require.Equal(t, tt.cv, cv)
 	}
@@ -117,15 +118,15 @@ func TestGetApplicantCVs(t *testing.T) {
 		) (uint64, []*dto.JSONGetApplicantCV)
 	}{
 		{
-			name:      "Create: ok",
-			cv:        make([]*dto.JSONGetApplicantCV, 0),
-			ID:        1,
+			name: "Create: ok",
+			cv:   make([]*dto.JSONGetApplicantCV, 0),
+			ID:   1,
 			prepare: func(
 				repo *repo,
 				ID uint64,
 				cv []*dto.JSONGetApplicantCV) (uint64, []*dto.JSONGetApplicantCV) {
 				model := []*dto.JSONCv{
-					&dto.JSONCv{
+					{
 						ID:                   0,
 						ApplicantID:          0,
 						PositionRu:           "PositionRu",
@@ -143,10 +144,10 @@ func TestGetApplicantCVs(t *testing.T) {
 
 				repo.cvs.
 					EXPECT().
-					GetCVsByApplicantID(uint64(1)).
+					GetCVsByApplicantID(gomock.Any(), uint64(1)).
 					Return(model, nil)
 				rcv := []*dto.JSONGetApplicantCV{
-					&dto.JSONGetApplicantCV{
+					{
 						ID:                   model[0].ID,
 						ApplicantID:          model[0].ApplicantID,
 						PositionRu:           model[0].PositionRu,
@@ -180,7 +181,7 @@ func TestGetApplicantCVs(t *testing.T) {
 			CVRepository: repo.cvs,
 		}
 		uc := usecase.NewCVsUsecase(logrus.New(), repositories)
-		cv, _ := uc.GetApplicantCVs(ID)
+		cv, _ := uc.GetApplicantCVs(context.Background(),ID)
 
 		require.Equal(t, tt.cv, cv)
 	}

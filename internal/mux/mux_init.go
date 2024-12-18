@@ -95,8 +95,13 @@ func Init(app *internal.App) *mux.Router {
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}", deleteVacancy).
 		Methods(http.MethodDelete)
 	AddVacancyIntoFavorite := middleware.RequireAuthorization(vacanciesHandlers.AddVacancyIntoFavorite, app, dto.UserTypeApplicant)
+	AddVacancyIntoFavorite = middleware.CSRFProtection(AddVacancyIntoFavorite, app)
 	router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", AddVacancyIntoFavorite).
 		Methods(http.MethodPost)
+	DellVacancyFromFavorite := middleware.RequireAuthorization(vacanciesHandlers.DellVacancyFromFavorite, app, dto.UserTypeApplicant)
+	DellVacancyFromFavorite = middleware.CSRFProtection(DellVacancyFromFavorite, app)
+		router.HandleFunc("/api/v1/applicant/{id:[0-9]+}/favorite-vacancy", DellVacancyFromFavorite).
+			Methods(http.MethodDelete)
 
 	subscribe := middleware.RequireAuthorization(vacanciesHandlers.SubscribeVacancy, app, dto.UserTypeApplicant)
 	subscribe = middleware.CSRFProtection(subscribe, app)
@@ -107,11 +112,9 @@ func Init(app *internal.App) *mux.Router {
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", unsubscribe).
 		Methods(http.MethodDelete)
 	subscription := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscription, app, dto.UserTypeApplicant)
-	subscription = middleware.CSRFProtection(subscription, app)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscription", subscription).
 		Methods(http.MethodGet)
 	subscribers := middleware.RequireAuthorization(vacanciesHandlers.GetVacancySubscribers, app, dto.UserTypeEmployer)
-	subscribers = middleware.CSRFProtection(subscribers, app)
 	router.HandleFunc("/api/v1/vacancy/{id:[0-9]+}/subscribers", subscribers).
 		Methods(http.MethodGet)
 

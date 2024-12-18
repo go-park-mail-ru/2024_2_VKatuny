@@ -6,7 +6,9 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/SebastiaanKlippert/go-wkhtmltopdf v1.9.3
 	github.com/davidbyttow/govips/v2 v2.15.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.7.1
+	github.com/rafaeljusto/redigomock/v3 v3.1.2
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/swag v1.16.4
 	golang.org/x/crypto v0.31.0
