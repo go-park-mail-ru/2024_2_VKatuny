@@ -1,7 +1,6 @@
 package notificationmicroservice
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +11,7 @@ import (
 	notificationsinterfaces "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/notifications"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/notifications/dto"
 	"github.com/gorilla/websocket"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 )
 
@@ -68,7 +68,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 				continue
 			}
 			newMessage(w, notificationsList, http.StatusOK)
-			
+
 			<-ticker.C
 			fmt.Println("!2")
 		}
@@ -101,8 +101,8 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 					nd.logger.Errorf("could get notifications: %s", err)
 					continue
 				}
-				for _, i := range notificationsList{
-					if i.ID == notificationID{
+				for _, i := range notificationsList {
+					if i.ID == notificationID {
 						err = nd.notificationsUsecase.MakeEmployerNotificationRead(notificationID)
 						if err != nil {
 							nd.logger.Errorf("could not make notification read: %s", err)
@@ -121,7 +121,7 @@ func (nd *NotificationsHandlers) GetAlEmployerNotifications(w http.ResponseWrite
 }
 
 func newMessage(w io.WriteCloser, notificationsList []*dto.EmployerNotification, status int) {
-	data, err := json.Marshal(&dto.JSONResponse{
+	data, err := easyjson.Marshal(&dto.JSONResponse{
 		HTTPStatus: status,
 		Body:       notificationsList,
 	})

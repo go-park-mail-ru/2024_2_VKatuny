@@ -3,7 +3,6 @@ package delivery_test
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -22,6 +21,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -267,7 +267,7 @@ func TestCreateCVHandler(t *testing.T) {
 					require.NoError(t, err)
 
 					gotJson := new(dto.JSONResponse)
-					err = json.Unmarshal(jsonData, gotJson)
+					err = easyjson.Unmarshal(jsonData, gotJson)
 					require.NoError(t, err)
 
 					require.EqualExportedValues(t, &dto.JSONResponse{
@@ -280,7 +280,7 @@ func TestCreateCVHandler(t *testing.T) {
 					require.NoError(t, err)
 
 					gotJson := new(dto.JSONResponse)
-					err = json.Unmarshal(jsonData, gotJson)
+					err = easyjson.Unmarshal(jsonData, gotJson)
 					require.NoError(t, err)
 
 					require.EqualExportedValues(t, &dto.JSONResponse{
@@ -293,7 +293,7 @@ func TestCreateCVHandler(t *testing.T) {
 					require.NoError(t, err)
 
 					gotJson := new(dto.JSONResponse)
-					err = json.Unmarshal(jsonData, gotJson)
+					err = easyjson.Unmarshal(jsonData, gotJson)
 					require.NoError(t, err)
 
 					require.EqualExportedValues(t, &dto.JSONResponse{
@@ -313,7 +313,7 @@ func TestGetCVHandler(t *testing.T) {
 		w *httptest.ResponseRecorder
 	}
 	type dependencies struct {
-		cvsUsecase *mock.MockICVsUsecase
+		cvsUsecase         *mock.MockICVsUsecase
 		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 
 		cv dto.JSONCv
@@ -390,7 +390,7 @@ func TestGetCVHandler(t *testing.T) {
 			defer ctrl.Finish()
 
 			d := dependencies{
-				cvsUsecase: mock.NewMockICVsUsecase(ctrl),
+				cvsUsecase:         mock.NewMockICVsUsecase(ctrl),
 				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 
@@ -404,9 +404,8 @@ func TestGetCVHandler(t *testing.T) {
 			app := &internal.App{
 				Logger: logger,
 				Usecases: &internal.Usecases{
-					CVUsecase: d.cvsUsecase,
+					CVUsecase:          d.cvsUsecase,
 					FileLoadingUsecase: d.fileLoadingUsecase,
-
 				},
 				Microservices: &internal.Microservices{
 					Compress: nil,
@@ -630,7 +629,7 @@ func TestUpdateCVHandler(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -796,7 +795,7 @@ func TestDeleteCVHandler(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -859,7 +858,7 @@ func TestCVtoPDF(t *testing.T) {
 				out.response = &dto.JSONResponse{
 					HTTPStatus: out.status,
 					Body: map[string]interface{}{
-						"FileName": "/"+res.FileName,
+						"FileName": "/" + res.FileName,
 					},
 				}
 				slugInt, _ := strconv.Atoi(in.slug)
@@ -982,7 +981,7 @@ func TestCVtoPDF(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 			require.Equalf(t, out.response, jsonResonse,
 				"got response %v, expected %v",

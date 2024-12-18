@@ -20,6 +20,7 @@ import (
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -139,7 +140,7 @@ func TestGetProfileHandler(t *testing.T) {
 			defer ctrl.Finish()
 
 			usecase := &usecase{
-				profile: mock.NewMockIEmployerUsecase(ctrl),
+				profile:            mock.NewMockIEmployerUsecase(ctrl),
 				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 			tt.w, tt.r = tt.prepare(tt.r, tt.w, usecase)
@@ -523,7 +524,7 @@ func TestRegistration(t *testing.T) {
 					Password:           "password",
 				}
 
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				usecase.registration.
 					EXPECT().
 					Create(gomock.Any(), form).
@@ -559,7 +560,7 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
 					UserType:  dto.UserTypeEmployer,
@@ -611,7 +612,7 @@ func TestRegistration(t *testing.T) {
 				}
 
 				requestID := "1234567890"
-				jsonForm, _ := json.Marshal(form)
+				jsonForm, _ := easyjson.Marshal(form)
 				grpc_request := &auth_grpc.AuthRequest{
 					RequestID: requestID,
 					UserType:  dto.UserTypeEmployer,
