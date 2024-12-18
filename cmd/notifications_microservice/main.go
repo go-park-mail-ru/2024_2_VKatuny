@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"os"
 
 	"net/http"
 
@@ -81,7 +82,13 @@ func main() {
 
 	handlers = middleware.Panic(handlers, logger)
 	logger.Infof("Notifications starting server at %s", conf.NotificationsMicroservice.Server.GetAddress())
-	err = http.ListenAndServe(conf.NotificationsMicroservice.Server.GetAddress(), handlers)
+	// err = http.ListenAndServe(conf.NotificationsMicroservice.Server.GetAddress(), handlers)
+	err = http.ListenAndServeTLS(
+		conf.NotificationsMicroservice.Server.GetAddress(),
+		os.Getenv("TLS_CERT"),
+		os.Getenv("TLS_KEY"),
+		handlers,
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
