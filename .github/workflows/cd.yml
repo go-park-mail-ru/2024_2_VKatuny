@@ -1,3 +1,4 @@
+name: CD workflow
 on:
   push:
     branches:
@@ -16,6 +17,9 @@ jobs:
           username: ${{ secrets.USER_NAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
+            cd ~/CD
+            sudo docker compose -f ./all-services-compose.yaml down
+            cd ~
             rm -rf ~/CD/*
             cd ~/CD
             git clone https://github.com/go-park-mail-ru/2024_2_VKatuny.git .
@@ -23,7 +27,6 @@ jobs:
             cp ~/configs/tern.conf ./db/migrations/
             cp ~/configs/prometheus.yml ./configs/
             cp ~/configs/.env ./
-            sudo docker compose -f ./all-services-compose.yaml down
             sudo docker compose -f ./all-services-compose.yaml build
             sudo docker compose -f ./all-services-compose.yaml up -d
             cd ./db/migrations/
