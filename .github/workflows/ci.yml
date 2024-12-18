@@ -27,6 +27,8 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
@@ -66,7 +68,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ github.token }}
-          branch: ${{ github.ref }}
+          branch: ${{ github.head_ref }}
 
   build-main-service:
     runs-on: ubuntu-latest
@@ -120,6 +122,8 @@ jobs:
       ]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
@@ -141,4 +145,4 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ github.token }}
-          branch: ${{ github.ref }}
+          branch: ${{ github.head_ref }}
