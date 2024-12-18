@@ -37,7 +37,7 @@ func TestGet(t *testing.T) {
 				userID := uint64(1)
 				repo.portfolio.
 					EXPECT().
-					GetPortfoliosByApplicantID(userID).
+					GetPortfoliosByApplicantID(context.Background(), userID).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 				return userID, portfolios
 			},
@@ -57,7 +57,7 @@ func TestGet(t *testing.T) {
 
 				repo.portfolio.
 					EXPECT().
-					GetPortfoliosByApplicantID(userID).
+					GetPortfoliosByApplicantID(context.Background(), userID).
 					Return(model, nil)
 				rportfolios := []*dto.JSONGetApplicantPortfolio{
 

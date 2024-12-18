@@ -1,25 +1,32 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/models"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type PostgreSQLVacanciesStorage struct {
-	db *sql.DB
+	db     *sql.DB
+	logger *logrus.Entry
 }
 
-func NewVacanciesStorage(db *sql.DB) *PostgreSQLVacanciesStorage {
+func NewVacanciesStorage(db *sql.DB, logger *logrus.Logger) *PostgreSQLVacanciesStorage {
 	return &PostgreSQLVacanciesStorage{
-		db: db,
+		db:     db,
+		logger: logrus.NewEntry(logger),
 	}
 }
 
-func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONVacancy, error) {
+func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(ctx context.Context, employerID uint64) ([]*dto.JSONVacancy, error) {
+	funcName := "PostgreSQLVacanciesStorage.GetVacanciesByEmployerID"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	Vacancies := make([]*dto.JSONVacancy, 0)
 
@@ -30,6 +37,7 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 		left join position_category on vacancy.position_category_id = position_category.id
 		where vacancy.employer_id = $1`, employerID)
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -68,13 +76,16 @@ func (s *PostgreSQLVacanciesStorage) GetVacanciesByEmployerID(employerID uint64)
 			UpdatedAt:            Vacancy.UpdatedAt,
 		}
 		Vacancies = append(Vacancies, &VacancyOk)
-		//TODO logger
-		fmt.Println(VacancyOk)
+		s.logger.Debugf("%s: got vacancy %v", funcName, VacancyOk)
 	}
 	return Vacancies, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
+func (s *PostgreSQLVacanciesStorage) SearchAll(ctx context.Context, offset uint64, num uint64, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
+	funcName := "PostgreSQLVacanciesStorage.SearchAll"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	Vacancies := make([]*dto.JSONVacancy, 0)
 	iter := 1
 	mainPart := `select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
@@ -124,6 +135,7 @@ func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, search
 		rows, err = s.db.Query(mainPart+categoryPart+searchPart+lastPart, group, num, offset)
 	}
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -132,6 +144,7 @@ func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, search
 		var Vacancy dto.JSONVacancyWithNull
 		if err := rows.Scan(&Vacancy.ID, &Vacancy.Location, &Vacancy.Position, &Vacancy.Description, &Vacancy.Salary, &Vacancy.EmployerID,
 			&Vacancy.WorkType, &Vacancy.Avatar, &Vacancy.CreatedAt, &Vacancy.UpdatedAt, &Vacancy.CompanyName, &Vacancy.PositionCategoryName, &Vacancy.CompressedAvatar); err != nil {
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 		VacancyOk := dto.JSONVacancy{
@@ -150,26 +163,31 @@ func (s *PostgreSQLVacanciesStorage) SearchAll(offset uint64, num uint64, search
 			CompressedAvatar:     Vacancy.CompressedAvatar.String,
 		}
 		Vacancies = append(Vacancies, &VacancyOk)
-		//TODO logger
-		fmt.Println(VacancyOk)
+		s.logger.Debugf("%s: got vacancy %v", funcName, VacancyOk)
 	}
-	//TODO logger
-	fmt.Println(Vacancies)
+	s.logger.Debugf("%s: got %d vacancies \n %v", funcName, len(Vacancies), Vacancies)
 	return Vacancies, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) Create(vacancy *dto.JSONVacancy) (uint64, error) {
+func (s *PostgreSQLVacanciesStorage) Create(ctx context.Context, vacancy *dto.JSONVacancy) (uint64, error) {
+	funcName := "PostgreSQLVacanciesStorage.Create"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	var WorkTypeID int
 	row := s.db.QueryRow(`select id from work_type where work_type_name=$1`, vacancy.WorkType)
 	if err := row.Scan(&WorkTypeID); err != nil {
 		switch err {
 		case sql.ErrNoRows:
+			s.logger.Debugf("%s: got empty result: %s", funcName, sql.ErrNoRows.Error())
 			row = s.db.QueryRow(`insert into work_type (work_type_name) VALUES ($1) returning id`, vacancy.WorkType)
 			err = row.Scan(&WorkTypeID)
 			if err != nil {
+				s.logger.Errorf("%s: got error %v", funcName, err)
 				return 0, err
 			}
 		default:
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return 0, err
 		}
 	}
@@ -178,12 +196,15 @@ func (s *PostgreSQLVacanciesStorage) Create(vacancy *dto.JSONVacancy) (uint64, e
 	if err := row.Scan(&CityID); err != nil {
 		switch err {
 		case sql.ErrNoRows:
+			s.logger.Debugf("%s: got empty result: %s", funcName, sql.ErrNoRows.Error())
 			row = s.db.QueryRow(`insert into city (city_name) VALUES ($1) returning id`, vacancy.Location)
 			err = row.Scan(&CityID)
 			if err != nil {
+				s.logger.Errorf("%s: got error %v", funcName, err)
 				return 0, err
 			}
 		default:
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return 0, err
 		}
 	}
@@ -197,6 +218,7 @@ func (s *PostgreSQLVacanciesStorage) Create(vacancy *dto.JSONVacancy) (uint64, e
 		row = s.db.QueryRow(`select id from position_category where category_name=$1`, vacancy.PositionCategoryName)
 		err := row.Scan(&PositionCategoryID)
 		if err != nil {
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return 0, err
 		}
 		row = s.db.QueryRow(`insert into vacancy (position, vacancy_description, salary, employer_id, work_type_id,
@@ -205,12 +227,17 @@ func (s *PostgreSQLVacanciesStorage) Create(vacancy *dto.JSONVacancy) (uint64, e
 	}
 	err := row.Scan(&VacancyId)
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return 0, err
 	}
+	s.logger.Debugf("%s: got vacancy_id %d", funcName, VacancyId)
 	return VacancyId, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) GetByID(ID uint64) (*dto.JSONVacancy, error) {
+func (s *PostgreSQLVacanciesStorage) GetByID(ctx context.Context, ID uint64) (*dto.JSONVacancy, error) {
+	funcName := "PostgreSQLVacanciesStorage.GetByID"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	row := s.db.QueryRow(`select vacancy.id, city.city_name, vacancy.position, vacancy_description, salary, employer_id, work_type.work_type_name, path_to_company_avatar, vacancy.created_at, vacancy.updated_at, 
 		company.company_name, position_category.category_name, vacancy.compressed_image from vacancy
@@ -235,6 +262,7 @@ func (s *PostgreSQLVacanciesStorage) GetByID(ID uint64) (*dto.JSONVacancy, error
 		&oneVacancy.PositionCategoryName,
 		&oneVacancy.CompressedAvatar,
 	)
+	s.logger.Debugf("%s: got one vacancy %v", funcName, oneVacancy)
 	VacancyOk := dto.JSONVacancy{
 		ID:                   oneVacancy.ID,
 		EmployerID:           oneVacancy.EmployerID,
@@ -251,24 +279,31 @@ func (s *PostgreSQLVacanciesStorage) GetByID(ID uint64) (*dto.JSONVacancy, error
 		CompressedAvatar:     oneVacancy.CompressedAvatar.String,
 	}
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
-	return &VacancyOk, err
+	return &VacancyOk, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONVacancy) (*dto.JSONVacancy, error) {
+func (s *PostgreSQLVacanciesStorage) Update(ctx context.Context, ID uint64, updatedVacancy *dto.JSONVacancy) (*dto.JSONVacancy, error) {
+	funcName := "PostgreSQLVacanciesStorage.Update"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	var CityId int
 	row := s.db.QueryRow(`select id from city where city_name=$1`, updatedVacancy.Location)
 	if err := row.Scan(&CityId); err != nil {
 		switch err {
 		case sql.ErrNoRows:
+			s.logger.Debugf("%s: got empty result: %s", funcName, sql.ErrNoRows.Error())
 			row = s.db.QueryRow(`insert into city (city_name) VALUES ($1) returning id`, updatedVacancy.Location)
 			err = row.Scan(&CityId)
 			if err != nil {
+				s.logger.Errorf("%s: got error %v", funcName, err)
 				return nil, err
 			}
 		default:
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 	}
@@ -278,11 +313,14 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 		switch err {
 		case sql.ErrNoRows:
 			row = s.db.QueryRow(`insert into work_type (work_type_name) VALUES ($1) returning id`, updatedVacancy.WorkType)
+			s.logger.Debugf("%s: got empty result: %s", funcName, sql.ErrNoRows.Error())
 			err = row.Scan(&WorkTypeID)
 			if err != nil {
+				s.logger.Errorf("%s: got error %v", funcName, err)
 				return nil, err
 			}
 		default:
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 	}
@@ -291,6 +329,7 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 		row = s.db.QueryRow(`select id from position_category where category_name=$1`, updatedVacancy.PositionCategoryName)
 		err := row.Scan(&PositionCategoryID)
 		if err != nil {
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 	}
@@ -341,6 +380,7 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 		&oneVacancy.UpdatedAt,
 		&oneVacancy.CompressedAvatar,
 	)
+	s.logger.Debugf("%s: got vacancy from db %v", funcName, oneVacancy)
 	VacancyOk := dto.JSONVacancy{
 		ID:               oneVacancy.ID,
 		EmployerID:       oneVacancy.EmployerID,
@@ -353,6 +393,7 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 		CompressedAvatar: oneVacancy.CompressedAvatar.String,
 	}
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	row = s.db.QueryRow(`select company.company_name from employer left join company on company.id = employer.company_name_id where employer.id=$1`, oneVacancy.EmployerID)
@@ -362,42 +403,72 @@ func (s *PostgreSQLVacanciesStorage) Update(ID uint64, updatedVacancy *dto.JSONV
 	VacancyOk.Location = updatedVacancy.Location
 	VacancyOk.PositionCategoryName = updatedVacancy.PositionCategoryName
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
-	return &VacancyOk, err
+	return &VacancyOk, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) Delete(ID uint64) error {
+func (s *PostgreSQLVacanciesStorage) Delete(ctx context.Context, ID uint64) error {
+	funcName := "PostgreSQLVacanciesStorage.Delete"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	_, err := s.db.Exec(`delete from vacancy where id = $1`, ID)
-	return err
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return err
+	}
+	return nil
 }
 
-func (s *PostgreSQLVacanciesStorage) Subscribe(ID uint64, applicantID uint64) error {
-	//TODO logger
-	fmt.Println(ID, applicantID)
+func (s *PostgreSQLVacanciesStorage) Subscribe(ctx context.Context, ID uint64, applicantID uint64) error {
+	funcName := "PostgreSQLVacanciesStorage.Subscribe"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+	
+	s.logger.Debugf("%s: id = %d, applicant_id = %d", funcName, ID, applicantID)
 	_, err := s.db.Exec(`insert into vacancy_subscriber (vacancy_id, applicant_id) VALUES ($1, $2)`, ID, applicantID)
-	return err
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return err
+	}
+	return nil
 }
 
-func (s *PostgreSQLVacanciesStorage) GetSubscriptionStatus(ID uint64, applicantID uint64) (bool, error) {
+func (s *PostgreSQLVacanciesStorage) GetSubscriptionStatus(ctx context.Context, ID uint64, applicantID uint64) (bool, error) {
+	funcName := "PostgreSQLVacanciesStorage.GetSubscriptionStatus"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	var rowID uint64
 	row := s.db.QueryRow(`select applicant_id from vacancy_subscriber where applicant_id=$1 and vacancy_id=$2`, applicantID, ID)
 	if err := row.Scan(&rowID); err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return false, nil
 	}
 	return true, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) GetSubscribersCount(ID uint64) (uint64, error) {
+func (s *PostgreSQLVacanciesStorage) GetSubscribersCount(ctx context.Context, ID uint64) (uint64, error) {
+	funcName := "PostgreSQLVacanciesStorage. TEXTXTXTXT"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	var rowCount uint64
 	row := s.db.QueryRow(`select count(id) from vacancy_subscriber where vacancy_id=$1`, ID)
 	if err := row.Scan(&rowCount); err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return rowCount, err
 	}
 	return rowCount, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) GetSubscribersList(ID uint64) ([]*models.Applicant, error) {
+func (s *PostgreSQLVacanciesStorage) GetSubscribersList(ctx context.Context, ID uint64) ([]*models.Applicant, error) {
+	funcName := "PostgreSQLVacanciesStorage. TEXTXTXTXT"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	Applicants := make([]*models.Applicant, 0)
 
 	rows, err := s.db.Query(`select applicant_id, first_name, last_name, city.city_name, birth_date, path_to_profile_avatar,
@@ -405,6 +476,7 @@ func (s *PostgreSQLVacanciesStorage) GetSubscribersList(ID uint64) ([]*models.Ap
 		from vacancy_subscriber	left join applicant on applicant.id = applicant_id
 		left join city on city.id = applicant.id where vacancy_subscriber.vacancy_id = $1`, ID)
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -414,7 +486,8 @@ func (s *PostgreSQLVacanciesStorage) GetSubscribersList(ID uint64) ([]*models.Ap
 		if err := rows.Scan(&applicantWithNull.ID, &applicantWithNull.FirstName, &applicantWithNull.LastName, &applicantWithNull.CityName,
 			&applicantWithNull.BirthDate, &applicantWithNull.PathToProfileAvatar, &applicantWithNull.Contacts, &applicantWithNull.Education,
 			&applicantWithNull.Email, &applicantWithNull.PasswordHash, &applicantWithNull.CreatedAt, &applicantWithNull.UpdatedAt, &applicantWithNull.CompressedAvatar); err != nil {
-			return nil, err
+				s.logger.Errorf("%s: got error %v", funcName, err)
+				return nil, err
 		}
 		oneApplicant := models.Applicant{
 			ID:                  applicantWithNull.ID,
@@ -433,18 +506,29 @@ func (s *PostgreSQLVacanciesStorage) GetSubscribersList(ID uint64) ([]*models.Ap
 		}
 
 		Applicants = append(Applicants, &oneApplicant)
-		//TODO logger
-		fmt.Println(oneApplicant)
+		s.logger.Debugf("%s: got applicant %v", funcName, oneApplicant)
 	}
 	return Applicants, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) Unsubscribe(ID uint64, applicantID uint64) error {
+func (s *PostgreSQLVacanciesStorage) Unsubscribe(ctx context.Context, ID uint64, applicantID uint64) error {
+	funcName := "PostgreSQLVacanciesStorage.Unsubscribe"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
+	s.logger.Debugf("%s: got id = %d, applicant_id = %d", funcName, ID, applicantID)
 	_, err := s.db.Exec(`delete from vacancy_subscriber where applicant_id=$1 and vacancy_id=$2`, applicantID, ID)
-	return err
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return err
+	}
+	return nil
 }
 
-func (s *PostgreSQLVacanciesStorage) GetApplicantFavoriteVacancies(applicantID uint64) ([]*dto.JSONVacancy, error) {
+func (s *PostgreSQLVacanciesStorage) GetApplicantFavoriteVacancies(ctx context.Context, applicantID uint64) ([]*dto.JSONVacancy, error) {
+	funcName := "PostgreSQLVacanciesStorage.GetApplicantFavoriteVacancies"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	Vacancies := make([]*dto.JSONVacancy, 0)
 
@@ -457,6 +541,7 @@ func (s *PostgreSQLVacanciesStorage) GetApplicantFavoriteVacancies(applicantID u
 		left join applicant on applicant.id = favorite_vacancy.applicant_id 
 		where applicant.id = $1`, applicantID)
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -477,7 +562,8 @@ func (s *PostgreSQLVacanciesStorage) GetApplicantFavoriteVacancies(applicantID u
 			&Vacancy.CompanyName,
 			&Vacancy.PositionCategoryName,
 			&Vacancy.CompressedAvatar); err != nil {
-			return nil, err
+				s.logger.Errorf("%s: got error %v", funcName, err)
+				return nil, err
 		}
 		VacancyOk := dto.JSONVacancy{
 			ID:                   Vacancy.ID,
@@ -495,15 +581,35 @@ func (s *PostgreSQLVacanciesStorage) GetApplicantFavoriteVacancies(applicantID u
 			UpdatedAt:            Vacancy.UpdatedAt,
 		}
 		Vacancies = append(Vacancies, &VacancyOk)
-		//TODO logger
-		fmt.Println(VacancyOk)
+		s.logger.Debugf("%s: got vacancy %v", funcName, VacancyOk)
 	}
 	return Vacancies, nil
 }
 
-func (s *PostgreSQLVacanciesStorage) MakeFavorite(ID uint64, applicantID uint64) error {
-	//TODO logger
-	fmt.Println(ID, applicantID)
+func (s *PostgreSQLVacanciesStorage) MakeFavorite(ctx context.Context, ID uint64, applicantID uint64) error {
+	funcName := "PostgreSQLVacanciesStorage.MakeFavorite"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
+	s.logger.Debugf("%s: got id = %d, applicant_id = %d", funcName, ID, applicantID)
 	_, err := s.db.Exec(`insert into favorite_vacancy (applicant_id, vacancy_id) VALUES ($1, $2)`, applicantID, ID)
-	return err
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return err
+	}
+	return nil
+}
+
+func (s *PostgreSQLVacanciesStorage) Unfavorite(ctx context.Context, ID uint64, applicantID uint64) error {
+	funcName := "PostgreSQLVacanciesStorage.Unfavorite"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
+	s.logger.Debugf("%s: got id = %d, applicant_id = %d", funcName, ID, applicantID)
+	_, err := s.db.Exec(`delete from favorite_vacancy where applicant_id = $1 and vacancy_id = $2`, applicantID, ID)
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return err
+	}
+	return nil
 }

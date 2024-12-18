@@ -10,7 +10,7 @@ import (
 type IPortfolioRepository interface {
 	// Add()
 	// TODO: need right now
-	GetPortfoliosByApplicantID(applicantID uint64) ([]*models.Portfolio, error)
+	GetPortfoliosByApplicantID(ctx context.Context, applicantID uint64) ([]*models.Portfolio, error)
 }
 
 type IPortfolioUsecase interface {

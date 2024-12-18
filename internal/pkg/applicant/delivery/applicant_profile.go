@@ -138,7 +138,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	if err == nil {
 		defer file.Close()
 		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
-		h.logger.Debug("add	ress %s compressed %s", fileAddress, compressedFileAddress)
+		h.logger.Debugf("address %s compressed %s", fileAddress, compressedFileAddress)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -246,7 +246,7 @@ func (h *ApplicantHandlers) GetCVs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// *dto.JSONGetApplicantCV
-	CVs, err := h.cvUsecase.GetApplicantCVs(applicantID)
+	CVs, err := h.cvUsecase.GetApplicantCVs(r.Context(), applicantID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -336,7 +336,7 @@ func (h *ApplicantHandlers) GetFavoriteVacancies(w http.ResponseWriter, r *http.
 	}
 
 	// *dto.JSONGetApplicantVacancies
-	Vacancies, err := h.vacanciesUsecase.GetApplicantFavoriteVacancies(applicantID)
+	Vacancies, err := h.vacanciesUsecase.GetApplicantFavoriteVacancies(r.Context(),applicantID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
