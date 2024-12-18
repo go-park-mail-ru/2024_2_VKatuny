@@ -3,9 +3,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - dev
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -25,7 +22,6 @@ jobs:
             cp ~/configs/tern.conf ./db/migrations/
             cp ~/configs/prometheus.yml ./configs/
             cp ~/configs/.env ./
-            git checkout RK4
             sudo docker compose -f ./all-services-compose.yaml down
             sudo docker compose -f ./all-services-compose.yaml build
             sudo docker compose -f ./all-services-compose.yaml up -d
