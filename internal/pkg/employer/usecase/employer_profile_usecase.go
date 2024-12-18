@@ -28,7 +28,7 @@ func (eu *EmployerUsecase) GetEmployerProfile(ctx context.Context, employerID ui
 	eu.logger = utils.SetLoggerRequestID(ctx, eu.logger)
 	eu.logger.Debugf("%s: entering", fn)
 
-	employerModel, err := eu.employerRepository.GetByID(employerID)
+	employerModel, err := eu.employerRepository.GetByID(ctx, employerID)
 	if err != nil {
 		eu.logger.Debugf("%s: unable to get employer profile: %s", fn, err)
 		return nil, err
@@ -55,7 +55,7 @@ func (eu *EmployerUsecase) UpdateEmployerProfile(ctx context.Context, employerID
 	eu.logger = utils.SetLoggerRequestID(ctx, eu.logger)
 	eu.logger.Debugf("%s: entering", fn)
 
-	_, err := eu.employerRepository.Update(employerID, employerProfile)
+	_, err := eu.employerRepository.Update(ctx, employerID, employerProfile)
 	if err != nil {
 		eu.logger.Errorf("function: %s; unable to update employer profile: %s", fn, err)
 		return err

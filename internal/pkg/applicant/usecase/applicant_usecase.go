@@ -3,6 +3,8 @@ package usecase
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -14,8 +16,8 @@ func (u *ApplicantUsecase) Create(ctx context.Context, form *dto.JSONApplicantRe
 	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
 	u.logger.Debugf("%s: entering", fn)
 
-	_, err := u.applicantRepo.GetByEmail(form.Email)
-	if err != nil {
+	_, err := u.applicantRepo.GetByEmail(ctx, form.Email)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgUserAlreadyExists)
 	}
@@ -29,7 +31,7 @@ func (u *ApplicantUsecase) Create(ctx context.Context, form *dto.JSONApplicantRe
 		Password:  utils.HashPassword(form.Password),
 	}
 	
-	applicantModel, err := u.applicantRepo.Create(applicant)
+	applicantModel, err := u.applicantRepo.Create(ctx, applicant)
 	if err != nil {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -47,7 +49,7 @@ func (u *ApplicantUsecase) GetByID(ctx context.Context, ID uint64) (*dto.JSONApp
 	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
 	u.logger.Debugf("%s: entering", fn)
 
-	applicantModel, err := u.applicantRepo.GetByID(ID)
+	applicantModel, err := u.applicantRepo.GetByID(ctx, ID)
 	if err != nil {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)

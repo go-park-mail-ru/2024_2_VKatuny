@@ -3,7 +3,6 @@ package delivery
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,6 +13,7 @@ import (
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
 	grpc_mock "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/mock"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -30,6 +30,7 @@ func TestIsAuthorized(t *testing.T) {
 		w            *httptest.ResponseRecorder
 		usecase      *usecase
 		codeExpected int
+		CSRFSecret   string
 
 		prepare func(
 			r *http.Request,
@@ -147,9 +148,50 @@ func TestIsAuthorized(t *testing.T) {
 			},
 		},
 		{
+			name:         "IsAuthorized: invalid csrf key",
+			r:            new(http.Request),
+			w:            new(httptest.ResponseRecorder),
+			CSRFSecret:   "12345",
+			codeExpected: http.StatusInternalServerError,
+			prepare: func(
+				r *http.Request,
+				w *httptest.ResponseRecorder,
+				usecase *usecase,
+			) (*httptest.ResponseRecorder, *http.Request) {
+				cookie := &http.Cookie{
+					Name:  dto.SessionIDName,
+					Value: "1234567890",
+				}
+				nr := httptest.NewRequest(
+					http.MethodGet,
+					"/api/v1/authorized",
+					nil,
+				)
+				nr.AddCookie(cookie)
+				request := &auth_grpc.CheckAuthRequest{
+					Session: &auth_grpc.SessionToken{
+						ID: cookie.Value,
+					},
+				}
+				response := &auth_grpc.CheckAuthResponse{
+					UserData: &auth_grpc.User{
+						UserType: dto.UserTypeApplicant,
+						ID:       uint64(1),
+					},
+				}
+				usecase.auth_grpc.
+					EXPECT().
+					CheckAuth(gomock.Any(), request).
+					Return(response, nil)
+				nw := httptest.NewRecorder()
+				return nw, nr
+			},
+		},
+		{
 			name:         "IsAuthorized: ok",
 			r:            new(http.Request),
 			w:            new(httptest.ResponseRecorder),
+			CSRFSecret:   "1234567812345678",
 			codeExpected: http.StatusOK,
 			prepare: func(
 				r *http.Request,
@@ -203,6 +245,7 @@ func TestIsAuthorized(t *testing.T) {
 				Microservices: &internal.Microservices{
 					Auth: usecase.auth_grpc,
 				},
+				CSRFSecret: tt.CSRFSecret,
 			}
 
 			h := NewSessionHandlers(app)
@@ -272,7 +315,7 @@ func TestLogin(t *testing.T) {
 					Email:    "testes@test.ru",
 					Password: "pass1234",
 				}
-				JSONform, _ := json.Marshal(form)
+				JSONform, _ := easyjson.Marshal(form)
 				nr := httptest.NewRequest(
 					http.MethodPost,
 					"/api/v1/login",
@@ -306,7 +349,7 @@ func TestLogin(t *testing.T) {
 					Email:    "testes@test.ru",
 					Password: "pass1234",
 				}
-				JSONform, _ := json.Marshal(form)
+				JSONform, _ := easyjson.Marshal(form)
 				nr := httptest.NewRequest(
 					http.MethodPost,
 					"/api/v1/login",

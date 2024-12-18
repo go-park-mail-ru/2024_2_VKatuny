@@ -34,7 +34,7 @@ func (au *ApplicantUsecase) GetApplicantProfile(ctx context.Context, userID uint
 	au.logger.Debugf("%s: entering", fn)
 
 	au.logger.Debugf("function: %s; user id: %d. Trying to get applicant profile by id", fn, userID)
-	applicantModel, err := au.applicantRepo.GetByID(userID)
+	applicantModel, err := au.applicantRepo.GetByID(ctx, userID)
 	if err != nil {
 		au.logger.Errorf("function: %s; got err: %s", fn, err)
 		return nil, err
@@ -63,7 +63,7 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(ctx context.Context, applican
 
 	au.logger.Debugf("function: %s; applicant id: %d. Trying to update applicant profile", fn, applicantID)
 
-	_, err := au.applicantRepo.Update(applicantID, newProfileData)
+	_, err := au.applicantRepo.Update(ctx, applicantID, newProfileData)
 	if err != nil {
 		au.logger.Errorf("function: %s; got err: %s", fn, err)
 		return err
@@ -78,4 +78,19 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(ctx context.Context, applican
 
 	au.logger.Debugf("function: %s; successfully updated applicant profile", fn)
 	return nil
+}
+
+func (au *ApplicantUsecase) GetAllCities(ctx context.Context, namePat string) ([]string, error) {
+	fn := "ApplicantUsecase.GetAllCities"
+	au.logger = utils.SetLoggerRequestID(ctx, au.logger)
+	au.logger.Debugf("%s: entering", fn)
+
+	cities, err := au.applicantRepo.GetAllCities(ctx, namePat)
+	if err != nil {
+		au.logger.Errorf("function: %s; got err: %s", fn, err)
+		return nil, err
+	}
+
+	au.logger.Debugf("function: %s; successfully updated applicant profile", fn)
+	return cities, nil
 }

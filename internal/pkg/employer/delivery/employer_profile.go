@@ -26,7 +26,7 @@ type EmployerHandlers struct {
 	vacanciesUsecase   vacancies.IVacanciesUsecase
 	fileLoadingUsecase fileloading.IFileLoadingUsecase
 	authGRPC           auth_grpc.AuthorizationClient
-	CompressGRPC       compressmicroservice.CompressServiceClient
+	compressGRPC       compressmicroservice.CompressServiceClient
 }
 
 func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
@@ -37,7 +37,7 @@ func NewEmployerHandlers(app *internal.App) *EmployerHandlers {
 		vacanciesUsecase:   app.Usecases.VacanciesUsecase,
 		fileLoadingUsecase: app.Usecases.FileLoadingUsecase,
 		authGRPC:           app.Microservices.Auth,
-		CompressGRPC:       app.Microservices.Compress,
+		compressGRPC:       app.Microservices.Compress,
 	}
 }
 
@@ -70,7 +70,7 @@ func (h *EmployerHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// dto - JSONGetEmployerProfile
-	employerProfile, err := h.employerUsecase.GetEmployerProfile(r.Context(), employerID)
+	profile, err := h.employerUsecase.GetEmployerProfile(r.Context(), employerID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -79,11 +79,13 @@ func (h *EmployerHandlers) GetProfile(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
-	h.logger.Debugf("function %s: success, got profile %v", fn, employerProfile)
+	profile.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(profile.Avatar)
+	h.logger.Debugf("function %s: success, got profile %v", fn, profile)
+	utils.EscapeHTMLStruct(profile)
+	h.logger.Debugf("function %s: success, got profile %v", fn, profile)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       employerProfile,
+		Body:       profile,
 	})
 }
 
@@ -141,7 +143,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 		newProfileData.Avatar = fileAddress
 		newProfileData.CompressedAvatar = compressedFileAddress
 	}
-
+	utils.EscapeHTMLStruct(newProfileData)
 	h.logger.Debugf("function %s: new profile data MultiPart parsed: %v", fn, newProfileData)
 
 	err = h.employerUsecase.UpdateEmployerProfile(r.Context(), employerID, newProfileData)
@@ -165,7 +167,7 @@ func (h *EmployerHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request)
 // @Accept json
 // @Produce json
 // @Param id path string true "Employer ID"
-// @Success 200 {object} dto.JSONResponse{body=[]models.Vacancy}
+// @Success 200 {object} dto.JSONResponse{}
 // @Failure 405 {object} dto.JSONResponse
 // @Router /api/v1/employer/{id}/vacancies [get]
 func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.Request) {
@@ -186,7 +188,7 @@ func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	vacancies, err := h.vacanciesUsecase.GetVacanciesByEmployerID(employerID)
+	vacancies, err := h.vacanciesUsecase.GetVacanciesByEmployerID(r.Context(),employerID)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -195,6 +197,10 @@ func (h *EmployerHandlers) GetEmployerVacancies(w http.ResponseWriter, r *http.R
 		})
 		return
 	}
+
+	for _, vacancy := range vacancies {
+		utils.EscapeHTMLStruct(vacancy)
+	} 
 
 	h.logger.Debugf("function %s: success, got vacancies: %d", fn, len(vacancies))
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{

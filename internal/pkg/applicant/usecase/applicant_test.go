@@ -13,9 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-
-
-
 )
 
 func TestGet(t *testing.T) {
@@ -40,7 +37,7 @@ func TestGet(t *testing.T) {
 				userID := uint64(1)
 				repo.applicant.
 					EXPECT().
-					GetByID(userID).
+					GetByID(gomock.Any(), userID).
 					Return(nil, errors.New("bad repository"))
 				return userID, profile
 			},
@@ -61,7 +58,7 @@ func TestGet(t *testing.T) {
 
 				repo.applicant.
 					EXPECT().
-					GetByID(userID).
+					GetByID(gomock.Any(), userID).
 					Return(model, nil)
 				rprofile := &dto.JSONGetApplicantProfile{
 					ID:        model.ID,
@@ -118,7 +115,7 @@ func TestUpdate(t *testing.T) {
 				userID := uint64(1)
 				repo.applicant.
 					EXPECT().
-					Update(userID, gomock.Any()).
+					Update(gomock.Any(), userID, gomock.Any()).
 					Return(nil, errors.New("bad repository"))
 				return userID, profile
 			},
@@ -140,7 +137,7 @@ func TestUpdate(t *testing.T) {
 
 				repo.applicant.
 					EXPECT().
-					Update(userID, gomock.Any()).
+					Update(gomock.Any(), userID, gomock.Any()).
 					Return(nil, nil)
 				rprofile := &dto.JSONUpdateApplicantProfile{
 					FirstName: model.FirstName,
@@ -176,7 +173,7 @@ func TestCreate(t *testing.T) {
 	t.Parallel()
 	type repo struct {
 		applicant *mock.MockIApplicantRepository
-	}
+	} 
 	tests := []struct {
 		name    string
 		form *dto.JSONApplicantRegistrationForm
@@ -198,7 +195,7 @@ func TestCreate(t *testing.T) {
 			) (*dto.JSONApplicantRegistrationForm, *dto.JSONUser) {
 				repo.applicant.
 					EXPECT().
-					GetByEmail(form.Email).
+					GetByEmail(gomock.Any(), form.Email).
 					Return(nil, errors.New("sql: no rows in result set"))
 				return form, nil
 			},
@@ -224,11 +221,11 @@ func TestCreate(t *testing.T) {
 				}
 				repo.applicant.
 					EXPECT().
-					GetByEmail(form.Email).
+					GetByEmail(gomock.Any(), form.Email).
 					Return(nil, nil)
 				repo.applicant.
 					EXPECT().
-					Create(gomock.Any()).
+					Create(gomock.Any(), gomock.Any()).
 					Return(applicant, errors.New("bad repository"))
 				return form, nil
 			},
@@ -254,11 +251,11 @@ func TestCreate(t *testing.T) {
 				}
 				repo.applicant.
 					EXPECT().
-					GetByEmail(form.Email).
+					GetByEmail(gomock.Any(), form.Email).
 					Return(nil, nil)
 				repo.applicant.
 					EXPECT().
-					Create(gomock.Any()).
+					Create(gomock.Any(), gomock.Any()).
 					Return(applicant, nil)
 				user = &dto.JSONUser{
 					ID:        applicant.ID,
@@ -311,7 +308,7 @@ func TestGetByID(t *testing.T) {
 				userID := uint64(1)
 				repo.applicant.
 					EXPECT().
-					GetByID(userID).
+					GetByID(gomock.Any(), userID).
 					Return(nil, errors.New("bad repository"))
 				return userID, applicant
 			},
@@ -338,7 +335,7 @@ func TestGetByID(t *testing.T) {
 				}
 				repo.applicant.
 					EXPECT().
-					GetByID(userID).
+					GetByID(gomock.Any(), userID).
 					Return(applicantModel, nil)
 				return userID, applicant
 			},
@@ -362,5 +359,58 @@ func TestGetByID(t *testing.T) {
 		applicant, _ := uc.GetByID(context.Background(), userID)
 
 		require.Equal(t, tt.applicant, applicant)
+	}
+}
+
+func TestGetAllCities(t *testing.T) {
+	t.Parallel()
+	type repo struct {
+		applicant *mock.MockIApplicantRepository
+	}
+	tests := []struct {
+		name    string
+		profile []string
+		prepare func(
+			repo *repo, profile []string,
+		) ([]string)
+	}{
+		{
+			name:    "Create: ok",
+			profile: make([]string, 0),
+			prepare: func(
+				repo *repo, profile []string) ([]string) {
+				model := []string{
+					"Moscow",
+				}
+
+				repo.applicant.
+					EXPECT().
+					GetAllCities(context.Background(), "Мос").
+					Return(model, nil)
+				rprofile := []string{
+					"Moscow",
+					
+				}
+				return rprofile
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		repo := &repo{
+			applicant: mock.NewMockIApplicantRepository(ctrl),
+		}
+		tt.profile = tt.prepare(repo, tt.profile)
+
+		repositories := &internal.Repositories{
+			ApplicantRepository: repo.applicant,
+		}
+		uc := usecase.NewApplicantUsecase(logrus.New(), repositories)
+		profile, _ := uc.GetAllCities(context.Background(), "Мос")
+
+		require.Equal(t, tt.profile, profile)
 	}
 }

@@ -1,26 +1,31 @@
 package delivery
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/vacancies"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
+	notificationsmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/notifications/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
 type VacanciesHandlers struct {
-	logger               *logrus.Entry
-	vacanciesUsecase     vacancies.IVacanciesUsecase
-	fileLoadingUsecase   fileloading.IFileLoadingUsecase
-	CompressGRPC         compressmicroservice.CompressServiceClient
+	logger             *logrus.Entry
+	vacanciesUsecase   vacancies.IVacanciesUsecase
+	applicantUsecase   applicant.IApplicantUsecase
+	fileLoadingUsecase fileloading.IFileLoadingUsecase
+	CompressGRPC       compressmicroservice.CompressServiceClient
+	NotificationsGRPC  notificationsmicroservice.NotificationsServiceClient
 }
 
 func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
@@ -28,10 +33,12 @@ func NewVacanciesHandlers(layers *internal.App) *VacanciesHandlers {
 	logger.Debug("VacanciesHandlers created")
 
 	return &VacanciesHandlers{
-		logger:               &logrus.Entry{Logger: logger},
-		vacanciesUsecase:     layers.Usecases.VacanciesUsecase,
-		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
-		CompressGRPC:         layers.Microservices.Compress,
+		logger:             &logrus.Entry{Logger: logger},
+		vacanciesUsecase:   layers.Usecases.VacanciesUsecase,
+		applicantUsecase:   layers.Usecases.ApplicantUsecase,
+		fileLoadingUsecase: layers.Usecases.FileLoadingUsecase,
+		CompressGRPC:       layers.Microservices.Compress,
+		NotificationsGRPC:  layers.Microservices.Notifications,
 	}
 }
 
@@ -59,7 +66,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	newVacancy.CompanyName = r.FormValue("companyName")
 	newVacancy.PositionCategoryName = r.FormValue("group")
 	temp, err := strconv.Atoi(r.FormValue("salary"))
-
+	utils.EscapeHTMLStruct(newVacancy)
 	if err != nil {
 		h.logger.Errorf("bad input of salary: %s", err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
@@ -96,7 +103,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	}
 
 	h.logger.Debug(newVacancy)
-	wroteVacancy, err := h.vacanciesUsecase.CreateVacancy(newVacancy, currentUser)
+	vacancy, err := h.vacanciesUsecase.CreateVacancy(r.Context(), newVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -107,7 +114,7 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
-		Body:       wroteVacancy,
+		Body:       vacancy,
 	})
 }
 
@@ -143,7 +150,7 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
 
-	vacancy, err := h.vacanciesUsecase.GetVacancy(vacancyID)
+	vacancy, err := h.vacanciesUsecase.GetVacancy(r.Context(), vacancyID)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -151,6 +158,7 @@ func (h *VacanciesHandlers) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
+	vacancy.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(vacancy.Avatar)
 	h.logger.Debugf("%s: got vacancy: %v", fn, vacancy)
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
@@ -240,8 +248,7 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 		updatedVacancy.CompressedAvatar = compressedFileAddress
 	}
 
-	
-	wroteVacancy, err := h.vacanciesUsecase.UpdateVacancy(vacancyID, updatedVacancy, currentUser)
+	wroteVacancy, err := h.vacanciesUsecase.UpdateVacancy(r.Context(), vacancyID, updatedVacancy, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -297,7 +304,7 @@ func (h *VacanciesHandlers) DeleteVacancy(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = h.vacanciesUsecase.DeleteVacancy(vacancyID, currentUser)
+	err = h.vacanciesUsecase.DeleteVacancy(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -352,7 +359,7 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = h.vacanciesUsecase.SubscribeOnVacancy(vacancyID, currentUser)
+	err = h.vacanciesUsecase.SubscribeOnVacancy(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		h.logger.Errorf("while subscribing on vacancy got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -362,6 +369,29 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	h.logger.Debugf("user_ID: %d subscribed on vacancy_ID %d", currentUser.ID, vacancyID)
+	// go func() {
+		vacancy, err := h.vacanciesUsecase.GetVacancy(r.Context(), vacancyID)
+		if err != nil {
+			h.logger.Errorf("while getting from db got err %s", err)
+			return
+		}
+		applicant, err := h.applicantUsecase.GetApplicantProfile(context.Background(), currentUser.ID)
+		if err != nil {
+			h.logger.Errorf("while getting from db got err %s", err)
+			return
+		}
+		h.logger.Debugf("Sending notification: %+v on vacancy: %+v", vacancy, applicant)
+		_, err = h.NotificationsGRPC.CreateEmployerNotification(
+			context.Background(),
+			&notificationsmicroservice.CreateEmployerNotificationInput{
+				ApplicantID:   currentUser.ID,
+				VacancyID:     vacancyID,
+				EmployerID:    vacancy.EmployerID,
+				ApplicantInfo: applicant.FirstName + " " + applicant.LastName,
+				VacancyInfo:   vacancy.Position,
+			},
+		)
+	//}()
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -409,7 +439,7 @@ func (h *VacanciesHandlers) UnsubscribeVacancy(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = h.vacanciesUsecase.UnsubscribeFromVacancy(vacancyID, currentUser)
+	err = h.vacanciesUsecase.UnsubscribeFromVacancy(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		h.logger.Errorf("while unsubscribing from vacancy got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -466,7 +496,7 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 		return
 	}
 
-	vacancySubscriptionInfo, err := h.vacanciesUsecase.GetSubscriptionInfo(vacancyID, currentUser.ID)
+	vacancySubscriptionInfo, err := h.vacanciesUsecase.GetSubscriptionInfo(r.Context(), vacancyID, currentUser.ID)
 	if err != nil {
 		h.logger.Errorf("while getting subscription status got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -492,7 +522,7 @@ func (h *VacanciesHandlers) GetVacancySubscription(w http.ResponseWriter, r *htt
 // @Failure 400 {object} dto.JSONResponse
 // @Failure 405 {object} dto.JSONResponse
 // @Failure 500 {object} dto.JSONResponse
-// @Router /api/v1/vacancy/{id}/subscribers [get]
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [get]
 func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -523,7 +553,7 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 		return
 	}
 
-	subscribers, err := h.vacanciesUsecase.GetVacancySubscribers(vacancyID, currentUser)
+	subscribers, err := h.vacanciesUsecase.GetVacancySubscribers(r.Context(), vacancyID, currentUser)
 	if err != nil {
 		h.logger.Errorf("while getting subscribers got: %s", err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -532,9 +562,127 @@ func (h *VacanciesHandlers) GetVacancySubscribers(w http.ResponseWriter, r *http
 		})
 		return
 	}
-
+	if subscribers != nil {
+		for _, subscriber := range subscribers.Subscribers {
+			subscriber.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(subscriber.Avatar)
+		}
+	}
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       subscribers,
+	})
+}
+
+// @Summary make favorite  vacancy
+// @Description make favorite  vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [post]
+func (h *VacanciesHandlers) AddVacancyIntoFavorite(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "VacanciesHandlers.AddVacancyIntoFavorite"
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
+
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnableToGetUserFromContext,
+		})
+		return
+	}
+
+	err = h.vacanciesUsecase.AddIntoFavorite(r.Context(), vacancyID, currentUser)
+	if err != nil {
+		h.logger.Errorf("while adding into favorite on vacancy got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("user_ID: %d added into favorite on vacancy_ID %d", currentUser.ID, vacancyID)
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+	})
+}
+
+// @Summary unmake favorite  vacancy
+// @Description unmake favorite vacancy by ID
+// @Tags Vacancy
+// @Accept  json
+// @Produce  json
+// @Param   id path string true "Vacancy ID"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/vacancy/{id}/favorite-vacancy [delete]
+func (h *VacanciesHandlers) DellVacancyFromFavorite(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "VacanciesHandlers.DellVacancyFromFavorite"
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s; entering", fn)
+
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	vacancyID, err := strconv.ParseUint(slug, 10, 64)
+	if err != nil {
+		h.logger.Errorf("%s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("%s: got slug: %d", fn, vacancyID)
+
+	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
+	if !ok {
+		h.logger.Error(dto.MsgUnableToGetUserFromContext)
+		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
+			HTTPStatus: http.StatusUnauthorized,
+			Error:      dto.MsgUnableToGetUserFromContext,
+		})
+		return
+	}
+
+	err = h.vacanciesUsecase.Unfavorite(r.Context(), vacancyID, currentUser)
+	if err != nil {
+		h.logger.Errorf("while unfavorite into favorite on vacancy got: %s", err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("user_ID: %d delted from favorite on vacancy_ID %d", currentUser.ID, vacancyID)
+
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
 	})
 }

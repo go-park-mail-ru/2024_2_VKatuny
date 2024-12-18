@@ -2,13 +2,13 @@
 package delivery
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	grpc_auth "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
+	"github.com/mailru/easyjson"
 )
 
 // CreateEmployerHandler creates employers in db
@@ -31,7 +31,7 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
 
 	employerRegistrationForm := new(dto.JSONEmployerRegistrationForm)
-	err := json.NewDecoder(r.Body).Decode(employerRegistrationForm)
+	err := easyjson.UnmarshalFromReader(r.Body, employerRegistrationForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
@@ -40,6 +40,8 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 		})
 		return
 	}
+
+	utils.EscapeHTMLStruct(employerRegistrationForm)
 	h.logger.Debugf("%s: json decoded successfully: %v", fn, employerRegistrationForm)
 
 	// TODO: implement usecase for validate registration data
@@ -76,6 +78,7 @@ func (h *EmployerHandlers) Registration(w http.ResponseWriter, r *http.Request) 
 		ID:       grpc_response.UserData.ID,
 		UserType: grpc_response.UserData.UserType,
 	}
+	user.UserType = utils.EscapeHTMLString(user.UserType)
 	h.logger.Debugf("%s: employer logged in successfully: %v", fn, user)
 
 	cookie := utils.MakeAuthCookie(grpc_response.Session.ID, h.backendAddress)

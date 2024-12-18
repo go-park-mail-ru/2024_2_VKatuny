@@ -1,10 +1,12 @@
 package repository
 
 import (
+	"context"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/sirupsen/logrus"
 )
 
 func TestPostgresGetByID(t *testing.T) {
@@ -72,9 +74,9 @@ func TestPostgresGetByID(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetByID(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetByID(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!! %s", err != nil, tt.wantErr, err)
 			}
 
@@ -130,9 +132,9 @@ func TestPostgresGetByEmail(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetByEmail(tt.args.Email); (err != nil) != tt.wantErr {
+			if _, err := s.GetByEmail(context.Background(), tt.args.Email); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!! %s", err != nil, tt.wantErr, err)
 			}
 
@@ -198,9 +200,9 @@ func TestPostgresCreate(t *testing.T) {
 
 			tt.args.query1(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
-			if _, err := s.Create(&tt.args.applicant); (err != nil) != tt.wantErr {
+			if _, err := s.Create(context.Background(), &tt.args.applicant); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -281,9 +283,62 @@ func TestPostgresUpdate(t *testing.T) {
 			tt.args.query1(mock, tt.args)
 			tt.args.query2(mock, tt.args)
 
-			s := NewApplicantStorage(db)
+			s := NewApplicantStorage(db, logrus.StandardLogger())
 
-			if _, err := s.Update(tt.args.ID, &tt.args.applicant); (err != nil) != tt.wantErr {
+			if _, err := s.Update(context.Background(), tt.args.ID, &tt.args.applicant); (err != nil) != tt.wantErr {
+				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestGetAllCities(t *testing.T) {
+	t.Parallel()
+	type args struct {
+		CityName    string
+		query1    func(mock sqlmock.Sqlmock, args args)
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+		err     error
+	}{
+		{
+			name: "TestOk",
+			args: args{
+				CityName: "Мос",
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select city.city_name from city where city.city_name like (.+)`).
+						WithArgs(
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"city_name"}).
+							AddRow("Москва"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			db, mock, err := sqlmock.New()
+			if err != nil {
+				t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+			}
+			defer db.Close()
+
+			tt.args.query1(mock, tt.args)
+
+			s := NewApplicantStorage(db, logrus.StandardLogger())
+
+			if _, err := s.GetAllCities(context.Background(), tt.args.CityName); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 

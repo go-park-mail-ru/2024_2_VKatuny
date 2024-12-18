@@ -43,18 +43,18 @@ func (m *MockIPortfolioRepository) EXPECT() *MockIPortfolioRepositoryMockRecorde
 }
 
 // GetPortfoliosByApplicantID mocks base method.
-func (m *MockIPortfolioRepository) GetPortfoliosByApplicantID(applicantID uint64) ([]*models.Portfolio, error) {
+func (m *MockIPortfolioRepository) GetPortfoliosByApplicantID(ctx context.Context, applicantID uint64) ([]*models.Portfolio, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPortfoliosByApplicantID", applicantID)
+	ret := m.ctrl.Call(m, "GetPortfoliosByApplicantID", ctx, applicantID)
 	ret0, _ := ret[0].([]*models.Portfolio)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPortfoliosByApplicantID indicates an expected call of GetPortfoliosByApplicantID.
-func (mr *MockIPortfolioRepositoryMockRecorder) GetPortfoliosByApplicantID(applicantID any) *gomock.Call {
+func (mr *MockIPortfolioRepositoryMockRecorder) GetPortfoliosByApplicantID(ctx, applicantID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPortfoliosByApplicantID", reflect.TypeOf((*MockIPortfolioRepository)(nil).GetPortfoliosByApplicantID), applicantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPortfoliosByApplicantID", reflect.TypeOf((*MockIPortfolioRepository)(nil).GetPortfoliosByApplicantID), ctx, applicantID)
 }
 
 // MockIPortfolioUsecase is a mock of IPortfolioUsecase interface.

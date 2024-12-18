@@ -3,7 +3,7 @@ package delivery_test
 import (
 	"bytes"
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -14,11 +14,14 @@ import (
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/logger"
+	applicant_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/delivery"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs/mock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	file_loading_mock "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading/mock"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -28,12 +31,12 @@ func createMultipartFormJSONCV(jsonForm *dto.JSONCv) (*bytes.Buffer, string) {
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 	defer writer.Close()
-	_ = writer.WriteField("positionRu", jsonForm.PositionRu)
-	_ = writer.WriteField("positionEn", jsonForm.PositionEn)
-	_ = writer.WriteField("description", jsonForm.Description)
-	_ = writer.WriteField("jobSearchStatus", jsonForm.JobSearchStatusName)
-	_ = writer.WriteField("workingExperience", jsonForm.WorkingExperience)
-	_ = writer.WriteField("group", jsonForm.PositionCategoryName)
+	writer.WriteField("positionRu", jsonForm.PositionRu)
+	writer.WriteField("positionEn", jsonForm.PositionEn)
+	writer.WriteField("description", jsonForm.Description)
+	writer.WriteField("jobSearchStatus", jsonForm.JobSearchStatusName)
+	writer.WriteField("workingExperience", jsonForm.WorkingExperience)
+	writer.WriteField("group", jsonForm.PositionCategoryName)
 	return &buf, writer.FormDataContentType()
 }
 
@@ -85,7 +88,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(f.cv, nil)
 
 				f.args.r = httptest.NewRequest(
@@ -130,7 +133,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(f.cv, fmt.Errorf(dto.MsgDataBaseError))
 
 				f.args.r.Header.Set("Content-Type", contentType)
@@ -195,7 +198,7 @@ func TestCreateCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					CreateCV(gomock.Any(), f.currentUser).
+					CreateCV(gomock.Any(), gomock.Any(), f.currentUser).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				multipartForm, contentType := createMultipartFormJSONCV(f.cv)
@@ -264,7 +267,7 @@ func TestCreateCVHandler(t *testing.T) {
 					require.NoError(t, err)
 
 					gotJson := new(dto.JSONResponse)
-					err = json.Unmarshal(jsonData, gotJson)
+					err = easyjson.Unmarshal(jsonData, gotJson)
 					require.NoError(t, err)
 
 					require.EqualExportedValues(t, &dto.JSONResponse{
@@ -277,7 +280,7 @@ func TestCreateCVHandler(t *testing.T) {
 					require.NoError(t, err)
 
 					gotJson := new(dto.JSONResponse)
-					err = json.Unmarshal(jsonData, gotJson)
+					err = easyjson.Unmarshal(jsonData, gotJson)
 					require.NoError(t, err)
 
 					require.EqualExportedValues(t, &dto.JSONResponse{
@@ -290,7 +293,7 @@ func TestCreateCVHandler(t *testing.T) {
 					require.NoError(t, err)
 
 					gotJson := new(dto.JSONResponse)
-					err = json.Unmarshal(jsonData, gotJson)
+					err = easyjson.Unmarshal(jsonData, gotJson)
 					require.NoError(t, err)
 
 					require.EqualExportedValues(t, &dto.JSONResponse{
@@ -310,7 +313,8 @@ func TestGetCVHandler(t *testing.T) {
 		w *httptest.ResponseRecorder
 	}
 	type dependencies struct {
-		cvsUsecase *mock.MockICVsUsecase
+		cvsUsecase         *mock.MockICVsUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
 
 		cv dto.JSONCv
 
@@ -342,8 +346,13 @@ func TestGetCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					GetCV(IDslug).
+					GetCV(gomock.Any(), IDslug).
 					Return(&f.cv, nil)
+
+				f.fileLoadingUsecase.
+					EXPECT().
+					FindCompressedFile(f.cv.Avatar).
+					Return("Compressed")
 
 				f.args.r = httptest.NewRequest(
 					http.MethodGet,
@@ -361,7 +370,7 @@ func TestGetCVHandler(t *testing.T) {
 
 				f.cvsUsecase.
 					EXPECT().
-					GetCV(IDslug).
+					GetCV(gomock.Any(), IDslug).
 					Return(nil, fmt.Errorf(dto.MsgDataBaseError))
 
 				f.args.r = httptest.NewRequest(
@@ -381,7 +390,8 @@ func TestGetCVHandler(t *testing.T) {
 			defer ctrl.Finish()
 
 			d := dependencies{
-				cvsUsecase: mock.NewMockICVsUsecase(ctrl),
+				cvsUsecase:         mock.NewMockICVsUsecase(ctrl),
+				fileLoadingUsecase: file_loading_mock.NewMockIFileLoadingUsecase(ctrl),
 			}
 
 			if tt.prepare != nil {
@@ -394,7 +404,8 @@ func TestGetCVHandler(t *testing.T) {
 			app := &internal.App{
 				Logger: logger,
 				Usecases: &internal.Usecases{
-					CVUsecase: d.cvsUsecase,
+					CVUsecase:          d.cvsUsecase,
+					FileLoadingUsecase: d.fileLoadingUsecase,
 				},
 				Microservices: &internal.Microservices{
 					Compress: nil,
@@ -485,7 +496,7 @@ func TestUpdateCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					UpdateCV(uint64(slugInt), in.currentUser, gomock.Any()).
+					UpdateCV(gomock.Any(), uint64(slugInt), in.currentUser, gomock.Any()).
 					Return(in.updatedCV, nil)
 
 				args.r = httptest.NewRequest(
@@ -504,28 +515,6 @@ func TestUpdateCVHandler(t *testing.T) {
 				args.w = httptest.NewRecorder()
 			},
 		},
-		// {
-		// 	name: "CVsHandler.UpdateCVHandler bad input",
-		// 	prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
-		// 		in.slug = "1"
-
-		// 		in.updatedCV = &dto.JSONCv{}
-
-		// 		out.status = http.StatusBadRequest
-		// 		out.response = &dto.JSONResponse{
-		// 			HTTPStatus: out.status,
-		// 			Error:      dto.MsgInvalidJSON,
-		// 		}
-
-		// 		args.r = httptest.NewRequest(
-		// 			http.MethodPut,
-		// 			fmt.Sprintf("/api/v1/cv/%s", in.slug),
-		// 			nil,
-		// 		)
-
-		// 		args.w = httptest.NewRecorder()
-		// 	},
-		// },
 		{
 			name: "CVsHandler.UpdateCVHandler can't get user from context",
 			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
@@ -640,7 +629,7 @@ func TestUpdateCVHandler(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -692,7 +681,7 @@ func TestDeleteCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					DeleteCV(uint64(slugInt), in.user).
+					DeleteCV(gomock.Any(), uint64(slugInt), in.user).
 					Return(nil)
 
 				args.r = httptest.NewRequest(
@@ -747,7 +736,7 @@ func TestDeleteCVHandler(t *testing.T) {
 
 				usecase.cvsUsecase.
 					EXPECT().
-					DeleteCV(uint64(slugInt), in.user).
+					DeleteCV(gomock.Any(), uint64(slugInt), in.user).
 					Return(fmt.Errorf(dto.MsgDataBaseError))
 
 				args.r = httptest.NewRequest(
@@ -806,7 +795,7 @@ func TestDeleteCVHandler(t *testing.T) {
 			)
 
 			jsonResonse := new(dto.JSONResponse)
-			err := json.NewDecoder(args.w.Result().Body).Decode(jsonResonse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
 			require.NoError(t, err)
 
 			require.Equalf(t, out.response, jsonResonse,
@@ -818,40 +807,189 @@ func TestDeleteCVHandler(t *testing.T) {
 	}
 }
 
+func TestCVtoPDF(t *testing.T) {
+	t.Parallel()
+
+	type in struct {
+		slug string
+		user *dto.UserFromSession
+	}
+	type outExpected struct {
+		response *dto.JSONResponse
+		status   int
+	}
+	type usecaseMock struct {
+		cvsUsecase         *mock.MockICVsUsecase
+		applicantUsecase   *applicant_mock.MockIApplicantUsecase
+		fileLoadingUsecase *file_loading_mock.MockIFileLoadingUsecase
+	}
+	type args struct {
+		r *http.Request
+		w *httptest.ResponseRecorder
+	}
+	tests := []struct {
+		name    string
+		prepare func(in *in, out *outExpected, usecase *usecaseMock, args *args)
+	}{
+		{
+			name: "CVHandler.DeleteCVHandler success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				applicant := &dto.JSONGetApplicantProfile{
+					ID:        0,
+					FirstName: "Mock Applicant",
+				}
+				cv := &dto.JSONCv{
+					ID:          0,
+					ApplicantID: 1,
+					PositionRu:  "Мок Должность",
+					PositionEn:  "Mock Position",
+					Description: "Мок Описание",
+				}
+				res := &dto.CVPDFFile{
+					FileName: "Mock CV.pdf",
+				}
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
+				}
+
+				out.status = http.StatusOK
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Body: map[string]interface{}{
+						"FileName": "/" + res.FileName,
+					},
+				}
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.cvsUsecase.
+					EXPECT().
+					GetCV(gomock.Any(), uint64(slugInt)).
+					Return(cv, nil)
+				usecase.applicantUsecase.
+					EXPECT().
+					GetApplicantProfile(context.Background(), uint64(cv.ApplicantID)).
+					Return(applicant, nil)
+				usecase.fileLoadingUsecase.
+					EXPECT().
+					CVtoPDF(cv, applicant).
+					Return(res, nil)
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/cv-to-pdf/%s", in.slug),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "CVHandler.DeleteCVHandler success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
+				}
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+				}
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/cv-to-pdf/%s", "111111111111111111111111111111111111111"),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+		{
+			name: "CVHandler.DeleteCVHandler success",
+			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
+				in.slug = "1"
+				in.user = &dto.UserFromSession{
+					ID:       1,
+					UserType: dto.UserTypeApplicant,
+				}
+
+				out.status = http.StatusInternalServerError
+				out.response = &dto.JSONResponse{
+					HTTPStatus: out.status,
+					Error:      "not found",
+				}
+				slugInt, _ := strconv.Atoi(in.slug)
+
+				usecase.cvsUsecase.
+					EXPECT().
+					GetCV(gomock.Any(), uint64(slugInt)).
+					Return(nil, errors.New("not found"))
+
+				args.r = httptest.NewRequest(
+					http.MethodGet,
+					fmt.Sprintf("/api/v1/cv-to-pdf/%s", in.slug),
+					nil,
+				)
+				args.w = httptest.NewRecorder()
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			in, out, usecase, args := new(in), new(outExpected), new(usecaseMock), new(args)
+
+			usecase.cvsUsecase = mock.NewMockICVsUsecase(ctrl)
+			usecase.applicantUsecase = applicant_mock.NewMockIApplicantUsecase(ctrl)
+			usecase.fileLoadingUsecase = file_loading_mock.NewMockIFileLoadingUsecase(ctrl)
+
+			tt.prepare(in, out, usecase, args)
+
+			logger := logrus.New()
+			logger.Out = io.Discard
+
+			app := &internal.App{
+				Logger: logger,
+				Usecases: &internal.Usecases{
+					CVUsecase:          usecase.cvsUsecase,
+					ApplicantUsecase:   usecase.applicantUsecase,
+					FileLoadingUsecase: usecase.fileLoadingUsecase,
+				},
+				Microservices: &internal.Microservices{
+					Compress: nil,
+				},
+			}
+
+			h := delivery.NewCVsHandler(app)
+			r := mux.NewRouter()
+			r.HandleFunc("/api/v1/cv-to-pdf/{id:[0-9]+}", h.CVtoPDF)
+
+			require.NotNil(t, args.r, "request is nil")
+			require.NotNil(t, args.w, "response is nil")
+
+			r.ServeHTTP(args.w, args.r)
+
+			require.EqualValuesf(t, out.status, args.w.Result().StatusCode,
+				"got status %d, expected %d",
+				args.w.Result().StatusCode,
+				out.status,
+			)
+
+			jsonResonse := new(dto.JSONResponse)
+			err := easyjson.UnmarshalFromReader(args.w.Result().Body, jsonResonse)
+			require.NoError(t, err)
+			require.Equalf(t, out.response, jsonResonse,
+				"got response %v, expected %v",
+				jsonResonse,
+				out.response,
+			)
+		})
+	}
+}
+
 // TODO: implement tests for SearchCVHandler
-
-// // func TestSearchCVHandler(t *testing.T) {
-// // 	t.Parallel()
-
-// 	type in struct {
-// 		offset      string
-// 		num         string
-// 		searchQuery string
-// 		searchBy    string
-// 		group       string
-// 	}
-// 	type outExpected struct {
-// 		status int
-// 		response *dto.JSONResponse
-// 	}
-// 	type usecaseMock struct {
-// 		cvsUsecase *mock.MockICVsUsecase
-// 	}
-// 	type args struct {
-// 		r *http.Request
-// 		w *httptest.ResponseRecorder
-// 	}
-// 	tests := []struct {
-// 		name    string
-// 		prepare func(in *in, out *outExpected, usecase *usecaseMock, args *args)
-// 	}{
-// 		{
-// 			name: "CVHandler.SearchCVHandler success",
-// 			prepare: func(in *in, out *outExpected, usecase *usecaseMock, args *args) {
-// 				in.offset = "0"
-// 				in.num = "10"
-// 				in.positionDescription = "position"
-// 			},
-// 		},
-// 	}
-// }

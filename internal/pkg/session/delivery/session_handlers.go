@@ -2,7 +2,6 @@
 package delivery
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"time"
@@ -10,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/mailru/easyjson"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
 	auth_grpc "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/auth/gen"
@@ -20,6 +20,7 @@ import (
 type SessionHandlers struct {
 	logger         *logrus.Entry
 	backendURL     string
+	secretCSRF     string
 	authClientGRPC auth_grpc.AuthorizationClient
 }
 
@@ -31,6 +32,7 @@ func NewSessionHandlers(app *internal.App) *SessionHandlers {
 	return &SessionHandlers{
 		logger:         &logrus.Entry{Logger: app.Logger},
 		backendURL:     app.BackendAddress,
+		secretCSRF:     app.CSRFSecret,
 		authClientGRPC: app.Microservices.Auth,
 	}
 }
@@ -90,11 +92,11 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("%s: grpc returned err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusUnauthorized,
-			Error:      dto.MsgNoUserWithSession,  // TODO: implement error
+			Error:      dto.MsgNoUserWithSession, // TODO: implement error
 		})
 		return
 	}
-	
+
 	userData := grpc_response.UserData
 
 	h.logger.Debugf("%s: got userID: %d", fn, userData.ID)
@@ -103,6 +105,28 @@ func (h *SessionHandlers) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		UserType: userData.UserType,
 	}
 	h.logger.Debugf("%s: user: %v", fn, user)
+
+	cryptToken, err := utils.NewCryptToken(h.secretCSRF)
+	if err != nil {
+		h.logger.Errorf("%s: can't initialize CSRF token generator %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	tokenCSRF, err := cryptToken.Create(user.ID, user.UserType, session.Value)
+	if err != nil {
+		h.logger.Errorf("%s: while creating CSRF token got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("%s: CSRF token created: %s", fn, tokenCSRF)
+	w.Header().Set("X-CSRF-Token", tokenCSRF)
+
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       user,
@@ -127,7 +151,7 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 	h.logger.Debugf("%s: entering", fn)
 
 	loginForm := new(dto.JSONLoginForm)
-	err := json.NewDecoder(r.Body).Decode(loginForm)
+	err := easyjson.UnmarshalFromReader(r.Body, loginForm)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
@@ -154,7 +178,7 @@ func (h *SessionHandlers) Login(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("%s: grpc returned err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusUnauthorized,
-			Error:      dto.MsgNoUserWithSession,  // TODO: implement error
+			Error:      dto.MsgNoUserWithSession, // TODO: implement error
 		})
 		return
 	}
@@ -226,7 +250,7 @@ func (h *SessionHandlers) Logout(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorf("%s: grpc returned err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusUnauthorized, dto.JSONResponse{
 			HTTPStatus: http.StatusUnauthorized,
-			Error:      dto.MsgNoUserWithSession,  // TODO: implement error
+			Error:      dto.MsgNoUserWithSession, // TODO: implement error
 		})
 		return
 	}

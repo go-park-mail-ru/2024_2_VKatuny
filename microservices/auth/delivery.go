@@ -20,7 +20,7 @@ import (
 type AuthorizationDelivery struct {
 	gen.UnimplementedAuthorizationServer
 
-	authRepo IAuthorizationRepository
+	AuthRepo IAuthorizationRepository
 	logger   *logrus.Entry
 
 	tokenLength uint
@@ -37,7 +37,7 @@ func NewAuthorization(dbConn *sql.DB, redisConn redis.Conn, logger *logrus.Logge
 	}
 	logger.Debugf("%s: initializing", fn)
 	return &AuthorizationDelivery{
-		authRepo:    NewAuthorizationRepository(logger, dbConn, redisConn),
+		AuthRepo:    NewAuthorizationRepository(logger, dbConn, redisConn),
 		logger:      &logrus.Entry{Logger: logger},
 		tokenLength: 32,
 		sessionTTL:  24 * time.Hour,
@@ -67,7 +67,7 @@ func (a *AuthorizationDelivery) AuthUser(ctx context.Context, req *gen.AuthReque
 	}
 	a.logger.Debugf("%s: generated token: %s", fn, token)
 
-	userInfo, err := a.authRepo.GetUser(req.UserType, req.Email)
+	userInfo, err := a.AuthRepo.GetUser(req.UserType, req.Email)
 	if err != nil {
 		a.logger.Errorf("%s: got err %s", fn, err)
 		response.Status = gen.StatusCode_UnableToGetUser
@@ -91,7 +91,7 @@ func (a *AuthorizationDelivery) AuthUser(ctx context.Context, req *gen.AuthReque
 		return response, status.Error(codes.InvalidArgument, "wrong login or password")
 	}
 
-	err = a.authRepo.CreateSession(userInfo.ID, token)
+	err = a.AuthRepo.CreateSession(userInfo.ID, token)
 	if err != nil {
 		a.logger.Errorf("%s: got err %s", fn, err)
 		response.Status = gen.StatusCode_UnableToCreateSession
@@ -124,7 +124,7 @@ func (a *AuthorizationDelivery) CheckAuth(ctx context.Context, req *gen.CheckAut
 
 	sessionID := req.Session.ID
 
-	userID, err := a.authRepo.GetUserIdBySession(sessionID)
+	userID, err := a.AuthRepo.GetUserIdBySession(sessionID)
 	if err != nil {
 		a.logger.Errorf("%s: got err %s", fn, err)
 		response.Status = gen.StatusCode_NoSessionExist
@@ -158,7 +158,7 @@ func (a *AuthorizationDelivery) DeauthUser(ctx context.Context, req *gen.DeauthR
 		return response, status.Error(codes.InvalidArgument, "session is nil")
 	}
 
-	err := a.authRepo.DeleteSession(req.Session.ID)
+	err := a.AuthRepo.DeleteSession(req.Session.ID)
 	if err != nil {
 		a.logger.Errorf("%s: got err %s", fn, err)
 		response.Status = gen.StatusCode_UnableToDeleteSession

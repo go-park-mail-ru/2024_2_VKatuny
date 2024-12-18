@@ -13,10 +13,11 @@ import (
 // Implementation locates in ./repository
 type IApplicantRepository interface { // TODO: rename to IApplicantRepository
 	// Can we send dto to Repository?
-	Create(applicant *dto.ApplicantInput) (*models.Applicant, error)
-	Update(ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) (*models.Applicant, error)
-	GetByID(ID uint64) (*models.Applicant, error)
-	GetByEmail(email string) (*models.Applicant, error)
+	Create(ctx context.Context, applicant *dto.ApplicantInput) (*models.Applicant, error)
+	Update(ctx context.Context, ID uint64, newApplicantData *dto.JSONUpdateApplicantProfile) (*models.Applicant, error)
+	GetByID(ctx context.Context, ID uint64) (*models.Applicant, error)
+	GetByEmail(ctx context.Context, email string) (*models.Applicant, error)
+	GetAllCities(ctx context.Context, namePat string) ([]string, error)
 }
 
 type IApplicantUsecase interface {
@@ -28,6 +29,7 @@ type IApplicantUsecase interface {
 		applicantID uint64,
 		newProfileData *dto.JSONUpdateApplicantProfile,
 	) error
+	GetAllCities(ctx context.Context, namePart string) ([]string, error)
 }
 
 var (

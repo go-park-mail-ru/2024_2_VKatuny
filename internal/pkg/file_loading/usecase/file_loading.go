@@ -1,10 +1,11 @@
 package usecase
 
 import (
-	"context"
 	"fmt"
 	"mime/multipart"
+	"os"
 	"slices"
+	"strings"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/configs"
@@ -19,7 +20,7 @@ type FileLoadingUsecase struct {
 	logger                *logrus.Logger
 	FileLoadingRepository fileloading.IFileLoadingRepository
 	CompressGRPC          compressmicroservice.CompressServiceClient
-	conf *configs.Config
+	conf                  *configs.Config
 }
 
 func NewFileLoadingUsecase(logger *logrus.Logger, repositories *internal.Repositories, microservices *internal.Microservices, conf *configs.Config) *FileLoadingUsecase {
@@ -46,19 +47,37 @@ func (vu *FileLoadingUsecase) WriteImage(file multipart.File, header *multipart.
 	if err != nil {
 		return "", "", err
 	}
-	var buff []byte
-	file.Read(buff)
-	vu.logger.Debugf("Start compression")
-	_, err = vu.CompressGRPC.CompressAndSaveFile(
-		context.Background(),
-		&compressmicroservice.CompressAndSaveFileInput{
-			FileName: filename + header.Filename,
-			FileType: header.Header["Content-Type"][0],
-			File:     buff,
-		},
-	)
-	if err != nil {
-		return "", "", err
+	return dir + fileAddress, vu.FindCompressedFile(fileAddress), nil
+}
+
+func (vu *FileLoadingUsecase) FindCompressedFile(filename string) string {
+	filename = strings.Split(filename, "/")[len(strings.Split(filename, "/"))-1]
+	vu.logger.Debugf("filename: %s", filename)
+	dir := vu.conf.CompressMicroservice.CompressedMediaDir
+	pwd, _ := os.Getwd()
+	newPwd := ""
+	for _, i := range strings.Split(pwd, "/") {
+		newPwd += i + "/"
+		if i == "2024_2_VKatuny" {
+			break
+		}
 	}
-	return dir + fileAddress, vu.conf.CompressMicroservice.CompressedMediaDir + fileAddress, nil
+	compressed, err := os.ReadDir(newPwd + dir)
+	if err != nil {
+		return ""
+	}
+	for _, file := range compressed {
+		if file.Name()[:strings.Index(file.Name(), ".")] == filename[:strings.Index(filename, ".")] {
+			return dir + file.Name()
+		}
+	}
+	return ""
+}
+
+func (vu *FileLoadingUsecase) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (*dto.CVPDFFile, error) {
+	name, err := vu.FileLoadingRepository.CVtoPDF(CV, applicant)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.CVPDFFile{FileName: name}, nil
 }

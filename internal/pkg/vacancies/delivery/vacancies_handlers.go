@@ -37,8 +37,10 @@ func (h *VacanciesHandlers) GetVacancies(w http.ResponseWriter, r *http.Request)
 	searchStr := queryParams.Get("searchQuery")
 	group := queryParams.Get("group")
 	searchBy := queryParams.Get("searchBy")
-	vacancies, err := h.vacanciesUsecase.SearchVacancies(offsetStr, numStr, searchStr, group, searchBy)
-
+	vacancies, err := h.vacanciesUsecase.SearchVacancies(r.Context(),offsetStr, numStr, searchStr, group, searchBy)
+	for _, vacancy := range vacancies {
+		vacancy.CompressedAvatar  = h.fileLoadingUsecase.FindCompressedFile(vacancy.Avatar)
+	}
 	if err != nil {
 		h.logger.Errorf("function: %s; got err while reading vacancies from db %s", fn, err)
 		middleware.UniversalMarshal(

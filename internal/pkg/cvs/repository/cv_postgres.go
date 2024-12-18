@@ -1,25 +1,33 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	"github.com/sirupsen/logrus"
 )
 
 type PostgreSQLCVStorage struct {
 	db *sql.DB
+	logger *logrus.Entry
 }
 
-func NewCVStorage(db *sql.DB) *PostgreSQLCVStorage {
+func NewCVStorage(db *sql.DB, logger *logrus.Logger) *PostgreSQLCVStorage {
 	return &PostgreSQLCVStorage{
 		db: db,
+		logger: logrus.NewEntry(logger),
 	}
 }
 
-func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*dto.JSONCv, error) {
-
+func (s *PostgreSQLCVStorage) GetCVsByApplicantID(ctx context.Context, applicantID uint64) ([]*dto.JSONCv, error) {
+	funcName := "PostgreSQLCVStorage.GetCVsByApplicantID"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+	
 	CVs := make([]*dto.JSONCv, 0)
 
 	rows, err := s.db.Query(`select cv.id, applicant_id, position_rus, position_eng, job_search_status_name, cv_description, working_experience,
@@ -27,6 +35,7 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*dto.JS
 		left join job_search_status on job_search_status.id = cv.job_search_status_id left join position_category on cv.position_category_id = position_category.id
 		where cv.applicant_id = $1`, applicantID)
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -48,6 +57,8 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*dto.JS
 			); err != nil {
 			return nil, err
 		}
+		s.logger.Debugf("%s: got from sql db %v", funcName, oneCV)
+
 		oneCVOk := dto.JSONCv{
 			ID:                   oneCV.ID,
 			ApplicantID:          oneCV.ApplicantID,
@@ -63,24 +74,30 @@ func (s *PostgreSQLCVStorage) GetCVsByApplicantID(applicantID uint64) ([]*dto.JS
 			CompressedAvatar:     oneCV.CompressedAvatar.String,
 		}
 		CVs = append(CVs, &oneCVOk)
-		fmt.Println(oneCVOk)
 	}
 
 	return CVs, nil
 }
 
-func (s *PostgreSQLCVStorage) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
+func (s *PostgreSQLCVStorage) Create(ctx context.Context, cv *dto.JSONCv) (*dto.JSONCv, error) {
+	funcName := "PostgreSQLCVStorage.Create"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	var JobSearchStatusID int
 	row := s.db.QueryRow(`select id from job_search_status where job_search_status_name=$1`, cv.JobSearchStatusName)
 	if err := row.Scan(&JobSearchStatusID); err != nil {
 		switch err {
 		case sql.ErrNoRows:
+			s.logger.Debugf("%s: got empty result: %s", funcName, sql.ErrNoRows.Error())
 			row = s.db.QueryRow(`insert into job_search_status (job_search_status_name) VALUES ($1) returning id`, cv.JobSearchStatusName)
 			err = row.Scan(&JobSearchStatusID)
 			if err != nil {
+				s.logger.Errorf("%s: got error %v", funcName, err)
 				return nil, err
 			}
 		default:
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 	}
@@ -95,6 +112,7 @@ func (s *PostgreSQLCVStorage) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
 		row = s.db.QueryRow(`select id from position_category where category_name=$1`, cv.PositionCategoryName)
 		err := row.Scan(&PositionCategoryID)
 		if err != nil {
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 		row = s.db.QueryRow(`insert into cv (applicant_id, position_rus, position_eng, cv_description, job_search_status_id, working_experience, path_to_profile_avatar, position_category_id, compressed_image)
@@ -113,15 +131,21 @@ func (s *PostgreSQLCVStorage) Create(cv *dto.JSONCv) (*dto.JSONCv, error) {
 		&oneCv.UpdatedAt,
 		&oneCv.CompressedAvatar,
 	)
+	s.logger.Debugf("%s: got from sql db %v", funcName, oneCv)
+
 	oneCv.JobSearchStatusName = cv.JobSearchStatusName
 	oneCv.PositionCategoryName = cv.PositionCategoryName
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	return &oneCv, err
 }
 
-func (s *PostgreSQLCVStorage) GetByID(ID uint64) (*dto.JSONCv, error) {
+func (s *PostgreSQLCVStorage) GetByID(ctx context.Context, ID uint64) (*dto.JSONCv, error) {
+	funcName := "PostgreSQLCVStorage.GetByID"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	row := s.db.QueryRow(`select cv.id, applicant_id, position_rus, position_eng, job_search_status.job_search_status_name, cv_description, working_experience,
 		path_to_profile_avatar, position_category.category_name, cv.created_at, cv.updated_at, cv.compressed_image from cv
@@ -142,6 +166,7 @@ func (s *PostgreSQLCVStorage) GetByID(ID uint64) (*dto.JSONCv, error) {
 		&oneCV.UpdatedAt,
 		&oneCV.CompressedAvatar,
 	)
+	s.logger.Debugf("%s: got from sql db %v", funcName, oneCV)
 
 	oneCVOk := dto.JSONCv{
 		ID:                   oneCV.ID,
@@ -158,24 +183,31 @@ func (s *PostgreSQLCVStorage) GetByID(ID uint64) (*dto.JSONCv, error) {
 		CompressedAvatar:     oneCV.CompressedAvatar.String,
 	}
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	return &oneCVOk, err
 }
 
-func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSONCv, error) {
+func (s *PostgreSQLCVStorage) Update(ctx context.Context, ID uint64, updatedCv *dto.JSONCv) (*dto.JSONCv, error) {
+	funcName := "PostgreSQLCVStorage.Update"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
 
 	var JobSearchStatusID int
 	row := s.db.QueryRow(`select id from job_search_status where job_search_status_name=$1`, updatedCv.JobSearchStatusName)
 	if err := row.Scan(&JobSearchStatusID); err != nil {
 		switch err {
 		case sql.ErrNoRows:
+			s.logger.Debugf("%s: got empty result: %s", funcName, sql.ErrNoRows.Error())
 			row = s.db.QueryRow(`insert into job_search_status (job_search_status_name) VALUES ($1) returning id`, updatedCv.JobSearchStatusName)
 			err = row.Scan(&JobSearchStatusID)
 			if err != nil {
+				s.logger.Errorf("%s: got error %v", funcName, err)
 				return nil, err
 			}
 		default:
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 	}
@@ -184,10 +216,10 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 		row = s.db.QueryRow(`select id from position_category where category_name=$1`, updatedCv.PositionCategoryName)
 		err := row.Scan(&PositionCategoryID)
 		if err != nil {
+			s.logger.Errorf("%s: got error %v", funcName, err)
 			return nil, err
 		}
 	}
-	fmt.Println(updatedCv)
 	if updatedCv.Avatar != "" {
 		if updatedCv.PositionCategoryName == "" {
 			row = s.db.QueryRow(`update cv
@@ -212,9 +244,9 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 		} else {
 			row = s.db.QueryRow(`update cv
 					set applicant_id = $1, position_rus = $2, position_eng = $3, cv_description=$4, 
-					job_search_status_id = $5, working_experience = $6, path_to_profile_avatar=$7, position_category_id=$8 where id=$9 returning id, 
+					job_search_status_id = $5, working_experience = $6, position_category_id=$7 where id=$8 returning id, 
 					applicant_id, position_rus, position_eng, cv_description, working_experience, path_to_profile_avatar, created_at, updated_at, compressed_image`,
-				updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, updatedCv.Avatar, PositionCategoryID, ID)
+				updatedCv.ApplicantID, updatedCv.PositionRu, updatedCv.PositionEn, updatedCv.Description, JobSearchStatusID, updatedCv.WorkingExperience, PositionCategoryID, ID)
 		}
 	}
 
@@ -233,6 +265,8 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 		&oneCV.CompressedAvatar,
 	)
 
+	s.logger.Debugf("%s: got updated cv from sql db %v", funcName, oneCV)
+
 	oneCVOk := dto.JSONCv{
 		ID:                   oneCV.ID,
 		ApplicantID:          oneCV.ApplicantID,
@@ -248,17 +282,30 @@ func (s *PostgreSQLCVStorage) Update(ID uint64, updatedCv *dto.JSONCv) (*dto.JSO
 	oneCVOk.JobSearchStatusName = updatedCv.JobSearchStatusName
 	oneCVOk.PositionCategoryName = updatedCv.PositionCategoryName
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
-	return &oneCVOk, err
+	return &oneCVOk, nil
 }
 
-func (s *PostgreSQLCVStorage) Delete(ID uint64) error {
+func (s *PostgreSQLCVStorage) Delete(ctx context.Context, ID uint64) error {
+	funcName := "PostgreSQLCVStorage.Delete"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	_, err := s.db.Exec(`delete from cv where id = $1`, ID)
-	return err
+	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
+		return err
+	}
+	return nil
 }
 
-func (s *PostgreSQLCVStorage) SearchAll(offset uint64, num uint64, searchStr, group, searchBy string) ([]*dto.JSONCv, error) {
+func (s *PostgreSQLCVStorage) SearchAll(ctx context.Context, offset uint64, num uint64, searchStr, group, searchBy string) ([]*dto.JSONCv, error) {
+	funcName := "PostgreSQLCVStorage.Delete"
+	s.logger = utils.SetLoggerRequestID(ctx, s.logger)
+	s.logger.Debugf("%s: entering", funcName)
+
 	CVs := make([]*dto.JSONCv, 0)
 	iter := 1
 	mainPart := `select cv.id, applicant_id, cv.position_rus, cv.position_eng, cv_description, job_search_status.job_search_status_name,
@@ -297,8 +344,7 @@ func (s *PostgreSQLCVStorage) SearchAll(offset uint64, num uint64, searchStr, gr
 	}
 
 	lastPart := " limit $" + strconv.Itoa(iter) + " offset $" + strconv.Itoa(iter+1)
-	fmt.Println(categoryPart)
-	fmt.Println(mainPart + categoryPart + searchPart + lastPart)
+	s.logger.Debugf("%s: builded query: %s", funcName, mainPart + categoryPart + searchPart + lastPart)
 	iter += 2
 	var rows *sql.Rows
 	var err error
@@ -312,6 +358,7 @@ func (s *PostgreSQLCVStorage) SearchAll(offset uint64, num uint64, searchStr, gr
 		rows, err = s.db.Query(mainPart+categoryPart+searchPart+lastPart, group, num, offset)
 	}
 	if err != nil {
+		s.logger.Errorf("%s: got error %v", funcName, err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -331,7 +378,8 @@ func (s *PostgreSQLCVStorage) SearchAll(offset uint64, num uint64, searchStr, gr
 			&oneCV.UpdatedAt,
 			&oneCV.CompressedAvatar,
 			); err != nil {
-			return nil, err
+				s.logger.Errorf("%s: got error %v", funcName, err)
+				return nil, err
 		}
 		oneCVOk := dto.JSONCv{
 			ID:                   oneCV.ID,
@@ -350,6 +398,6 @@ func (s *PostgreSQLCVStorage) SearchAll(offset uint64, num uint64, searchStr, gr
 		CVs = append(CVs, &oneCVOk)
 		fmt.Println(oneCVOk)
 	}
-	fmt.Println(CVs)
+	s.logger.Debugf("%s: got CVs form db %v", funcName, CVs)
 	return CVs, nil
 }

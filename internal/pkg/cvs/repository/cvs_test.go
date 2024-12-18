@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
+	"github.com/sirupsen/logrus"
 )
 
 func TestPostgresGetCVsByApplicantID(t *testing.T) {
@@ -74,9 +77,9 @@ func TestPostgresGetCVsByApplicantID(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewCVStorage(db)
+			s := NewCVStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetCVsByApplicantID(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetCVsByApplicantID(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -94,6 +97,7 @@ func TestPostgresCreate(t *testing.T) {
 		jobSearchStatusID uint64
 		query1            func(mock sqlmock.Sqlmock, args args)
 		query2            func(mock sqlmock.Sqlmock, args args)
+		query3            func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
@@ -120,10 +124,17 @@ func TestPostgresCreate(t *testing.T) {
 						WithArgs(
 							args.cv.JobSearchStatusName,
 						).
+						WillReturnError(sql.ErrNoRows)
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into job_search_status (.+)`).
+						WithArgs(
+							args.cv.JobSearchStatusName,
+						).
 						WillReturnRows(sqlmock.NewRows([]string{"id"}).
 							AddRow(1))
 				},
-				query2: func(mock sqlmock.Sqlmock, args args) {
+				query3: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`insert into cv (.+)`).
 						WithArgs(
 							args.cv.ApplicantID,
@@ -133,6 +144,58 @@ func TestPostgresCreate(t *testing.T) {
 							args.jobSearchStatusID,
 							args.cv.WorkingExperience,
 							args.cv.Avatar,
+							args.cv.CompressedAvatar,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
+							"cv_description", "working_experience", "path_to_profile_avatar", "created_at", "updated_at", "compressed_image"}).
+							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Нет опыта", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "cv.svg"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				cv: dto.JSONCv{
+					ApplicantID:          1,
+					PositionRu:           "Должность",
+					PositionEn:           "Position",
+					Description:          "Description",
+					JobSearchStatusName:  "Ищу",
+					WorkingExperience:    "Experience",
+					Avatar:               "a.svg",
+					CompressedAvatar:     "a.svg",
+					PositionCategoryName: "Category",
+				},
+				jobSearchStatusID: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.cv.JobSearchStatusName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.cv.PositionCategoryName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into cv (.+)`).
+						WithArgs(
+							args.cv.ApplicantID,
+							args.cv.PositionRu,
+							args.cv.PositionEn,
+							args.cv.Description,
+							args.jobSearchStatusID,
+							args.cv.WorkingExperience,
+							args.cv.Avatar,
+							1,
 							args.cv.CompressedAvatar,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
@@ -156,10 +219,11 @@ func TestPostgresCreate(t *testing.T) {
 
 			tt.args.query1(mock, tt.args)
 			tt.args.query2(mock, tt.args)
+			tt.args.query3(mock, tt.args)
 
-			s := NewCVStorage(db)
+			s := NewCVStorage(db, logrus.StandardLogger())
 
-			if _, err := s.Create(&tt.args.cv); (err != nil) != tt.wantErr {
+			if _, err := s.Create(context.Background(), &tt.args.cv); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -235,9 +299,9 @@ func TestPostgresGetByID(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewCVStorage(db)
+			s := NewCVStorage(db, logrus.StandardLogger())
 
-			if _, err := s.GetByID(tt.args.ID); (err != nil) != tt.wantErr {
+			if _, err := s.GetByID(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!! %s", err != nil, tt.wantErr, err)
 			}
 
@@ -256,6 +320,7 @@ func TestPostgresUpdate(t *testing.T) {
 		jobSearchStatusID uint64
 		query1            func(mock sqlmock.Sqlmock, args args)
 		query2            func(mock sqlmock.Sqlmock, args args)
+		query3            func(mock sqlmock.Sqlmock, args args)
 	}
 	tests := []struct {
 		name    string
@@ -284,10 +349,17 @@ func TestPostgresUpdate(t *testing.T) {
 						WithArgs(
 							args.cv.JobSearchStatusName,
 						).
+						WillReturnError(sql.ErrNoRows)
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into job_search_status  (.+)`).
+						WithArgs(
+							args.cv.JobSearchStatusName,
+						).
 						WillReturnRows(sqlmock.NewRows([]string{"id"}).
 							AddRow(1))
 				},
-				query2: func(mock sqlmock.Sqlmock, args args) {
+				query3: func(mock sqlmock.Sqlmock, args args) {
 					mock.ExpectQuery(`update cv (.+)`).
 						WithArgs(
 							args.cv.ApplicantID,
@@ -298,6 +370,162 @@ func TestPostgresUpdate(t *testing.T) {
 							args.cv.WorkingExperience,
 							args.cv.Avatar,
 							args.cv.CompressedAvatar,
+							args.cv.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
+							"cv_description", "working_experience", "path_to_profile_avatar", "created_at", "updated_at", "compressed_image"}).
+							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Нет опыта", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "cv.svg"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				ID: 1,
+				cv: dto.JSONCv{
+					ApplicantID:          1,
+					PositionRu:           "Должность",
+					PositionEn:           "Position",
+					Description:          "Description",
+					JobSearchStatusName:  "Ищу",
+					WorkingExperience:    "Experience",
+					Avatar:               "a.svg",
+					CompressedAvatar:     "a.svg",
+					PositionCategoryName: "Category",
+					ID:                   1,
+				},
+				jobSearchStatusID: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.cv.JobSearchStatusName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select id from position_category (.+)`).
+						WithArgs(
+							args.cv.PositionCategoryName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`update cv (.+)`).
+						WithArgs(
+							args.cv.ApplicantID,
+							args.cv.PositionRu,
+							args.cv.PositionEn,
+							args.cv.Description,
+							args.jobSearchStatusID,
+							args.cv.WorkingExperience,
+							args.cv.Avatar,
+							1,
+							args.cv.CompressedAvatar,
+							args.cv.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
+							"cv_description", "working_experience", "path_to_profile_avatar", "created_at", "updated_at", "compressed_image"}).
+							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Нет опыта", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "cv.svg"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				ID: 1,
+				cv: dto.JSONCv{
+					ApplicantID:         1,
+					PositionRu:          "Должность",
+					PositionEn:          "Position",
+					Description:         "Description",
+					JobSearchStatusName: "Ищу",
+					WorkingExperience:   "Experience",
+					CompressedAvatar:    "a.svg",
+					ID:                  1,
+				},
+				jobSearchStatusID: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.cv.JobSearchStatusName,
+						).
+						WillReturnError(sql.ErrNoRows)
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`insert into job_search_status  (.+)`).
+						WithArgs(
+							args.cv.JobSearchStatusName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`update cv (.+)`).
+						WithArgs(
+							args.cv.ApplicantID,
+							args.cv.PositionRu,
+							args.cv.PositionEn,
+							args.cv.Description,
+							args.jobSearchStatusID,
+							args.cv.WorkingExperience,
+							args.cv.ID,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
+							"cv_description", "working_experience", "path_to_profile_avatar", "created_at", "updated_at", "compressed_image"}).
+							AddRow(1, 1, "Скульптор", "Sculptor", "Я усердный и трудолюбивый", "Нет опыта", "cv.svg", "2024-11-09 04:17:52.598 +0300", "2024-11-09 04:17:52.598 +0300", "cv.svg"))
+				},
+			},
+			wantErr: false,
+			err:     nil,
+		},
+		{
+			name: "TestOk",
+			args: args{
+				ID: 1,
+				cv: dto.JSONCv{
+					ApplicantID:          1,
+					PositionRu:           "Должность",
+					PositionEn:           "Position",
+					Description:          "Description",
+					JobSearchStatusName:  "Ищу",
+					WorkingExperience:    "Experience",
+					CompressedAvatar:     "a.svg",
+					PositionCategoryName: "Category",
+					ID:                   1,
+				},
+				jobSearchStatusID: 1,
+				query1: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select  (.+)`).
+						WithArgs(
+							args.cv.JobSearchStatusName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query2: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`select id from position_category (.+)`).
+						WithArgs(
+							args.cv.PositionCategoryName,
+						).
+						WillReturnRows(sqlmock.NewRows([]string{"id"}).
+							AddRow(1))
+				},
+				query3: func(mock sqlmock.Sqlmock, args args) {
+					mock.ExpectQuery(`update cv (.+)`).
+						WithArgs(
+							args.cv.ApplicantID,
+							args.cv.PositionRu,
+							args.cv.PositionEn,
+							args.cv.Description,
+							args.jobSearchStatusID,
+							args.cv.WorkingExperience,
+							1,
 							args.cv.ID,
 						).
 						WillReturnRows(sqlmock.NewRows([]string{"id", "applicant_id", "position_rus", "position_eng",
@@ -321,10 +549,11 @@ func TestPostgresUpdate(t *testing.T) {
 
 			tt.args.query1(mock, tt.args)
 			tt.args.query2(mock, tt.args)
+			tt.args.query3(mock, tt.args)
 
-			s := NewCVStorage(db)
+			s := NewCVStorage(db, logrus.StandardLogger())
 
-			if _, err := s.Update(tt.args.ID, &tt.args.cv); (err != nil) != tt.wantErr {
+			if _, err := s.Update(context.Background(), tt.args.ID, &tt.args.cv); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!!!!!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -375,9 +604,9 @@ func TestPostgresDelete(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewCVStorage(db)
+			s := NewCVStorage(db, logrus.StandardLogger())
 
-			if err := s.Delete(tt.args.ID); (err != nil) != tt.wantErr {
+			if err := s.Delete(context.Background(), tt.args.ID); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err!!!! %s", err != nil, tt.wantErr, err.Error())
 			}
 
@@ -441,9 +670,9 @@ func TestPostgresSearchAll(t *testing.T) {
 
 			tt.args.query(mock, tt.args)
 
-			s := NewCVStorage(db)
+			s := NewCVStorage(db, logrus.StandardLogger())
 
-			if _, err := s.SearchAll(tt.args.offset, tt.args.num, tt.args.searchStr, tt.args.group, tt.args.searchBy); (err != nil) != tt.wantErr {
+			if _, err := s.SearchAll(context.Background(), tt.args.offset, tt.args.num, tt.args.searchStr, tt.args.group, tt.args.searchBy); (err != nil) != tt.wantErr {
 				t.Errorf("Postgres error = %v, wantErr %v, err !!! %s", err != nil, tt.wantErr, err.Error())
 			}
 

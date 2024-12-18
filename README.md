@@ -1,4 +1,5 @@
 # 2024_2_VKatuny
+![Coverage](https://img.shields.io/badge/Coverage-60.8%25-yellow)
 
 Данный репозиторий предназначен для хранения frontend части проекта HeadHunter,
 разрабатываемого командой VKатуны.
@@ -51,3 +52,18 @@ make lint
 ```bash
 make tests
 ```
+
+### Необходимые библиотеки
+go-pdfium  
+https://github.com/klippa-app/go-pdfium?tab=readme-ov-file
+pdfium  
+https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F6886/pdfium-linux-x64.tgz
+
+govips  
+https://github.com/davidbyttow/govips
++
+https://github.com/davidbyttow/govips/issues/100
+(
+sudo apt install pkg-config
+sudo apt install libvips-dev
+)

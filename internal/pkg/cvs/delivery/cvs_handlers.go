@@ -1,26 +1,29 @@
 package delivery
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/middleware"
+	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/applicant"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/commonerrors"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/cvs"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
 	"github.com/go-park-mail-ru/2024_2_VKatuny/internal/utils"
+	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	compressmicroservice "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
 
 	fileloading "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/file_loading"
 )
 
 type CVsHandler struct {
-	logger               *logrus.Entry
-	cvsUsecase           cvs.ICVsUsecase
-	fileLoadingUsecase   fileloading.IFileLoadingUsecase
+	logger             *logrus.Entry
+	applicantUsecase   applicant.IApplicantUsecase
+	cvsUsecase         cvs.ICVsUsecase
+	fileLoadingUsecase fileloading.IFileLoadingUsecase
 	CompressGRPC       compressmicroservice.CompressServiceClient
 }
 
@@ -37,9 +40,10 @@ func NewCVsHandler(layers *internal.App) *CVsHandler {
 	}
 	logger.Debug("CVsHandler created")
 	return &CVsHandler{
-		logger:               &logrus.Entry{Logger: logger},
-		cvsUsecase:           layers.Usecases.CVUsecase,
-		fileLoadingUsecase:   layers.Usecases.FileLoadingUsecase,
+		logger:             &logrus.Entry{Logger: logger},
+		applicantUsecase:   layers.Usecases.ApplicantUsecase,
+		cvsUsecase:         layers.Usecases.CVUsecase,
+		fileLoadingUsecase: layers.Usecases.FileLoadingUsecase,
 		CompressGRPC:       layers.Microservices.Compress,
 	}
 }
@@ -91,7 +95,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 		newCV.Avatar = fileAddress
 		newCV.CompressedAvatar = compressedFileAddress
 	}
-
+	utils.EscapeHTMLStruct(newCV)
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
@@ -102,7 +106,7 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	wroteCV, err := h.cvsUsecase.CreateCV(newCV, currentUser)
+	wroteCV, err := h.cvsUsecase.CreateCV(r.Context(), newCV, currentUser)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -151,7 +155,7 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 	}
 	h.logger.Debugf("%s: got slug cvID: %d", fn, cvID)
 
-	CV, err := h.cvsUsecase.GetCV(cvID)
+	CV, err := h.cvsUsecase.GetCV(r.Context(), cvID)
 	if err != nil {
 		h.logger.Errorf("%s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -160,7 +164,7 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
+	CV.CompressedAvatar  = h.fileLoadingUsecase.FindCompressedFile(CV.Avatar)
 	h.logger.Debugf("%s: success, got cv: %v", fn, CV)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -209,7 +213,7 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
-	
+
 	currentUser, ok := r.Context().Value(dto.UserContextKey).(*dto.UserFromSession)
 	if !ok {
 		h.logger.Error("unable to get user from context, please check didn't you forget to add middleware.RequireAuthorization")
@@ -243,8 +247,8 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 		newCV.Avatar = fileAddress
 		newCV.CompressedAvatar = compressedFileAddress
 	}
-
-	updatedCV, err := h.cvsUsecase.UpdateCV(cvID, currentUser, newCV)
+	utils.EscapeHTMLStruct(newCV)
+	updatedCV, err := h.cvsUsecase.UpdateCV(r.Context(), cvID, currentUser, newCV)
 	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
@@ -305,8 +309,8 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.cvsUsecase.DeleteCV(cvID, currentUser)
- 	if err != nil {
+	err = h.cvsUsecase.DeleteCV(r.Context(), cvID, currentUser)
+	if err != nil {
 		h.logger.Errorf("function %s: got err %s", fn, err)
 		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
 			HTTPStatus: http.StatusInternalServerError,
@@ -317,5 +321,60 @@ func (h *CVsHandler) DeleteCV(w http.ResponseWriter, r *http.Request) {
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
+	})
+}
+
+// @Tags CV
+// @Summary Get cv
+// @Description Get cv
+// @Produce json
+// @Param id path uint64 true "id of cv"
+// @Success 200 {object} dto.JSONResponse
+// @Failure 400 {object} dto.JSONResponse
+// @Failure 401 {object} dto.JSONResponse
+// @Failure 404 {object} dto.JSONResponse
+// @Failure 405 {object} dto.JSONResponse
+// @Failure 500 {object} dto.JSONResponse
+// @Router /api/v1/cv-to-pdf/{id} [get]
+func (h *CVsHandler) CVtoPDF(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	fn := "CVsHandler.CVtoPDF"
+	h.logger = utils.SetLoggerRequestID(r.Context(), h.logger)
+	h.logger.Debugf("%s: entering", fn)
+
+	vars := mux.Vars(r)
+	slug := vars["id"]
+	cvID, err := strconv.ParseUint(slug, 10, 64)
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      commonerrors.ErrFrontUnableToCastSlug.Error(),
+		})
+		return
+	}
+	h.logger.Debugf("function %s: got slug cvID: %d", fn, cvID)
+
+	var name *dto.CVPDFFile
+	CV, err := h.cvsUsecase.GetCV(r.Context(), cvID)
+	if err == nil {
+		applicant, err := h.applicantUsecase.GetApplicantProfile(context.Background(), CV.ApplicantID)
+		if err == nil {
+			name, err = h.fileLoadingUsecase.CVtoPDF(CV, applicant)
+		}
+	}
+	if err != nil {
+		h.logger.Errorf("function %s: got err %s", fn, err)
+		middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+			HTTPStatus: http.StatusInternalServerError,
+			Error:      err.Error(),
+		})
+		return
+	}
+	name.FileName="/"+name.FileName
+	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
+		HTTPStatus: http.StatusOK,
+		Body:       name,
 	})
 }

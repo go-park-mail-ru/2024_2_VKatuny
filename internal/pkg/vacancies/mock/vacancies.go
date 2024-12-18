@@ -10,6 +10,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
 	dto "github.com/go-park-mail-ru/2024_2_VKatuny/internal/pkg/dto"
@@ -42,165 +43,208 @@ func (m *MockIVacanciesRepository) EXPECT() *MockIVacanciesRepositoryMockRecorde
 }
 
 // Create mocks base method.
-func (m *MockIVacanciesRepository) Create(vacancy *dto.JSONVacancy) (uint64, error) {
+func (m *MockIVacanciesRepository) Create(ctx context.Context, vacancy *dto.JSONVacancy) (uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", vacancy)
+	ret := m.ctrl.Call(m, "Create", ctx, vacancy)
 	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockIVacanciesRepositoryMockRecorder) Create(vacancy any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) Create(ctx, vacancy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIVacanciesRepository)(nil).Create), vacancy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockIVacanciesRepository)(nil).Create), ctx, vacancy)
 }
 
 // Delete mocks base method.
-func (m *MockIVacanciesRepository) Delete(ID uint64) error {
+func (m *MockIVacanciesRepository) Delete(ctx context.Context, ID uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Delete", ID)
+	ret := m.ctrl.Call(m, "Delete", ctx, ID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockIVacanciesRepositoryMockRecorder) Delete(ID any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) Delete(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIVacanciesRepository)(nil).Delete), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockIVacanciesRepository)(nil).Delete), ctx, ID)
+}
+
+// GetApplicantFavoriteVacancies mocks base method.
+func (m *MockIVacanciesRepository) GetApplicantFavoriteVacancies(ctx context.Context, applicantID uint64) ([]*dto.JSONVacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApplicantFavoriteVacancies", ctx, applicantID)
+	ret0, _ := ret[0].([]*dto.JSONVacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplicantFavoriteVacancies indicates an expected call of GetApplicantFavoriteVacancies.
+func (mr *MockIVacanciesRepositoryMockRecorder) GetApplicantFavoriteVacancies(ctx, applicantID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicantFavoriteVacancies", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetApplicantFavoriteVacancies), ctx, applicantID)
 }
 
 // GetByID mocks base method.
-func (m *MockIVacanciesRepository) GetByID(ID uint64) (*dto.JSONVacancy, error) {
+func (m *MockIVacanciesRepository) GetByID(ctx context.Context, ID uint64) (*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByID", ID)
+	ret := m.ctrl.Call(m, "GetByID", ctx, ID)
 	ret0, _ := ret[0].(*dto.JSONVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByID indicates an expected call of GetByID.
-func (mr *MockIVacanciesRepositoryMockRecorder) GetByID(ID any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) GetByID(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetByID), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetByID), ctx, ID)
 }
 
 // GetSubscribersCount mocks base method.
-func (m *MockIVacanciesRepository) GetSubscribersCount(ID uint64) (uint64, error) {
+func (m *MockIVacanciesRepository) GetSubscribersCount(ctx context.Context, ID uint64) (uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSubscribersCount", ID)
+	ret := m.ctrl.Call(m, "GetSubscribersCount", ctx, ID)
 	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSubscribersCount indicates an expected call of GetSubscribersCount.
-func (mr *MockIVacanciesRepositoryMockRecorder) GetSubscribersCount(ID any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) GetSubscribersCount(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscribersCount", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetSubscribersCount), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscribersCount", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetSubscribersCount), ctx, ID)
 }
 
 // GetSubscribersList mocks base method.
-func (m *MockIVacanciesRepository) GetSubscribersList(ID uint64) ([]*models.Applicant, error) {
+func (m *MockIVacanciesRepository) GetSubscribersList(ctx context.Context, ID uint64) ([]*models.Applicant, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSubscribersList", ID)
+	ret := m.ctrl.Call(m, "GetSubscribersList", ctx, ID)
 	ret0, _ := ret[0].([]*models.Applicant)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSubscribersList indicates an expected call of GetSubscribersList.
-func (mr *MockIVacanciesRepositoryMockRecorder) GetSubscribersList(ID any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) GetSubscribersList(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscribersList", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetSubscribersList), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscribersList", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetSubscribersList), ctx, ID)
 }
 
 // GetSubscriptionStatus mocks base method.
-func (m *MockIVacanciesRepository) GetSubscriptionStatus(ID, applicantID uint64) (bool, error) {
+func (m *MockIVacanciesRepository) GetSubscriptionStatus(ctx context.Context, ID, applicantID uint64) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSubscriptionStatus", ID, applicantID)
+	ret := m.ctrl.Call(m, "GetSubscriptionStatus", ctx, ID, applicantID)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSubscriptionStatus indicates an expected call of GetSubscriptionStatus.
-func (mr *MockIVacanciesRepositoryMockRecorder) GetSubscriptionStatus(ID, applicantID any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) GetSubscriptionStatus(ctx, ID, applicantID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionStatus", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetSubscriptionStatus), ID, applicantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionStatus", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetSubscriptionStatus), ctx, ID, applicantID)
 }
 
 // GetVacanciesByEmployerID mocks base method.
-func (m *MockIVacanciesRepository) GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONVacancy, error) {
+func (m *MockIVacanciesRepository) GetVacanciesByEmployerID(ctx context.Context, employerID uint64) ([]*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVacanciesByEmployerID", employerID)
+	ret := m.ctrl.Call(m, "GetVacanciesByEmployerID", ctx, employerID)
 	ret0, _ := ret[0].([]*dto.JSONVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVacanciesByEmployerID indicates an expected call of GetVacanciesByEmployerID.
-func (mr *MockIVacanciesRepositoryMockRecorder) GetVacanciesByEmployerID(employerID any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) GetVacanciesByEmployerID(ctx, employerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacanciesByEmployerID", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetVacanciesByEmployerID), employerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacanciesByEmployerID", reflect.TypeOf((*MockIVacanciesRepository)(nil).GetVacanciesByEmployerID), ctx, employerID)
+}
+
+// MakeFavorite mocks base method.
+func (m *MockIVacanciesRepository) MakeFavorite(ctx context.Context, ID, applicantID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MakeFavorite", ctx, ID, applicantID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MakeFavorite indicates an expected call of MakeFavorite.
+func (mr *MockIVacanciesRepositoryMockRecorder) MakeFavorite(ctx, ID, applicantID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MakeFavorite", reflect.TypeOf((*MockIVacanciesRepository)(nil).MakeFavorite), ctx, ID, applicantID)
 }
 
 // SearchAll mocks base method.
-func (m *MockIVacanciesRepository) SearchAll(offset, num uint64, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
+func (m *MockIVacanciesRepository) SearchAll(ctx context.Context, offset, num uint64, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchAll", offset, num, searchStr, group, searchBy)
+	ret := m.ctrl.Call(m, "SearchAll", ctx, offset, num, searchStr, group, searchBy)
 	ret0, _ := ret[0].([]*dto.JSONVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SearchAll indicates an expected call of SearchAll.
-func (mr *MockIVacanciesRepositoryMockRecorder) SearchAll(offset, num, searchStr, group, searchBy any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) SearchAll(ctx, offset, num, searchStr, group, searchBy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAll", reflect.TypeOf((*MockIVacanciesRepository)(nil).SearchAll), offset, num, searchStr, group, searchBy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAll", reflect.TypeOf((*MockIVacanciesRepository)(nil).SearchAll), ctx, offset, num, searchStr, group, searchBy)
 }
 
 // Subscribe mocks base method.
-func (m *MockIVacanciesRepository) Subscribe(ID, applicantID uint64) error {
+func (m *MockIVacanciesRepository) Subscribe(ctx context.Context, ID, applicantID uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Subscribe", ID, applicantID)
+	ret := m.ctrl.Call(m, "Subscribe", ctx, ID, applicantID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Subscribe indicates an expected call of Subscribe.
-func (mr *MockIVacanciesRepositoryMockRecorder) Subscribe(ID, applicantID any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) Subscribe(ctx, ID, applicantID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockIVacanciesRepository)(nil).Subscribe), ID, applicantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockIVacanciesRepository)(nil).Subscribe), ctx, ID, applicantID)
+}
+
+// Unfavorite mocks base method.
+func (m *MockIVacanciesRepository) Unfavorite(ctx context.Context, ID, applicantID uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Unfavorite", ctx, ID, applicantID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Unfavorite indicates an expected call of Unfavorite.
+func (mr *MockIVacanciesRepositoryMockRecorder) Unfavorite(ctx, ID, applicantID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfavorite", reflect.TypeOf((*MockIVacanciesRepository)(nil).Unfavorite), ctx, ID, applicantID)
 }
 
 // Unsubscribe mocks base method.
-func (m *MockIVacanciesRepository) Unsubscribe(ID, applicantID uint64) error {
+func (m *MockIVacanciesRepository) Unsubscribe(ctx context.Context, ID, applicantID uint64) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Unsubscribe", ID, applicantID)
+	ret := m.ctrl.Call(m, "Unsubscribe", ctx, ID, applicantID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Unsubscribe indicates an expected call of Unsubscribe.
-func (mr *MockIVacanciesRepositoryMockRecorder) Unsubscribe(ID, applicantID any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) Unsubscribe(ctx, ID, applicantID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unsubscribe", reflect.TypeOf((*MockIVacanciesRepository)(nil).Unsubscribe), ID, applicantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unsubscribe", reflect.TypeOf((*MockIVacanciesRepository)(nil).Unsubscribe), ctx, ID, applicantID)
 }
 
 // Update mocks base method.
-func (m *MockIVacanciesRepository) Update(ID uint64, updatedVacancy *dto.JSONVacancy) (*dto.JSONVacancy, error) {
+func (m *MockIVacanciesRepository) Update(ctx context.Context, ID uint64, updatedVacancy *dto.JSONVacancy) (*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", ID, updatedVacancy)
+	ret := m.ctrl.Call(m, "Update", ctx, ID, updatedVacancy)
 	ret0, _ := ret[0].(*dto.JSONVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockIVacanciesRepositoryMockRecorder) Update(ID, updatedVacancy any) *gomock.Call {
+func (mr *MockIVacanciesRepositoryMockRecorder) Update(ctx, ID, updatedVacancy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIVacanciesRepository)(nil).Update), ID, updatedVacancy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockIVacanciesRepository)(nil).Update), ctx, ID, updatedVacancy)
 }
 
 // MockIVacanciesUsecase is a mock of IVacanciesUsecase interface.
@@ -227,157 +271,200 @@ func (m *MockIVacanciesUsecase) EXPECT() *MockIVacanciesUsecaseMockRecorder {
 	return m.recorder
 }
 
-// CreateVacancy mocks base method.
-func (m *MockIVacanciesUsecase) CreateVacancy(vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
+// AddIntoFavorite mocks base method.
+func (m *MockIVacanciesUsecase) AddIntoFavorite(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateVacancy", vacancy, currentUser)
+	ret := m.ctrl.Call(m, "AddIntoFavorite", ctx, ID, currentUser)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddIntoFavorite indicates an expected call of AddIntoFavorite.
+func (mr *MockIVacanciesUsecaseMockRecorder) AddIntoFavorite(ctx, ID, currentUser any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIntoFavorite", reflect.TypeOf((*MockIVacanciesUsecase)(nil).AddIntoFavorite), ctx, ID, currentUser)
+}
+
+// CreateVacancy mocks base method.
+func (m *MockIVacanciesUsecase) CreateVacancy(ctx context.Context, vacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateVacancy", ctx, vacancy, currentUser)
 	ret0, _ := ret[0].(*dto.JSONVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateVacancy indicates an expected call of CreateVacancy.
-func (mr *MockIVacanciesUsecaseMockRecorder) CreateVacancy(vacancy, currentUser any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) CreateVacancy(ctx, vacancy, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).CreateVacancy), vacancy, currentUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).CreateVacancy), ctx, vacancy, currentUser)
 }
 
 // DeleteVacancy mocks base method.
-func (m *MockIVacanciesUsecase) DeleteVacancy(ID uint64, currentUser *dto.UserFromSession) error {
+func (m *MockIVacanciesUsecase) DeleteVacancy(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteVacancy", ID, currentUser)
+	ret := m.ctrl.Call(m, "DeleteVacancy", ctx, ID, currentUser)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteVacancy indicates an expected call of DeleteVacancy.
-func (mr *MockIVacanciesUsecaseMockRecorder) DeleteVacancy(ID, currentUser any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) DeleteVacancy(ctx, ID, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).DeleteVacancy), ID, currentUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).DeleteVacancy), ctx, ID, currentUser)
+}
+
+// GetApplicantFavoriteVacancies mocks base method.
+func (m *MockIVacanciesUsecase) GetApplicantFavoriteVacancies(ctx context.Context, applicantID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApplicantFavoriteVacancies", ctx, applicantID)
+	ret0, _ := ret[0].([]*dto.JSONGetEmployerVacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplicantFavoriteVacancies indicates an expected call of GetApplicantFavoriteVacancies.
+func (mr *MockIVacanciesUsecaseMockRecorder) GetApplicantFavoriteVacancies(ctx, applicantID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicantFavoriteVacancies", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetApplicantFavoriteVacancies), ctx, applicantID)
 }
 
 // GetSubscriptionInfo mocks base method.
-func (m *MockIVacanciesUsecase) GetSubscriptionInfo(ID, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error) {
+func (m *MockIVacanciesUsecase) GetSubscriptionInfo(ctx context.Context, ID, applicantID uint64) (*dto.JSONVacancySubscriptionStatus, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSubscriptionInfo", ID, applicantID)
+	ret := m.ctrl.Call(m, "GetSubscriptionInfo", ctx, ID, applicantID)
 	ret0, _ := ret[0].(*dto.JSONVacancySubscriptionStatus)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSubscriptionInfo indicates an expected call of GetSubscriptionInfo.
-func (mr *MockIVacanciesUsecaseMockRecorder) GetSubscriptionInfo(ID, applicantID any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) GetSubscriptionInfo(ctx, ID, applicantID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionInfo", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetSubscriptionInfo), ID, applicantID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubscriptionInfo", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetSubscriptionInfo), ctx, ID, applicantID)
 }
 
 // GetVacanciesByEmployerID mocks base method.
-func (m *MockIVacanciesUsecase) GetVacanciesByEmployerID(employerID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
+func (m *MockIVacanciesUsecase) GetVacanciesByEmployerID(ctx context.Context, employerID uint64) ([]*dto.JSONGetEmployerVacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVacanciesByEmployerID", employerID)
+	ret := m.ctrl.Call(m, "GetVacanciesByEmployerID", ctx, employerID)
 	ret0, _ := ret[0].([]*dto.JSONGetEmployerVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVacanciesByEmployerID indicates an expected call of GetVacanciesByEmployerID.
-func (mr *MockIVacanciesUsecaseMockRecorder) GetVacanciesByEmployerID(employerID any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) GetVacanciesByEmployerID(ctx, employerID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacanciesByEmployerID", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacanciesByEmployerID), employerID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacanciesByEmployerID", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacanciesByEmployerID), ctx, employerID)
 }
 
 // GetVacancy mocks base method.
-func (m *MockIVacanciesUsecase) GetVacancy(ID uint64) (*dto.JSONVacancy, error) {
+func (m *MockIVacanciesUsecase) GetVacancy(ctx context.Context, ID uint64) (*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVacancy", ID)
+	ret := m.ctrl.Call(m, "GetVacancy", ctx, ID)
 	ret0, _ := ret[0].(*dto.JSONVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVacancy indicates an expected call of GetVacancy.
-func (mr *MockIVacanciesUsecaseMockRecorder) GetVacancy(ID any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) GetVacancy(ctx, ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacancy), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacancy), ctx, ID)
 }
 
 // GetVacancySubscribers mocks base method.
-func (m *MockIVacanciesUsecase) GetVacancySubscribers(ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error) {
+func (m *MockIVacanciesUsecase) GetVacancySubscribers(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) (*dto.JSONVacancySubscribers, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetVacancySubscribers", ID, currentUser)
+	ret := m.ctrl.Call(m, "GetVacancySubscribers", ctx, ID, currentUser)
 	ret0, _ := ret[0].(*dto.JSONVacancySubscribers)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetVacancySubscribers indicates an expected call of GetVacancySubscribers.
-func (mr *MockIVacanciesUsecaseMockRecorder) GetVacancySubscribers(ID, currentUser any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) GetVacancySubscribers(ctx, ID, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacancySubscribers", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacancySubscribers), ID, currentUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVacancySubscribers", reflect.TypeOf((*MockIVacanciesUsecase)(nil).GetVacancySubscribers), ctx, ID, currentUser)
 }
 
 // SearchVacancies mocks base method.
-func (m *MockIVacanciesUsecase) SearchVacancies(offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
+func (m *MockIVacanciesUsecase) SearchVacancies(ctx context.Context, offsetStr, numStr, searchStr, group, searchBy string) ([]*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchVacancies", offsetStr, numStr, searchStr, group, searchBy)
+	ret := m.ctrl.Call(m, "SearchVacancies", ctx, offsetStr, numStr, searchStr, group, searchBy)
 	ret0, _ := ret[0].([]*dto.JSONVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SearchVacancies indicates an expected call of SearchVacancies.
-func (mr *MockIVacanciesUsecaseMockRecorder) SearchVacancies(offsetStr, numStr, searchStr, group, searchBy any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) SearchVacancies(ctx, offsetStr, numStr, searchStr, group, searchBy any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchVacancies", reflect.TypeOf((*MockIVacanciesUsecase)(nil).SearchVacancies), offsetStr, numStr, searchStr, group, searchBy)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchVacancies", reflect.TypeOf((*MockIVacanciesUsecase)(nil).SearchVacancies), ctx, offsetStr, numStr, searchStr, group, searchBy)
 }
 
 // SubscribeOnVacancy mocks base method.
-func (m *MockIVacanciesUsecase) SubscribeOnVacancy(ID uint64, currentUser *dto.UserFromSession) error {
+func (m *MockIVacanciesUsecase) SubscribeOnVacancy(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubscribeOnVacancy", ID, currentUser)
+	ret := m.ctrl.Call(m, "SubscribeOnVacancy", ctx, ID, currentUser)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SubscribeOnVacancy indicates an expected call of SubscribeOnVacancy.
-func (mr *MockIVacanciesUsecaseMockRecorder) SubscribeOnVacancy(ID, currentUser any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) SubscribeOnVacancy(ctx, ID, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeOnVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).SubscribeOnVacancy), ID, currentUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeOnVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).SubscribeOnVacancy), ctx, ID, currentUser)
+}
+
+// Unfavorite mocks base method.
+func (m *MockIVacanciesUsecase) Unfavorite(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Unfavorite", ctx, ID, currentUser)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Unfavorite indicates an expected call of Unfavorite.
+func (mr *MockIVacanciesUsecaseMockRecorder) Unfavorite(ctx, ID, currentUser any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unfavorite", reflect.TypeOf((*MockIVacanciesUsecase)(nil).Unfavorite), ctx, ID, currentUser)
 }
 
 // UnsubscribeFromVacancy mocks base method.
-func (m *MockIVacanciesUsecase) UnsubscribeFromVacancy(ID uint64, currentUser *dto.UserFromSession) error {
+func (m *MockIVacanciesUsecase) UnsubscribeFromVacancy(ctx context.Context, ID uint64, currentUser *dto.UserFromSession) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UnsubscribeFromVacancy", ID, currentUser)
+	ret := m.ctrl.Call(m, "UnsubscribeFromVacancy", ctx, ID, currentUser)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UnsubscribeFromVacancy indicates an expected call of UnsubscribeFromVacancy.
-func (mr *MockIVacanciesUsecaseMockRecorder) UnsubscribeFromVacancy(ID, currentUser any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) UnsubscribeFromVacancy(ctx, ID, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsubscribeFromVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).UnsubscribeFromVacancy), ID, currentUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsubscribeFromVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).UnsubscribeFromVacancy), ctx, ID, currentUser)
 }
 
 // UpdateVacancy mocks base method.
-func (m *MockIVacanciesUsecase) UpdateVacancy(ID uint64, updatedVacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
+func (m *MockIVacanciesUsecase) UpdateVacancy(ctx context.Context, ID uint64, updatedVacancy *dto.JSONVacancy, currentUser *dto.UserFromSession) (*dto.JSONVacancy, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateVacancy", ID, updatedVacancy, currentUser)
+	ret := m.ctrl.Call(m, "UpdateVacancy", ctx, ID, updatedVacancy, currentUser)
 	ret0, _ := ret[0].(*dto.JSONVacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateVacancy indicates an expected call of UpdateVacancy.
-func (mr *MockIVacanciesUsecaseMockRecorder) UpdateVacancy(ID, updatedVacancy, currentUser any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) UpdateVacancy(ctx, ID, updatedVacancy, currentUser any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).UpdateVacancy), ID, updatedVacancy, currentUser)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateVacancy", reflect.TypeOf((*MockIVacanciesUsecase)(nil).UpdateVacancy), ctx, ID, updatedVacancy, currentUser)
 }
 
 // ValidateQueryParameters mocks base method.
-func (m *MockIVacanciesUsecase) ValidateQueryParameters(offset, num string) (uint64, uint64, error) {
+func (m *MockIVacanciesUsecase) ValidateQueryParameters(ctx context.Context, offset, num string) (uint64, uint64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateQueryParameters", offset, num)
+	ret := m.ctrl.Call(m, "ValidateQueryParameters", ctx, offset, num)
 	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(uint64)
 	ret2, _ := ret[2].(error)
@@ -385,7 +472,7 @@ func (m *MockIVacanciesUsecase) ValidateQueryParameters(offset, num string) (uin
 }
 
 // ValidateQueryParameters indicates an expected call of ValidateQueryParameters.
-func (mr *MockIVacanciesUsecaseMockRecorder) ValidateQueryParameters(offset, num any) *gomock.Call {
+func (mr *MockIVacanciesUsecaseMockRecorder) ValidateQueryParameters(ctx, offset, num any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateQueryParameters", reflect.TypeOf((*MockIVacanciesUsecase)(nil).ValidateQueryParameters), offset, num)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateQueryParameters", reflect.TypeOf((*MockIVacanciesUsecase)(nil).ValidateQueryParameters), ctx, offset, num)
 }

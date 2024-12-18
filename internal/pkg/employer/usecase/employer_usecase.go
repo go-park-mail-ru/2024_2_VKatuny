@@ -16,7 +16,7 @@ func (u *EmployerUsecase) Create(ctx context.Context, form *dto.JSONEmployerRegi
 	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
 	u.logger.Debugf("%s: entering", fn)
 
-	_, err := u.employerRepository.GetByEmail(form.Email)
+	_, err := u.employerRepository.GetByEmail(ctx, form.Email)
 	if err != nil && err.Error() != "sql: no rows in result set" {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgUserAlreadyExists)
@@ -34,7 +34,7 @@ func (u *EmployerUsecase) Create(ctx context.Context, form *dto.JSONEmployerRegi
 		Password:           utils.HashPassword(form.Password),
 	}
 
-	employerModel, err := u.employerRepository.Create(employer)
+	employerModel, err := u.employerRepository.Create(ctx, employer)
 	if err != nil {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)
@@ -43,7 +43,7 @@ func (u *EmployerUsecase) Create(ctx context.Context, form *dto.JSONEmployerRegi
 
 	return &dto.JSONUser{
 		ID:       employerModel.ID,
-		UserType: dto.UserTypeApplicant,
+		UserType: dto.UserTypeEmployer,
 	}, nil
 }
 
@@ -53,7 +53,7 @@ func (u *EmployerUsecase) GetByID(ctx context.Context, ID uint64) (*dto.JSONEmpl
 	u.logger = utils.SetLoggerRequestID(ctx, u.logger)
 	u.logger.Debugf("%s: entering", fn)
 
-	employerModel, err := u.employerRepository.GetByID(ID)
+	employerModel, err := u.employerRepository.GetByID(ctx, ID)
 	if err != nil {
 		u.logger.Errorf("%s: got err %s", fn, err)
 		return nil, fmt.Errorf(dto.MsgDataBaseError)

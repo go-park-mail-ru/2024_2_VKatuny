@@ -12,17 +12,18 @@ option go_package = "./;compressmicroservice";
 message Nothing {
 }
 
-message CompressAndSaveFileInput {
-  string fileName = 1;
-  string fileType = 2;
-  bytes file = 3;
-}
+// message CompressAndSaveFileInput {
+//   string fileName = 1;
+//   string fileType = 2;
+//   bytes file = 3;
+// }
 
-message DeleteFileInput {
-  string fileName = 1;
-}
+// message DeleteFileInput {
+//   string fileName = 1;
+// }
 
 service CompressService {
-	rpc CompressAndSaveFile (CompressAndSaveFileInput) returns (Nothing) {}
-	rpc DeleteFile (DeleteFileInput) returns (Nothing) {}
+	//rpc CompressAndSaveFile (CompressAndSaveFileInput) returns (Nothing) {}
+	//rpc DeleteFile (DeleteFileInput) returns (Nothing) {}
+  rpc StartScanCompressDemon (Nothing) returns (Nothing) {}
 }

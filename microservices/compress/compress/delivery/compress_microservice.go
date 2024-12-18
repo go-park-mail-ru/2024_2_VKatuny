@@ -2,6 +2,7 @@ package compressmicroservice
 
 import (
 	"context"
+	"time"
 
 	compressinterfaces "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/compress"
 	compress "github.com/go-park-mail-ru/2024_2_VKatuny/microservices/compress/generated"
@@ -21,22 +22,36 @@ func NewCompressManager(compressUsecase compressinterfaces.ICompressUsecase, log
 	}
 }
 
-func (cm *CompressManager) CompressAndSaveFile(ctx context.Context, in *compress.CompressAndSaveFileInput) (*compress.Nothing, error) {
-	funcName := "CompressDelivery.CompressAndSaveFile"
-	cm.logger.Debugf("%s: got request: %s", funcName, in)
-	if in == nil {
-		return &compress.Nothing{}, compressinterfaces.WrongData
-	}
-	err := cm.compressUsecase.CompressAndSaveFile(in.FileName, in.FileType, in.File)
-	return &compress.Nothing{}, err
-}
+// func (cm *CompressManager) CompressAndSaveFile(ctx context.Context, in *compress.CompressAndSaveFileInput) (*compress.Nothing, error) {
+// 	funcName := "CompressDelivery.CompressAndSaveFile"
+// 	cm.logger.Debugf("%s: got request: %s", funcName, in)
+// 	if in == nil {
+// 		return &compress.Nothing{}, compressinterfaces.WrongData
+// 	}
+// 	err := cm.compressUsecase.CompressAndSaveFile(in.FileName, in.FileType, in.File)
+// 	return &compress.Nothing{}, err
+// }
 
-func (cm *CompressManager) DeleteFile(ctx context.Context, in *compress.DeleteFileInput) (*compress.Nothing, error) {
-	funcName := "CompressDelivery.DeleteFile"
-	cm.logger.Debugf("%s: got request: %s", funcName, in)
-	if in == nil {
-		return &compress.Nothing{}, compressinterfaces.WrongData
-	}
-	err := cm.compressUsecase.DeleteFile(in.FileName)
+// func (cm *CompressManager) DeleteFile(ctx context.Context, in *compress.DeleteFileInput) (*compress.Nothing, error) {
+// 	funcName := "CompressDelivery.DeleteFile"
+// 	cm.logger.Debugf("%s: got request: %s", funcName, in)
+// 	if in == nil {
+// 		return &compress.Nothing{}, compressinterfaces.WrongData
+// 	}
+// 	err := cm.compressUsecase.DeleteFile(in.FileName)
+// 	return &compress.Nothing{}, err
+// }
+
+func (cm *CompressManager) StartScanCompressDemon(ctx context.Context, in *compress.Nothing) (*compress.Nothing, error) {
+	var err error
+	go func() {
+		for true {
+			err = cm.compressUsecase.ScanDir()
+			if err != nil {
+				break
+			}
+			time.Sleep(time.Hour)
+		}
+	}()
 	return &compress.Nothing{}, err
 }
