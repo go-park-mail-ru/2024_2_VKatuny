@@ -35,8 +35,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
-      - ${MEDIA_DIR}:/build/${MEDIA_DIR}
-      - ${COMPRESSED_MEDIA_DIR}:/build/${COMPRESSED_MEDIA_DIR}
+      - ${MEDIA_DIR}:/build/media/Uncompressed
+      - ${COMPRESSED_MEDIA_DIR}:/build/media/Compressed
     networks:
       - monitoring
 
@@ -51,6 +51,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
+      - ${HOST_TLS_CERTIFICATE_DIR}:/build/tls
     depends_on:
       db_postgresql:
         condition: service_started
@@ -65,14 +66,14 @@ services:
     env_file:
       - .env
     ports:
-      - "127.0.0.1:8081:8001"
+      - "127.0.0.1:8081:8081"
     restart: unless-stopped
     volumes:
       - ./configs/:/build/configs
-      - ${MEDIA_DIR}:/build/${MEDIA_DIR}
-      - ${CV_PDF_DIR}:/build/${CV_PDF_DIR}
-      - ${TEMPLATES_DIR}:/build/${TEMPLATES_DIR}
-      - ${HOST_TLS_CERTIFICATE_DIR}:/build/${TLS_DIR}
+      - ${MEDIA_DIR}:/build/media
+      - ${CV_PDF_DIR}:/build/media/CVinPDF
+      - ${TEMPLATES_DIR}:/build/templates
+      - ${HOST_TLS_CERTIFICATE_DIR}:/build/tls:ro
     depends_on:
       db_postgresql:
         condition: service_started
