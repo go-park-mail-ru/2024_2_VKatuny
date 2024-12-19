@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -84,7 +85,16 @@ func (h *CVsHandler) CreateCV(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileWasRead, err := io.ReadAll(file)
+		if err != nil {
+			h.logger.Errorf("function %s: got err %s", fn, err)
+			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      err.Error(),
+			})
+			return
+		}
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(fileWasRead, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -164,7 +174,7 @@ func (h *CVsHandler) GetCV(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	CV.CompressedAvatar  = h.fileLoadingUsecase.FindCompressedFile(CV.Avatar)
+	CV.CompressedAvatar = h.fileLoadingUsecase.FindCompressedFile(CV.Avatar)
 	h.logger.Debugf("%s: success, got cv: %v", fn, CV)
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
@@ -236,7 +246,16 @@ func (h *CVsHandler) UpdateCV(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileWasRead, err := io.ReadAll(file)
+		if err != nil {
+			h.logger.Errorf("function %s: got err %s", fn, err)
+			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      err.Error(),
+			})
+			return
+		}
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(fileWasRead, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -372,7 +391,7 @@ func (h *CVsHandler) CVtoPDF(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	name.FileName="/"+name.FileName
+	name.FileName = "/" + name.FileName
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
 		HTTPStatus: http.StatusOK,
 		Body:       name,

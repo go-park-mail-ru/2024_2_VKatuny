@@ -57,7 +57,7 @@ func (mr *MockIFileLoadingRepositoryMockRecorder) CVtoPDF(CV, applicant any) *go
 }
 
 // WriteFileOnDisk mocks base method.
-func (m *MockIFileLoadingRepository) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error) {
+func (m *MockIFileLoadingRepository) WriteFileOnDisk(filename string, header *multipart.FileHeader, file []byte) (string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteFileOnDisk", filename, header, file)
 	ret0, _ := ret[0].(string)
@@ -126,7 +126,7 @@ func (mr *MockIFileLoadingUsecaseMockRecorder) FindCompressedFile(filename any) 
 }
 
 // WriteImage mocks base method.
-func (m *MockIFileLoadingUsecase) WriteImage(file multipart.File, header *multipart.FileHeader) (string, string, error) {
+func (m *MockIFileLoadingUsecase) WriteImage(file []byte, header *multipart.FileHeader) (string, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteImage", file, header)
 	ret0, _ := ret[0].(string)

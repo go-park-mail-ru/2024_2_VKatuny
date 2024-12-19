@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"text/template"
@@ -31,7 +32,7 @@ func NewFileLoadingStorage(logger *logrus.Logger, mediaDir, CVinPDFDir, template
 	}
 }
 
-func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error) {
+func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file []byte) (string, string, error) {
 	fn := "FileLoadingStorage.WriteFileOnDisk"
 	s.logger.Debugf("%s: entering with name: %s", fn, s.mediaDir+filename+header.Filename)
 	dst, err := os.Create(s.mediaDir + filename + header.Filename)
@@ -40,32 +41,26 @@ func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.
 		return "", "", fmt.Errorf("error creating file")
 	}
 	defer dst.Close()
-	if _, err := io.Copy(dst, file); err != nil {
+	reader := bytes.NewReader(file)
+	if _, err := io.Copy(dst, reader); err != nil {
 		s.logger.Errorf("%s: got error copying file", fn)
 		return "", "", fmt.Errorf("error copying file")
 	}
 	s.logger.Debugf("%s: done with name: %s and %s", fn, s.mediaDir, filename+header.Filename)
-	return s.mediaDir, filename + header.Filename, nil
+	dirList := strings.Split(s.mediaDir, "/")
+	dirList = dirList[slices.Index(dirList, "2024_2_VKatuny")+1:]
+	dirCut := strings.Join(dirList, "/") + "/"
+	return dirCut, filename + header.Filename, nil
 }
 
 func (s *FileLoadingStorage) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetApplicantProfile) (string, error) {
 	fn := "FileLoadingStorage.CVtoPDF"
 	s.logger.Debugf("%s: entering", fn)
 
-	pwd, _ := os.Getwd()
-	newPwd := ""
-	for _, i := range strings.Split(pwd, "/") {
-		newPwd += i + "/"
-		if i == "2024_2_VKatuny" {
-			break
-		}
-	}
-	tmpl := template.Must(template.ParseFiles(newPwd + s.templateDir + "template.html"))
-	pwd, err := os.Getwd()
-	if err != nil {
-		s.logger.Errorf("%s: got err %s", fn, err)
-		return "", err
-	}
+	templateDir := addslesh(s.templateDir)
+	mediaDir := addslesh(s.mediaDir)
+	cvinPDFdir := addslesh(s.cvinPDFdir)
+	tmpl := template.Must(template.ParseFiles(templateDir + "template.html"))
 	type And struct {
 		CV        dto.JSONCv
 		Applicant dto.JSONGetApplicantProfile
@@ -73,28 +68,27 @@ func (s *FileLoadingStorage) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetAppli
 		Template  string
 	}
 	megaStruct := And{CV: *CV, Applicant: *applicant}
-	if len(megaStruct.Applicant.BirthDate) > 9 {
-		megaStruct.Applicant.BirthDate = megaStruct.Applicant.BirthDate[:9]
+	if len(megaStruct.Applicant.BirthDate) > 10 {
+		megaStruct.Applicant.BirthDate = megaStruct.Applicant.BirthDate[:10]
 	}
-	if len(megaStruct.CV.CreatedAt) > 9 {
-		megaStruct.CV.CreatedAt = megaStruct.CV.CreatedAt[:9]
+	if len(megaStruct.CV.CreatedAt) > 10 {
+		megaStruct.CV.CreatedAt = megaStruct.CV.CreatedAt[:10]
 	}
-	s.logger.Debugf("avatar: %s", pwd+CV.Avatar)
-	s.logger.Debugf("template: %s", pwd+"/"+s.templateDir+"template.css")
-	megaStruct.Template = pwd + "/" + s.templateDir + "template.css"
-	megaStruct.CV.Avatar = pwd + CV.Avatar
+	s.logger.Debugf("avatar: %s", mediaDir+CV.Avatar)
+	s.logger.Debugf("template: %s", templateDir+"template.css")
+	megaStruct.Template = templateDir + "template.css"
+	megaStruct.CV.Avatar = mediaDir + strings.Split(CV.Avatar, "/")[len(strings.Split(CV.Avatar, "/"))-1]
 	if CV.Avatar != "" {
 		megaStruct.IsImg = 1
 	} else {
 		megaStruct.IsImg = 0
 	}
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, megaStruct)
+	err := tmpl.Execute(&buf, megaStruct)
 	if err != nil {
 		s.logger.Errorf("%s: got err %s", fn, err)
 		return "", err
 	}
-	//s.logger.Debugf(buf.String())
 
 	pdfg, err := wkhtml.NewPDFGenerator()
 	if err != nil {
@@ -109,12 +103,19 @@ func (s *FileLoadingStorage) CVtoPDF(CV *dto.JSONCv, applicant *dto.JSONGetAppli
 		s.logger.Errorf("%s: got err %s", fn, err)
 		return "", err
 	}
-	name := s.cvinPDFdir + strconv.Itoa(int(CV.ID)) + "&&" + strconv.Itoa(int(CV.ApplicantID)) + ".pdf"
-	err = pdfg.WriteFile(newPwd+name)
+	name := cvinPDFdir + strconv.Itoa(int(CV.ID)) + "&&" + strconv.Itoa(int(CV.ApplicantID)) + ".pdf"
+	err = pdfg.WriteFile(name)
 	if err != nil {
 		s.logger.Errorf("%s: got err %s", fn, err)
 		return "", err
 	}
 	s.logger.Debugf("%s: done with name: %s", fn, name)
 	return name, nil
+}
+
+func addslesh(str string) string {
+	if str[len(str)-1] != '/' {
+		str += "/"
+	}
+	return str
 }

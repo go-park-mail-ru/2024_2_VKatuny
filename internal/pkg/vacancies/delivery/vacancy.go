@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -80,7 +81,16 @@ func (h *VacanciesHandlers) CreateVacancy(w http.ResponseWriter, r *http.Request
 	file, header, err := r.FormFile("company_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileWasRead, err := io.ReadAll(file)
+		if err != nil {
+			h.logger.Errorf("function %s: got err %s", fn, err)
+			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      err.Error(),
+			})
+			return
+		}
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(fileWasRead, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -236,7 +246,16 @@ func (h *VacanciesHandlers) UpdateVacancy(w http.ResponseWriter, r *http.Request
 	file, header, err := r.FormFile("company_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileWasRead, err := io.ReadAll(file)
+		if err != nil {
+			h.logger.Errorf("function %s: got err %s", fn, err)
+			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      err.Error(),
+			})
+			return
+		}
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(fileWasRead, header)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{
 				HTTPStatus: http.StatusBadRequest,
@@ -370,27 +389,27 @@ func (h *VacanciesHandlers) SubscribeVacancy(w http.ResponseWriter, r *http.Requ
 	}
 	h.logger.Debugf("user_ID: %d subscribed on vacancy_ID %d", currentUser.ID, vacancyID)
 	// go func() {
-		vacancy, err := h.vacanciesUsecase.GetVacancy(r.Context(), vacancyID)
-		if err != nil {
-			h.logger.Errorf("while getting from db got err %s", err)
-			return
-		}
-		applicant, err := h.applicantUsecase.GetApplicantProfile(context.Background(), currentUser.ID)
-		if err != nil {
-			h.logger.Errorf("while getting from db got err %s", err)
-			return
-		}
-		h.logger.Debugf("Sending notification: %+v on vacancy: %+v", vacancy, applicant)
-		_, err = h.NotificationsGRPC.CreateEmployerNotification(
-			context.Background(),
-			&notificationsmicroservice.CreateEmployerNotificationInput{
-				ApplicantID:   currentUser.ID,
-				VacancyID:     vacancyID,
-				EmployerID:    vacancy.EmployerID,
-				ApplicantInfo: applicant.FirstName + " " + applicant.LastName,
-				VacancyInfo:   vacancy.Position,
-			},
-		)
+	vacancy, err := h.vacanciesUsecase.GetVacancy(r.Context(), vacancyID)
+	if err != nil {
+		h.logger.Errorf("while getting from db got err %s", err)
+		return
+	}
+	applicant, err := h.applicantUsecase.GetApplicantProfile(context.Background(), currentUser.ID)
+	if err != nil {
+		h.logger.Errorf("while getting from db got err %s", err)
+		return
+	}
+	h.logger.Debugf("Sending notification: %+v on vacancy: %+v", vacancy, applicant)
+	_, err = h.NotificationsGRPC.CreateEmployerNotification(
+		context.Background(),
+		&notificationsmicroservice.CreateEmployerNotificationInput{
+			ApplicantID:   currentUser.ID,
+			VacancyID:     vacancyID,
+			EmployerID:    vacancy.EmployerID,
+			ApplicantInfo: applicant.FirstName + " " + applicant.LastName,
+			VacancyInfo:   vacancy.Position,
+		},
+	)
 	//}()
 
 	middleware.UniversalMarshal(w, http.StatusOK, dto.JSONResponse{
