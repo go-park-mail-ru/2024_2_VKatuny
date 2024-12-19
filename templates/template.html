@@ -7,28 +7,27 @@
     {{if eq .IsImg 1}}<img src="{{.CV.Avatar}}" alt="Profile picture" class="profile-picture">{{end}}
     <a class="header__logo">μArt</a>
     <div class="resume">
-    <header>
-        <h1>{{.Applicant.FirstName}} {{.Applicant.LastName}}</h1>
-        <h5>Контакты:</h5>
-        <p>{{.Applicant.Contacts}}</p>
-        <p></p>
+    <header class="main-info">
+        <h1 class="main-info__full-name">{{.Applicant.FirstName}} {{.Applicant.LastName}} </h1>
+        {{if eq .Applicant.Contacts ""}}{{else}}<h5 class="contacts-title">Контакты:</h5>
+        <p class="main-info__contacts">{{.Applicant.Contacts}}</p>{{end}}
     </header>
-    <section id="pos">
-        <h2>{{.CV.PositionRu}} ({{.CV.PositionEn}})</h2>
+    <section id="pos" class="positions">
+        <h2 class="positions_description">{{.CV.PositionRu}} ({{.CV.PositionEn}})</h2>
     </section>
-    <section id="exp">
-        <h2>Опыт работы</h2>
-        <p>{{.CV.WorkingExperience}}</p>
+    <section id="exp" class="working-experience">
+        <h2 class="working-experience__title">Опыт работы</h2>
+        <p class="working-experience__description">{{.CV.WorkingExperience}}</p>
     </section>
-    <section id="ed">
-        <h2>Образование</h2>
-        <p>{{.Applicant.Education}}</p>
-    </section>
-    <section id="additional-info">
-        <h2>Дополнительная информация</h2>
-        <p>Дата рождения: {{.Applicant.BirthDate}}</p>
-        <p>Город поиска вакансии: {{.Applicant.City}}</p>
-        <p>Резюме создано в: {{.CV.CreatedAt}}</p>
+    {{if eq .Applicant.Education ""}}{{else}}<section id="ed" class="education">
+        <h2 class="education__title">Образование</h2>
+        <p class="education__description">{{.Applicant.Education}}</p>
+    </section>{{end}}
+    <section id="additional-info" >
+        <h2 class="additional-info__title">Дополнительная информация</h2>
+        <p class="additional-info__birth-date">Дата рождения: {{.Applicant.BirthDate}}</p>
+        {{if eq .Applicant.City ""}}{{else}}<p class="additional-info__city-name">Город поиска вакансии: {{.Applicant.City}}</p>{{end}}
+        <p class="additional-info__creation-date">Резюме создано в: {{.CV.CreatedAt}}</p>
     </section>
 </div>
 </body></html>
