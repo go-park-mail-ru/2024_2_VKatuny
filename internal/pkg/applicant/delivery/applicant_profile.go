@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"io"
 	"net/http"
 	"strconv"
 
@@ -125,7 +126,7 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 		})
 		return
 	}
-
+	r.ParseMultipartForm(25 << 20) // 25Mb
 	newProfileData := &dto.JSONUpdateApplicantProfile{}
 	newProfileData.FirstName = r.FormValue("firstName")
 	newProfileData.LastName = r.FormValue("lastName")
@@ -137,7 +138,16 @@ func (h *ApplicantHandlers) UpdateProfile(w http.ResponseWriter, r *http.Request
 	file, header, err := r.FormFile("profile_avatar")
 	if err == nil {
 		defer file.Close()
-		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(file, header)
+		fileWasRead, err := io.ReadAll(file)
+		if err != nil {
+			h.logger.Errorf("function %s: got err %s", fn, err)
+			middleware.UniversalMarshal(w, http.StatusInternalServerError, dto.JSONResponse{
+				HTTPStatus: http.StatusInternalServerError,
+				Error:      err.Error(),
+			})
+			return
+		}
+		fileAddress, compressedFileAddress, err := h.fileLoadingUsecase.WriteImage(fileWasRead, header)
 		h.logger.Debugf("address %s compressed %s", fileAddress, compressedFileAddress)
 		if err != nil {
 			middleware.UniversalMarshal(w, http.StatusBadRequest, dto.JSONResponse{

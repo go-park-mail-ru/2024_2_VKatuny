@@ -3,6 +3,7 @@ package usecase
 import (
 	"fmt"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"slices"
 	"strings"
@@ -32,15 +33,13 @@ func NewFileLoadingUsecase(logger *logrus.Logger, repositories *internal.Reposit
 	}
 }
 
-var allowedTypes = []string{"image/jpeg", "image/jpg", "image/svg", "image/svg+xml"}
+var allowedTypes = []string{"image/jpeg", "image/svg+xml", "image/pjpeg", "image/webp"}
 
-func (vu *FileLoadingUsecase) WriteImage(file multipart.File, header *multipart.FileHeader) (string, string, error) {
-	a := header.Header
-	vu.logger.Debug(a["Content-Type"][0])
-	for _, i := range a["Content-Type"] {
-		if !slices.Contains(allowedTypes, i) {
-			return "", "", fmt.Errorf(dto.MsgInvalidFile)
-		}
+func (vu *FileLoadingUsecase) WriteImage(file []byte, header *multipart.FileHeader) (string, string, error) {
+	ContentType := http.DetectContentType(file)
+	vu.logger.Debug(ContentType)
+	if !slices.Contains(allowedTypes, ContentType) || header.Size > 25<<21 || len(file) > 25<<21 {
+		return "", "", fmt.Errorf(dto.MsgInvalidFile)
 	}
 	filename := utils.GenerateSessionToken(utils.TokenLength+10, dto.UserTypeApplicant)
 	dir, fileName, err := vu.FileLoadingRepository.WriteFileOnDisk(filename, header, file)
@@ -60,7 +59,7 @@ func (vu *FileLoadingUsecase) FindCompressedFile(filename string) string {
 	}
 	dirList := strings.Split(dir, "/")
 	dirList = dirList[slices.Index(dirList, "2024_2_VKatuny")+1:]
-	dirCut := strings.Join(dirList, "/")+"/"
+	dirCut := strings.Join(dirList, "/") + "/"
 	for _, file := range compressed {
 		if file.Name()[:strings.Index(file.Name(), ".")] == filename[:strings.Index(filename, ".")] {
 			return dirCut + file.Name()

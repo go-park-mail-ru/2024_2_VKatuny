@@ -32,7 +32,7 @@ func NewFileLoadingStorage(logger *logrus.Logger, mediaDir, CVinPDFDir, template
 	}
 }
 
-func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file multipart.File) (string, string, error) {
+func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.FileHeader, file []byte) (string, string, error) {
 	fn := "FileLoadingStorage.WriteFileOnDisk"
 	s.logger.Debugf("%s: entering with name: %s", fn, s.mediaDir+filename+header.Filename)
 	dst, err := os.Create(s.mediaDir + filename + header.Filename)
@@ -41,7 +41,8 @@ func (s *FileLoadingStorage) WriteFileOnDisk(filename string, header *multipart.
 		return "", "", fmt.Errorf("error creating file")
 	}
 	defer dst.Close()
-	if _, err := io.Copy(dst, file); err != nil {
+	reader := bytes.NewReader(file)
+	if _, err := io.Copy(dst, reader); err != nil {
 		s.logger.Errorf("%s: got error copying file", fn)
 		return "", "", fmt.Errorf("error copying file")
 	}
