@@ -43,32 +43,27 @@ func (vu *FileLoadingUsecase) WriteImage(file multipart.File, header *multipart.
 		}
 	}
 	filename := utils.GenerateSessionToken(utils.TokenLength+10, dto.UserTypeApplicant)
-	dir, fileAddress, err := vu.FileLoadingRepository.WriteFileOnDisk(filename, header, file)
+	dir, fileName, err := vu.FileLoadingRepository.WriteFileOnDisk(filename, header, file)
 	if err != nil {
 		return "", "", err
 	}
-	return dir + fileAddress, vu.FindCompressedFile(fileAddress), nil
+	return dir + fileName, vu.FindCompressedFile(fileName), nil
 }
 
 func (vu *FileLoadingUsecase) FindCompressedFile(filename string) string {
 	filename = strings.Split(filename, "/")[len(strings.Split(filename, "/"))-1]
 	vu.logger.Debugf("filename: %s", filename)
 	dir := vu.conf.CompressMicroservice.CompressedMediaDir
-	pwd, _ := os.Getwd()
-	newPwd := ""
-	for _, i := range strings.Split(pwd, "/") {
-		newPwd += i + "/"
-		if i == "2024_2_VKatuny" {
-			break
-		}
-	}
-	compressed, err := os.ReadDir(newPwd + dir)
+	compressed, err := os.ReadDir(dir)
 	if err != nil {
 		return ""
 	}
+	dirList := strings.Split(dir, "/")
+	dirList = dirList[slices.Index(dirList, "2024_2_VKatuny")+1:]
+	dirCut := strings.Join(dirList, "/")+"/"
 	for _, file := range compressed {
 		if file.Name()[:strings.Index(file.Name(), ".")] == filename[:strings.Index(filename, ".")] {
-			return dir + file.Name()
+			return dirCut + file.Name()
 		}
 	}
 	return ""
