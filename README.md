@@ -1,7 +1,7 @@
 # 2024_2_VKatuny
 ![Coverage](https://img.shields.io/badge/Coverage-60.8%25-yellow)
 
-Данный репозиторий предназначен для хранения frontend части проекта HeadHunter,
+Данный репозиторий предназначен для хранения backend части проекта HeadHunter,
 разрабатываемого командой VKатуны.
 
 - [2024\_2\_VKatuny](#2024_2_vkatuny)
@@ -15,7 +15,7 @@
 ### Члены команды
 
 - [Илья Андриянов](https://github.com/Regikon)
-- [Виктория Гурьева](https://github.com/VikaGuryeva)
+- [~~Виктория Гурьева~~](https://github.com/VikaGuryeva) (ушла из проекта)
 - [Олег Музалев](https://github.com/Olgmuzalev13)
 - [Михаил Черепнин](https://github.com/Ifelsik)
 
@@ -27,7 +27,7 @@
 
 ## Ссылки на внешние ресурсы
 
-- [Стандартная ссылка на деплой](http://89.208.199.175)
+- [Стандартная ссылка на деплой](https://uart.site)
 - [Репозиторий фронтенда](https://github.com/frontend-park-mail-ru/2024_2_VKatuny)
 - [Ссылка на документацию api (без рендера) в репозитории бэкенда](https://github.com/go-park-mail-ru/2024_2_VKatuny/tree/feature_vacancies-list-api/api)
 
@@ -53,14 +53,26 @@ make lint
 make tests
 ```
 
-### Необходимые библиотеки
-go-pdfium  
-https://github.com/klippa-app/go-pdfium?tab=readme-ov-file
-pdfium  
-https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F6886/pdfium-linux-x64.tgz
+### Генерация swagger-файла
+```bash
+make api
+```
 
-govips  
-https://github.com/davidbyttow/govips
+### Генерация моков для тестов
+```bash
+make mock-gen
+```
+
+### Генерация easy-json
+```bash
+make easyjson-gen
+```
+
+## Необходимые библиотеки
+[go-pdfium](https://github.com/klippa-app/go-pdfium?tab=readme-ov-file)  
+[pdfium](https://github.com/bblanchon/pdfium-binaries/releases/download/chromium%2F6886/pdfium-linux-x64.tgz)  
+  
+[govips](https://github.com/davidbyttow/govips)
 +
 https://github.com/davidbyttow/govips/issues/100
 (
