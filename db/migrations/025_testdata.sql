@@ -44,23 +44,23 @@ values (1, 90000, 'Скульптор', 'Требуется скульптор �
 
 
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (1, 170000, 'Дизайнер витрины', 'Требуется оформить главный стенд нового офиса', 2, 2, "media/Uncompressed/1ahsdfhtrgtorhjertoldbtsdjgxsdfkg.PNG");
+values (1, 170000, 'Дизайнер витрины', 'Требуется оформить главный стенд нового офиса', 2, 2, 'media/Uncompressed/1ahsdfhtrgtorhjertoldbtsdjgxsdfkg.PNG');
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (3, 80000, 'Младший дизайнер интерьера', 'Требуется специалист в области дизайна интерьера в дружный коллектив нашего бюро', 1, 2, "media/Uncompressed/1ahsdfhtrgtaahjertoldbtsdjgxsdfkg.PNG");
+values (3, 80000, 'Младший дизайнер интерьера', 'Требуется специалист в области дизайна интерьера в дружный коллектив нашего бюро', 1, 2, 'media/Uncompressed/1ahsdfhtrgtaahjertoldbtsdjgxsdfkg.PNG');
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (3, 100000, 'Художник оформитель', 'Требуется опытный специалист для оформления дизайнерской мебели', 1, 3, "media/Uncompressed/1ahsdfhtrgtaahjertoldbtsdjgxsdfkg.PNG");
+values (3, 100000, 'Художник оформитель', 'Требуется опытный специалист для оформления дизайнерской мебели', 1, 3, 'media/Uncompressed/1ahsdfhtrgtaahjertoldbtsdjgxsdfkg.PNG');
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (2, 210000, 'Младший ландшафтный дизайнер', 'Нанимаем опытного специалиста для оформления нескольких парковых зон', 2, 1, "media/Uncompressed/1ahsdfhtrgtorhjruooldbtsdjgxsdfkg.JPG");
+values (2, 210000, 'Младший ландшафтный дизайнер', 'Нанимаем опытного специалиста для оформления нескольких парковых зон', 2, 1, 'media/Uncompressed/1ahsdfhtrgtorhjruooldbtsdjgxsdfkg.JPG');
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (2, 120000, 'Младший ландшафтный дизайнер', 'Требуется специалист по живой изгороди', 1, 3, "media/Uncompressed/1ahsdfhtrgtorhjruooldbtsdjgxsdfkg.JPG");
+values (2, 120000, 'Младший ландшафтный дизайнер', 'Требуется специалист по живой изгороди', 1, 3, 'media/Uncompressed/1ahsdfhtrgtorhjruooldbtsdjgxsdfkg.JPG');
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (2, 220000, 'Куратор', 'Требуется куратор в нашу программу повышения квалификации сотрудников', 1, 2, "media/Uncompressed/1ahsdfhtrgtorhjruooldbtsdjgxsdfkg.JPG");
+values (2, 220000, 'Куратор', 'Требуется куратор в нашу программу повышения квалификации сотрудников', 1, 2, 'media/Uncompressed/1ahsdfhtrgtorhjruooldbtsdjgxsdfkg.JPG');
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (1, 320000, 'Графитист', 'Нанимаем профессионального художника-гафитиста для временного графити приуроченному к празднику на высотном здании', 2, 2, "media/Uncompressed/1ahsdfhtrgtorhjertoldbtsdjgxsdfkg.PNG");
+values (1, 320000, 'Графитист', 'Нанимаем профессионального художника-гафитиста для временного графити приуроченному к празднику на высотном здании', 2, 2, 'media/Uncompressed/1ahsdfhtrgtorhjertoldbtsdjgxsdfkg.PNG');
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (4, 110000, 'Хореограф', 'Ищем профессионального хареографа со стажем 15 лет', 1, 3, "media/Uncompressed/1ahsdfhtrgtorhjruaaldbtsdjgxsdfkg.JPG");
+values (4, 110000, 'Хореограф', 'Ищем профессионального хареографа со стажем 15 лет', 1, 3, 'media/Uncompressed/1ahsdfhtrgtorhjruaaldbtsdjgxsdfkg.JPG');
 insert into vacancy (employer_id , salary, position, vacancy_description, work_type_id, city_id, path_to_company_avatar)
-values (4, 210000, 'Художник декоратор', 'Требуется декоратор для постановок', 1, 1, "media/Uncompressed/1ahsdfhtrgtorhjruaaldbtsdjgxsdfkg.JPG");
+values (4, 210000, 'Художник декоратор', 'Требуется декоратор для постановок', 1, 1, 'media/Uncompressed/1ahsdfhtrgtorhjruaaldbtsdjgxsdfkg.JPG');
 
 
 insert into vacancy_subscriber (applicant_id , vacancy_id) values (1, 1);
