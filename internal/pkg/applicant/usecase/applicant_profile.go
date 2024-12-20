@@ -69,12 +69,6 @@ func (au *ApplicantUsecase) UpdateApplicantProfile(ctx context.Context, applican
 		return err
 	}
 	au.logger.Debug("compress")
-	// TODO: add microservice
-
-	// if err != nil {
-	// 	au.logger.Errorf("fail compress microservice")
-	// 	return err
-	// }
 
 	au.logger.Debugf("function: %s; successfully updated applicant profile", fn)
 	return nil
